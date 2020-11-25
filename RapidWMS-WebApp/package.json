@@ -50,6 +50,7 @@
     "not ie <= 10"
   ],
   "dependencies": {
+    "@ant-design/aliyun-theme": "^0.0.4",
     "@antv/data-set": "^0.10.1",
     "accounting": "^0.4.1",
     "antd": "^3.23.4",

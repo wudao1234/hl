@@ -5,6 +5,7 @@ import webpackPlugin from './plugin.config';
 import defaultSettings from '../src/defaultSettings';
 import slash from 'slash2';
 import { apiHost } from '@/defaultSettings';
+import aliyunTheme from '@ant-design/aliyun-theme';
 
 const { pwa, primaryColor } = defaultSettings;
 const { APP_TYPE, TEST } = process.env;
@@ -73,9 +74,11 @@ export default {
   routes: pageRoutes,
   // Theme for antd
   // https://ant.design/docs/react/customize-theme-cn
-  theme: {
-    'primary-color': primaryColor,
-  },
+  // theme: {
+  //   'primary-color': primaryColor,
+  // },
+  // https://github.com/ant-design/ant-design-aliyun-theme
+  "theme": aliyunTheme,
   proxy: {
     '/api': {
       target: apiHost,
