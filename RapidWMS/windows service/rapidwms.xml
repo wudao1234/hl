@@ -1,0 +1,9 @@
+<service>
+      <id>rapidwms</id>
+      <name>rapidwms</name>
+      <description>RapidWMS by Macrow</description>
+      <env name="RAPIDWMS_HOME" value="D:\RapidWMS\Services"/>
+      <executable>C:\Program Files\Java\jdk1.8.0_201\bin\java</executable>
+      <arguments>-Xrs -Xms256m -Xmx1024m -jar "%RAPIDWMS_HOME%\rapidwms.jar" --spring.profiles.active=hl</arguments>
+      <log mode="none"/>
+</service>

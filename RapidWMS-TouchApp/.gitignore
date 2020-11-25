@@ -1,0 +1,8 @@
+# uni-app
+node_modules/
+.project
+unpackage/
+
+# misc
+.DS_Store
+._*

@@ -1,0 +1,14 @@
+
+FROM java:8
+
+LABEL version="1.0"
+
+WORKDIR /rapidwms
+
+ADD ./thinleaf-system/target/rapidwms-1.0.jar app.jar
+
+EXPOSE 8016
+
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+
+CMD ["--spring.profiles.active=docker"]

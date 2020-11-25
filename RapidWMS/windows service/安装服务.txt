@@ -1,0 +1,23 @@
+WinSW Installation Guide
+This page provides WinSW installation guidelines for different cases.
+
+Installation steps
+In order to setup WinSW, you commonly need to perform the following steps:
+
+Take winsw.exe from the distribution, and rename it to your taste (such as myapp.exe)
+Write myapp.xml (see XML Config File specification for more details)
+Place those two files side by side, because that's how WinSW discovers its configuration.
+Run myapp.exe install <OPTIONS> in order to install the service wrapper.
+Optional - Perform additional configuration in the Windows Service Manager.
+Optional - Perform extra configurations if required (guidelines are available below).
+Declare that the executable is compatible with .NET 4 or above (for WinSW 1.x only)
+Enable the WinSW offline mode
+Run the service from the Windows Service Manager.
+There are some details for each step available below.
+
+
+到终端运行
+
+rapidwms.exe install
+
+一定打开查看rapidwms.xml的路径配置，正确了才能启动服务

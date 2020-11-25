@@ -1,0 +1,32 @@
+package org.mstudio.modules.wms.address_type.domain;
+
+import com.alibaba.fastjson.annotation.JSONField;
+import lombok.Data;
+import org.mstudio.modules.wms.address.domain.Address;
+import org.mstudio.modules.wms.common.BaseEntity;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import java.util.List;
+
+/**
+ * @author Macrow
+ * @date 2019-07-09
+ */
+
+@Data
+@Entity
+@Table(name = "wms_address_type")
+public class AddressType extends BaseEntity {
+
+    private String name;
+
+    private Integer sortOrder;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "addressType", fetch = FetchType.LAZY)
+    private List<Address> addresses;
+
+}

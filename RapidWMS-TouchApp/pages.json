@@ -1,0 +1,248 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/dashboard/dashboard",
+			"style": {
+				"navigationBarTitleText": "数据看板",
+				"enablePullDownRefresh": true
+			}
+		}
+		,{
+            "path" : "pages/order/list/list",
+            "style" : {
+				"navigationBarTitleText":"订单列表",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path": "pages/warehouse/warehouse/warehouse",
+            "style": {
+				"navigationBarTitleText":"仓库管理",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path": "pages/transit/transit/transit",
+            "style": {
+				"navigationBarTitleText":"物流管理",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path": "pages/profile/profile/profile",
+            "style": {
+				"navigationBarTitleText":"我的迅仓云"
+			}
+        }
+        ,{
+            "path" : "pages/profile/change-password/change-password",
+            "style" : {
+				"navigationBarTitleText":"更改密码"
+			}
+        }
+		,{
+            "path": "pages/login/login",
+            "style": {
+				"navigationBarTitleText":"登录我的迅仓云"
+			}
+        }
+        ,{
+            "path" : "pages/order/detail/detail",
+            "style" : {
+				"navigationBarTitleText":"订单详情"
+			}
+        }
+        ,{
+            "path" : "pages/order/add/add",
+            "style" : {
+				"navigationBarTitleText":"新增订单"
+			}
+        }
+        ,{
+            "path" : "pages/order/warezone-select/warezone-select",
+            "style" : {
+				"navigationBarTitleText":"指定库区"
+			}
+        }
+        ,{
+            "path" : "pages/order/goods-select/goods-select",
+            "style" : {
+				"navigationBarTitleText":"选择商品",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path" : "pages/order/stock-select/stock-select",
+            "style" : {
+				"navigationBarTitleText":"选择商品",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/stock-detail/stock-detail",
+            "style" : {
+				"navigationBarTitleText":"库存详情"
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/move-stock/move-stock",
+            "style" : {
+				"navigationBarTitleText":"移库"
+			}
+        }
+        ,{
+            "path" : "pages/profile/about/about",
+            "style" : {
+				"navigationBarTitleText":"关于迅仓云"
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/receive-goods-detail/receive-goods-detail",
+            "style" : {
+				"navigationBarTitleText":"入库详情"
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/stock-flow-detail/stock-flow-detail",
+            "style" : {
+				"navigationBarTitleText":"流水明细详情"
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/receive-goods-add/receive-goods-add",
+            "style" : {
+				"navigationBarTitleText":"新增入库"
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/receive-goods-add-from-goods/receive-goods-add-from-goods",
+            "style" : {
+				"navigationBarTitleText":"选择商品入库",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/receive-goods-add-choose/receive-goods-add-choose",
+            "style" : {
+				"navigationBarTitleText":"确认入库信息"
+			}
+        }
+        ,{
+            "path" : "pages/transit/order-confirm/order-confirm",
+            "style" : {
+				"navigationBarTitleText":"订单分拣"
+			}
+        }
+        ,{
+            "path" : "pages/transit/pack-detail/pack-detail",
+            "style" : {
+				"navigationBarTitleText":"打包详情"
+			}
+        }
+        ,{
+            "path" : "pages/transit/pack-add/pack-add",
+            "style" : {
+				"navigationBarTitleText":"新增打包"
+			}
+        }
+        ,{
+            "path" : "pages/transit/order-select/order-select",
+            "style" : {
+				"navigationBarTitleText":"订单列表",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path" : "pages/transit/address-select/address-select",
+            "style" : {
+				"navigationBarTitleText":"地址列表",
+				"enablePullDownRefresh":true
+			}
+        }
+		,{
+            "path" : "pages/server-setting/server-setting",
+            "style" : {
+				"navigationBarTitleText":"服务器地址设置"
+			}
+        }
+        ,{
+            "path" : "pages/transit/address-detail/address-detail",
+            "style" : {
+				"navigationBarTitleText":"地址详情"
+			}
+        }
+        ,{
+            "path" : "pages/transit/address-add/address-add",
+            "style" : {
+				"navigationBarTitleText":"新增地址"
+			}
+        }
+        ,{
+            "path" : "pages/transit/pack-package/pack-package",
+            "style" : {
+							"navigationBarTitleText":"箱码分包"
+						}
+        }
+        ,{
+            "path" : "pages/profile/my-packages/my-packages",
+            "style" : {
+				"navigationBarTitleText":"我的派送",
+				"enablePullDownRefresh":true
+			}
+        }
+        ,{
+            "path" : "pages/transit/pack-list-user/pack-list-user",
+            "style" : {
+				"navigationBarTitleText":"派送列表"
+			}
+        }
+        ,{
+            "path" : "pages/warehouse/update-stock-expire-date/update-stock-expire-date",
+            "style" : {
+				"navigationBarTitleText":"更新库存质保日期"
+			}
+        }
+    ],
+	"globalStyle": {
+		"mp-alipay": {
+			/* 支付宝小程序特有相关 */
+			"transparentTitle": "always",
+			"allowsBounceVertical": "NO"
+		},
+		"navigationBarBackgroundColor": "#1296db",
+		"navigationBarTitleText": "迅仓云移动版",
+		"navigationBarTextStyle": "white"
+	},
+	"tabBar": {
+		"color": "#7A7E83",
+		"selectedColor": "#1296db",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+			"pagePath": "pages/dashboard/dashboard",
+			"iconPath": "static/image/dashboard.png",
+			"selectedIconPath": "static/image/dashboard-fill.png",
+			"text": "数据看板"
+		}, {
+			"pagePath": "pages/order/list/list",
+			"iconPath": "static/image/accountbook.png",
+			"selectedIconPath": "static/image/accountbook-fill.png",
+			"text": "销售管理"
+		}, {
+			"pagePath": "pages/warehouse/warehouse/warehouse",
+			"iconPath": "static/image/container.png",
+			"selectedIconPath": "static/image/container-fill.png",
+			"text": "仓储管理"
+		}, {
+			"pagePath": "pages/transit/transit/transit",
+			"iconPath": "static/image/interation.png",
+			"selectedIconPath": "static/image/interation-fill.png",
+			"text": "物流管理"
+		}, {
+			"pagePath": "pages/profile/profile/profile",
+			"iconPath": "static/image/home.png",
+			"selectedIconPath": "static/image/home-fill.png",
+			"text": "个人中心"
+		}]
+	}
+}

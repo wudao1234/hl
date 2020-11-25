@@ -1,0 +1,71 @@
+version: '3.7'
+
+services:
+
+  nginx:
+    image: nginx:1.18.0
+    container_name: rapidwms_nginx
+    restart: always
+    depends_on:
+      - springboot
+    links:
+      - springboot
+    ports:
+      - 8019:8019
+    environment:
+      - TZ=Asia/Shanghai  
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - /rapidwms/html/:/etc/nginx/html/
+      - /rapidwms/springboot/avatar:/rapidwms/springboot/avatar
+      - /rapidwms/springboot/picture:/rapidwms/springboot/picture
+      - /rapidwms/springboot/template:/rapidwms/springboot/template
+
+  mysql:
+    image: mysql:5.7.31
+    container_name: rapidwms_mysql
+    restart: always
+    ports:
+      - 3309:3306
+    volumes:
+     - /rapidwms/mysql:/var/lib/mysql
+    command: [
+      '--character-set-server=utf8',
+      '--collation-server=utf8_unicode_ci',
+      '--lower_case_table_names=1'
+    ]
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=Kerry@RapidWMS#2020
+      
+  redis:
+    image: redis:6.0.6
+    container_name: rapidwms_redis
+    restart: always
+    ports:
+      - 6379:6379
+    environment:
+      - TZ=Asia/Shanghai  
+
+  springboot:
+    image: adoptopenjdk/openjdk8
+    container_name: rapidwms_springboot
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - TZ=Asia/Shanghai  
+    depends_on:
+      - mysql
+      - redis
+    links:
+      - mysql
+      - redis
+    volumes:
+      - /rapidwms/springboot:/rapidwms
+    command:
+        - /bin/sh
+        - -c
+        - |
+          cd /rapidwms
+          java -Duser.timezone=GMT+08 -jar rapidwms.jar --spring.profiles.active=kerry
