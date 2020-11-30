@@ -2,9 +2,9 @@ import React, { Component, Suspense } from 'react';
 import { connect } from 'dva';
 import GridContent from '@/components/PageHeaderWrapper/GridContent';
 import { getTimeDistance } from '@/utils/utils';
-import styles from './Analysis.less';
 import PageLoading from '@/components/PageLoading';
 import { AsyncLoadBizCharts } from '@/components/Charts/AsyncLoadBizCharts';
+import styles from './Analysis.less';
 
 const IntroduceRow = React.lazy(() => import('./IntroduceRow'));
 const SalesCard = React.lazy(() => import('./SalesCard'));

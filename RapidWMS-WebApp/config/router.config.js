@@ -145,34 +145,14 @@ export default [
             component: './Customer/Customer',
           },
           {
-            path: '/infrastructure/wareZone',
-            name: 'wareZone',
-            component: './WareZone/WareZone',
-          },
-          {
             path: '/infrastructure/warePosition',
             name: 'warePosition',
             component: './WarePosition/WarePosition',
           },
           {
-            path: '/infrastructure/goods',
-            name: 'goods',
-            component: './Goods/Goods',
-          },
-          {
             path: '/infrastructure/goodsType',
             name: 'goodsType',
             component: './GoodsType/GoodsType',
-          },
-          {
-            path: '/infrastructure/address',
-            name: 'address',
-            component: './Address/Address',
-          },
-          {
-            path: '/infrastructure/addressType',
-            name: 'addressType',
-            component: './AddressType/AddressType',
           },
           {
             path: '/infrastructure/store',
@@ -187,19 +167,14 @@ export default [
         path: '/warehouse',
         routes: [
           {
-            path: '/warehouse/stock',
-            name: 'stock',
-            component: './Stock/Stock',
+            path: '/warehouse/warePosition',
+            name: 'warePosition',
+            component: './WarePosition/WarePosition',
           },
           {
-            path: '/warehouse/receiveGoods',
-            name: 'receiveGoods',
-            component: './ReceiveGoods/ReceiveGoods',
-          },
-          {
-            path: '/warehouse/addReceiveGoods',
-            name: 'addReceiveGoods',
-            component: './ReceiveGoods/AddReceiveGoods',
+            path: '/warehouse/wareZone',
+            name: 'wareZone',
+            component: './WareZone/WareZone',
           },
           {
             path: '/warehouse/editReceiveGoods/:id',
@@ -218,11 +193,6 @@ export default [
             name: 'viewReceiveGoods',
             component: './ReceiveGoods/ViewReceiveGoods',
             hideInMenu: true,
-          },
-          {
-            path: '/warehouse/stockFlow',
-            name: 'stockFlow',
-            component: './StockFlow/StockFlow',
           },
         ],
       },
@@ -342,6 +312,70 @@ export default [
             name: 'trigger',
             hideInMenu: true,
             component: './Exception/TriggerException',
+          },
+        ],
+      },
+      {
+        name: 'goods',
+        path: '/goods',
+        routes: [
+          {
+            path: '/goods/goods',
+            name: 'goods',
+            component: './Goods/Goods',
+          },
+          {
+            path: '/goods/customer',
+            name: 'customer',
+            component: './Customer/Customer',
+          },
+        ],
+      },
+      {
+        name: 'inventory',
+        path: '/inventory',
+        routes: [
+          {
+            path: '/inventory/stock',
+            name: 'stock',
+            component: './Stock/Stock',
+          },
+          {
+            path: '/inventory/stockFlow',
+            name: 'stockFlow',
+            component: './StockFlow/StockFlow',
+          },
+        ],
+      },
+      {
+        name: 'aog',
+        path: '/aog',
+        routes: [
+          {
+            path: '/aog/receiveGoods',
+            name: 'receiveGoods',
+            component: './ReceiveGoods/ReceiveGoods',
+          },
+          {
+            path: '/aog/addReceiveGoods',
+            name: 'addReceiveGoods',
+            component: './ReceiveGoods/AddReceiveGoods',
+          },
+        ],
+      },
+      {
+        name: 'logistics',
+        path: '/logistics',
+        routes: [
+          {
+            path: '/logistics/address',
+            name: 'address',
+            component: './Address/Address',
+          },
+          {
+            path: '/logistics/addressType',
+            name: 'addressType',
+            component: './AddressType/AddressType',
           },
         ],
       },

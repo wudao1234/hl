@@ -5,13 +5,13 @@ import { Icon } from 'antd';
 import GlobalFooter from '@/components/GlobalFooter';
 import DocumentTitle from 'react-document-title';
 import SelectLang from '@/components/SelectLang';
+import getPageTitle from '@/utils/getPageTitle';
 import styles from './UserLayout.less';
 import logo from '../assets/logo.svg';
-import getPageTitle from '@/utils/getPageTitle';
 
 const copyright = (
   <Fragment>
-    Copyright <Icon type="copyright" /> 2020 迅仓云
+    Copyright <Icon type="copyright" /> 2020 展鹿商贸仓储
   </Fragment>
 );
 
@@ -44,7 +44,7 @@ class UserLayout extends Component {
               <div className={styles.header}>
                 <Link to="/">
                   <img alt="logo" className={styles.logo} src={logo} />
-                  <span className={styles.title}>迅仓云</span>
+                  <span className={styles.title}>展鹿商贸仓储</span>
                 </Link>
               </div>
               <div className={styles.desc} />

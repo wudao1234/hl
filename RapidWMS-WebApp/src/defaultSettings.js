@@ -9,7 +9,7 @@
 //   menu: {
 //     disableLocal: false,
 //   },
-//   title: '迅仓云',
+//   title: '展鹿商贸仓储',
 //   pwa: true,
 //   // Your custom iconfont Symbol script Url
 //   // eg：//at.alicdn.com/t/font_1039637_btcrd5co4w.js
@@ -30,7 +30,7 @@ module.exports = {
   menu: {
     disableLocal: false,
   },
-  title: '迅仓云',
+  title: '展鹿商贸仓储',
   pwa: true,
   iconfontUrl: '',
   apiHost: 'http://localhost:8016',
