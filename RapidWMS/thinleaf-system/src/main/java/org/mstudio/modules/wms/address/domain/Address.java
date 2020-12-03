@@ -36,4 +36,6 @@ public class Address extends BaseEntity {
 
     private String description;
 
+    private Float coefficient;
+
 }

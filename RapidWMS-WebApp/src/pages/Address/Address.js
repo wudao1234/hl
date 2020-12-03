@@ -335,6 +335,12 @@ class Address extends PureComponent {
               initialValue: currentItem.phone,
             })(<Input placeholder="请输入联系电话" />)}
           </FormItem>
+          <FormItem label="系数" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('coefficient', {
+              rules: [{ required: true, message: '请输入系数' }],
+              initialValue: currentItem.coefficient,
+            })(<Input placeholder="请输入系数" />)}
+          </FormItem>
           <FormItem label="备注" {...this.formLayout} hasFeedback>
             {getFieldDecorator('description', {
               initialValue: currentItem.description,
@@ -414,6 +420,26 @@ class Address extends PureComponent {
         title: '联系电话',
         dataIndex: 'phone',
         key: 'phone',
+        width: '8%',
+        sorter: true,
+        render: text => {
+          if (text !== undefined && text !== null) {
+            return (
+              <Highlighter
+                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                searchWords={[search]}
+                autoEscape
+                textToHighlight={text.toString()}
+              />
+            );
+          }
+          return text;
+        },
+      },
+      {
+        title: '系数',
+        dataIndex: 'coefficient',
+        key: 'coefficient',
         width: '8%',
         sorter: true,
         render: text => {

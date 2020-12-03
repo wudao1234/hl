@@ -22,4 +22,6 @@ public class AddressVO extends BaseObject {
 
     private String description;
 
+    private Float coefficient;
+
 }

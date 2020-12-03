@@ -481,7 +481,7 @@ class ReceiveGoods extends PureComponent {
 
   handleAddReceiveGoods = () => {
     router.push({
-      pathname: '/warehouse/addReceiveGoods',
+      pathname: '/aog/addReceiveGoods',
       query: {
         queryParams: this.getQueryParams(),
       },

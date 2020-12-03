@@ -254,7 +254,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
 
     const handleGoBackToList = () => {
       router.push({
-        pathname: '/warehouse/receiveGoods',
+        pathname: '/aog/receiveGoods',
         query: {
           queryParams,
         },
@@ -316,7 +316,10 @@ class ReceiveGoodsAuditForm extends PureComponent {
     };
 
     const getReceiveGoodsTypeOptions = () => {
-      const receiveGoodsTypeArray = [{ id: 0, name: '新增到货' }, { id: 1, name: '退货' }];
+      const receiveGoodsTypeArray = [
+        { id: 0, name: '新增到货' },
+        { id: 1, name: '退货' },
+      ];
       const children = [];
       if (Array.isArray(receiveGoodsTypeArray)) {
         receiveGoodsTypeArray.forEach(type => {
