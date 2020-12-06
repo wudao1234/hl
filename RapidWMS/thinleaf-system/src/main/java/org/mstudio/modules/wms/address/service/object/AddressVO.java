@@ -24,4 +24,6 @@ public class AddressVO extends BaseObject {
 
     private Float coefficient;
 
+    private String clientStore;
+
 }

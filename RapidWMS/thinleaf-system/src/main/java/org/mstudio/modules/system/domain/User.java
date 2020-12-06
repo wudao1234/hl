@@ -8,6 +8,7 @@ import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.pack.domain.Pack;
+import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -41,6 +42,8 @@ public class User implements Serializable {
     @NotBlank
     @Email
     private String email;
+
+    private Float coefficient;
 
     @NotNull
     private Boolean enabled;
@@ -98,4 +101,9 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "userSending", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<CustomerOrder> ordersSending;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<PickMatch> pickMatchs;
 }

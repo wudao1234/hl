@@ -300,6 +300,12 @@ class Address extends PureComponent {
       }
       return (
         <Form onSubmit={this.handleSubmit}>
+          <FormItem label="门店" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('clientStore', {
+              rules: [{ required: true, message: '请输入门店' }],
+              initialValue: currentItem.naclientStoreme,
+            })(<Input placeholder="XX重庆江北店" />)}
+          </FormItem>
           <FormItem label="地址" {...this.formLayout} hasFeedback>
             {getFieldDecorator('name', {
               rules: [{ required: true, message: '请输入地址' }],
@@ -358,6 +364,12 @@ class Address extends PureComponent {
         render: (text, record, index) => {
           return `${index + 1 + (currentPage - 1) * pageSize}`;
         },
+      },
+      {
+        title: '门店',
+        dataIndex: 'clientStore',
+        key: 'clientStore',
+        width: '15%',
       },
       {
         title: '地址',

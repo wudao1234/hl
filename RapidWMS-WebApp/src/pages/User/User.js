@@ -268,6 +268,12 @@ class UserList extends PureComponent {
               initialValue: current.username,
             })(<Input placeholder="用户名长度介于2和20之间" />)}
           </FormItem>
+          <FormItem label="系数" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('coefficient', {
+              rules: [{ required: true, message: '请输入系数' }],
+              initialValue: current.coefficient,
+            })(<Input placeholder="0.1" />)}
+          </FormItem>
           <FormItem label="电子邮箱" {...this.formLayout} hasFeedback>
             {getFieldDecorator('email', {
               rules: [

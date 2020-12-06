@@ -9,6 +9,7 @@ import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.operate_snapshot.domain.OperateSnapshot;
 import org.mstudio.modules.wms.pack.domain.Pack;
+import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 
 import javax.persistence.*;
@@ -19,14 +20,18 @@ import java.util.Date;
 import java.util.List;
 
 /**
-* @author Macrow
-* @date 2019-02-22
-*/
+ * @author Macrow
+ * @date 2019-02-22
+ */
 
 @Data
 @Entity
 @Table(name = "wms_customer_order")
-@NamedEntityGraph(name = "customerOrder.all", attributeNodes = { @NamedAttributeNode(value = "owner"), @NamedAttributeNode(value = "pack") })
+@NamedEntityGraph(name = "customerOrder.all",
+        attributeNodes = {
+                @NamedAttributeNode(value = "owner"),
+                @NamedAttributeNode(value = "pack")
+        })
 public class CustomerOrder extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -126,7 +131,7 @@ public class CustomerOrder extends BaseEntity {
 
     /**
      * isActive 是否为有效状态，作废则为无效
-      */
+     */
     private Boolean isActive;
 
     /**
@@ -212,5 +217,10 @@ public class CustomerOrder extends BaseEntity {
     @JSONField(serialize = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Pack pack;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "customerOrder", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private List<PickMatch> pickMatch;
 
 }

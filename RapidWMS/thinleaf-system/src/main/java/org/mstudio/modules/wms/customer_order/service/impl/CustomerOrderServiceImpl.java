@@ -63,6 +63,9 @@ import org.mstudio.modules.wms.operate_snapshot.service.OperateSnapshotService;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pack.service.impl.PackServiceImpl;
+import org.mstudio.modules.wms.pick_match.domain.PickMatchType;
+import org.mstudio.modules.wms.pick_match.repository.PickMatchRepository;
+import org.mstudio.modules.wms.pick_match.service.PickMatchService;
 import org.mstudio.modules.wms.stock.domain.Stock;
 import org.mstudio.modules.wms.stock.dto.AddDTO;
 import org.mstudio.modules.wms.stock.dto.ReduceForOrderItemDTO;
@@ -170,6 +173,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PickMatchService pickMatchService;
 
     @Override
     @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
@@ -591,6 +597,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 order.setOrderStatus(OrderStatus.GATHER_GOODS);
                 customerOrderRepository.save(order);
                 operateSnapshotService.create(OrderStatus.GATHER_GOODS.getName(), order);
+                pickMatchService.create(order, PickMatchType.PICK_MATCH);
             } else {
                 throw new BadRequestException("确认分拣与开始分拣必须是同一人");
             }
@@ -629,6 +636,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             order.setOrderStatus(OrderStatus.CONFIRM);
             customerOrderRepository.save(order);
             operateSnapshotService.create(OrderStatus.CONFIRM.getName(), order);
+            pickMatchService.create(order, PickMatchType.REVIEW);
         } else {
             throw new BadRequestException("订单状态错误");
         }

@@ -38,4 +38,6 @@ public class Address extends BaseEntity {
 
     private Float coefficient;
 
+    private String clientStore;
+
 }

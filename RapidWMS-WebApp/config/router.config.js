@@ -380,6 +380,17 @@ export default [
         ],
       },
       {
+        name: 'piece',
+        path: '/piece',
+        routes: [
+          {
+            path: '/piece/pickMatch',
+            name: 'pickMatch',
+            component: './PickMatch/PickMatch',
+          },
+        ],
+      },
+      {
         component: '404',
       },
     ],
