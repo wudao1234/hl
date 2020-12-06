@@ -26,7 +26,7 @@ public class AddressTypeController {
     private static final String ENTITY_NAME = "AddressType";
 
     @GetMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN', 'S_ADDRESS_TYPE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public Object list(@RequestParam(value = "search", required = false) String name, Pageable pageable) {
         return new ResponseEntity<>(addressTypeService.queryAll(name, pageable), HttpStatus.OK);
     }

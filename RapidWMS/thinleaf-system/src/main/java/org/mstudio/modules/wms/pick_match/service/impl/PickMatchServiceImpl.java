@@ -26,7 +26,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.*;
 
 import static org.mstudio.utils.SecurityContextHolder.getUserDetails;
@@ -53,8 +58,11 @@ public class PickMatchServiceImpl implements PickMatchService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserRepository userRepo;
+
     @Override
-//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
     public Map queryAll(Pageable pageable) {
         Specification<PickMatchCoefficient> spec = (Specification<PickMatchCoefficient>) (root, criteriaQuery, criteriaBuilder) -> null;
@@ -130,5 +138,38 @@ public class PickMatchServiceImpl implements PickMatchService {
 
         pickMatch.setScore(score);
         pickMatchRepository.save(pickMatch);
+    }
+
+    @Override
+//    @Cacheable(value = CACHE_NAME, key = "#p1")
+    public Map statistics(String name, Pageable pageable) {
+        Specification<User> spec = (Specification<User>) (root, criteriaQuery, cb) -> {
+            List<Predicate> list = new ArrayList<Predicate>();
+            if (!ObjectUtils.isEmpty(name)) {
+                list.add(cb.like(root.get("username").as(String.class), "%" + name + "%"));
+            }
+            Predicate[] p = new Predicate[list.size()];
+            return cb.and(list.toArray(p));
+        };
+        Page<User> page = userRepo.findAll(spec, pageable);
+        return PageUtil.toPage(page.map(user -> {
+            Map m = new HashMap();
+            m.put("id", user.getId());
+            m.put("username", user.getUsername());
+            Float pickMatchScore = 0f;
+            Float reviewScore = 0f;
+            for (PickMatch pm : user.getPickMatchs()) {
+                if (null != pm.getType()) {
+                    if (PickMatchType.PICK_MATCH.equals(pm.getType())) {
+                        pickMatchScore += pm.getScore();
+                    } else {
+                        reviewScore += pm.getScore();
+                    }
+                }
+            }
+            m.put("pickMatchScore", pickMatchScore);
+            m.put("reviewScore", reviewScore);
+            return m;
+        }));
     }
 }

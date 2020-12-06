@@ -388,6 +388,11 @@ export default [
             name: 'pickMatch',
             component: './PickMatch/PickMatch',
           },
+          {
+            path: '/piece/pickMatchStatistics',
+            name: 'pickMatchStatistics',
+            component: './PickMatchStatistics/PickMatchStatistics',
+          },
         ],
       },
       {

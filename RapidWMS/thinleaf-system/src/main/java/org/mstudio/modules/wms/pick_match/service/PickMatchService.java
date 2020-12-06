@@ -12,16 +12,18 @@ import org.springframework.data.domain.Pageable;
 import java.util.Map;
 
 /**
-* @author lfj
-*/
+ * @author lfj
+ */
 
 public interface PickMatchService {
 
-    Map queryAll( Pageable pageable);
+    Map queryAll(Pageable pageable);
 
     PickMatchCoefficient update(Long id, PickMatchCoefficient resource);
 
     PickMatchCoefficient findById(Long id);
 
     void create(CustomerOrder order, PickMatchType type);
+
+    Map statistics(String name, Pageable pageable);
 }

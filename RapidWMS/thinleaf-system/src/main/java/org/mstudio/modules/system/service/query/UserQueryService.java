@@ -40,7 +40,7 @@ public class UserQueryService {
     /**
      * 分页
      */
-    @Cacheable(keyGenerator = "keyGenerator")
+//    @Cacheable(keyGenerator = "keyGenerator")
     public Object queryAll(UserDTO user, Pageable pageable){
         Page<User> page = userRepo.findAll(new Spec(user),pageable);
         return PageUtil.toPage(page.map(userMapper::toDto));

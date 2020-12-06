@@ -1,6 +1,8 @@
 package org.mstudio.modules.wms.pick_match.rest;
 
+import org.mstudio.aop.log.Log;
 import org.mstudio.exception.BadRequestException;
+import org.mstudio.modules.system.service.dto.UserDTO;
 import org.mstudio.modules.wms.pick_match.domain.PickMatchCoefficient;
 import org.mstudio.modules.wms.pick_match.service.PickMatchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +26,13 @@ public class PickMatchController {
     private PickMatchService pickMatchService;
 
     @GetMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN', 'S_ADDRESS_LIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity list(Pageable pageable) {
         return new ResponseEntity<>(pickMatchService.queryAll(pageable), HttpStatus.OK);
     }
 
-
     @PutMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN', 'S_ADDRESS_CRUD')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity update(@Validated @RequestBody PickMatchCoefficient resource) {
         if (resource.getId() == null) {
             throw new BadRequestException("ID不能为空");
@@ -40,9 +41,16 @@ public class PickMatchController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'S_ADDRESS_LIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity get(@PathVariable Long id) {
         return new ResponseEntity<>(pickMatchService.findById(id), HttpStatus.OK);
+    }
+
+    @Log("统计")
+    @GetMapping(value = "/statistics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
+    public ResponseEntity statistics(@RequestParam(value = "search", required = false) String name, Pageable pageable) {
+        return new ResponseEntity(pickMatchService.statistics(name, pageable), HttpStatus.OK);
     }
 
 }
