@@ -9,7 +9,9 @@ import org.mstudio.modules.wms.address.repository.AddressRepository;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrderItem;
 import org.mstudio.modules.wms.dispatch.domain.DispatchCoefficient;
+import org.mstudio.modules.wms.dispatch.domain.DispatchSys;
 import org.mstudio.modules.wms.dispatch.repository.DispatchCoefficientRepository;
+import org.mstudio.modules.wms.dispatch.repository.DispatchSysRepository;
 import org.mstudio.modules.wms.dispatch.service.DispatchService;
 import org.mstudio.utils.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,9 @@ public class DispatchServiceImpl implements DispatchService {
     @Autowired
     private UserRepository userRepo;
 
+    @Autowired
+    private DispatchSysRepository dispatchSysRepository;
+
     @Override
     //@Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
@@ -77,6 +82,18 @@ public class DispatchServiceImpl implements DispatchService {
         }
 
         return dispatchCoefficientRepository.save(resource);
+    }
+
+    @Override
+    //@Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
+    public Map querySysAll(Pageable pageable) {
+        Specification<DispatchSys> spec = (Specification<DispatchSys>) (root, criteriaQuery, criteriaBuilder) -> null;
+        // 默认按照创建的时间顺序排列
+        Sort sort = pageable.getSort().and(new Sort(Sort.Direction.DESC, "id"));
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<DispatchSys> page = dispatchSysRepository.findAll(spec, newPageable);
+        return PageUtil.toPage(page);
     }
 
     @Override

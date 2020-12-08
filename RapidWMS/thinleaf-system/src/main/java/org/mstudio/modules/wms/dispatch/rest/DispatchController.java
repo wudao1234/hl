@@ -39,17 +39,4 @@ public class DispatchController {
         return new ResponseEntity<>(dispatchService.update(resource.getId(), resource), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
-    public ResponseEntity get(@PathVariable Long id) {
-        return new ResponseEntity<>(dispatchService.findById(id), HttpStatus.OK);
-    }
-
-    @Log("统计")
-    @GetMapping(value = "/statistics")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
-    public ResponseEntity statistics(@RequestParam(value = "search", required = false) String name, Pageable pageable) {
-        return new ResponseEntity(dispatchService.statistics(name, pageable), HttpStatus.OK);
-    }
-
 }

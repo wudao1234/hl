@@ -403,6 +403,11 @@ export default [
             name: 'dispatchStatistics',
             component: './Dispatch/DispatchStatistics',
           },
+          {
+            path: '/piece/dispatchSys',
+            name: 'dispatchSys',
+            component: './Dispatch/DispatchSys',
+          },
         ],
       },
       {

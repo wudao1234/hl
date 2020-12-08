@@ -14,6 +14,8 @@ public interface DispatchService {
 
     Map queryAll(Pageable pageable);
 
+    Map querySysAll(Pageable pageable);
+
     DispatchCoefficient update(Long id, DispatchCoefficient resource);
 
     DispatchCoefficient findById(Long id);

@@ -7,7 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 /**
- * 拣配 计件 系数
+ * 配送 计件 系数
 * @author lfj
 * @date 2020-12-01
 */
