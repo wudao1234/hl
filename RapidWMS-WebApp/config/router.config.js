@@ -393,6 +393,16 @@ export default [
             name: 'pickMatchStatistics',
             component: './PickMatchStatistics/PickMatchStatistics',
           },
+          {
+            path: '/piece/dispatch',
+            name: 'dispatch',
+            component: './Dispatch/Dispatch',
+          },
+          {
+            path: '/piece/dispatchStatistics',
+            name: 'dispatchStatistics',
+            component: './Dispatch/DispatchStatistics',
+          },
         ],
       },
       {
