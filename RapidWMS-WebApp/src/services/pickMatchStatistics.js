@@ -1,6 +1,6 @@
 import request from '@/utils/request';
 
-export default async function queryPickMatch(params) {
+export async function queryPickMatch(params) {
   const {
     payload: { search, pageSize, currentPage, orderBy },
   } = params;
@@ -13,4 +13,11 @@ export default async function queryPickMatch(params) {
   if (queryString.charAt(queryString.length - 1) === '&')
     queryString = queryString.substring(0, queryString.length - 1);
   return request(queryString);
+}
+
+export async function updatePickMatch(payload) {
+  return request('/api/pick_match', {
+    method: 'PUT',
+    body: payload,
+  });
 }

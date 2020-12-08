@@ -42,7 +42,6 @@ spring:
   redis:
     #数据库索引
     database: 0
-    # local dev
     host: 127.0.0.1
     # docker
     # host: redis

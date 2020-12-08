@@ -15,7 +15,7 @@ const { Search } = Input;
   loading: loading.models.pickMatchStatistics,
 }))
 @Form.create()
-class AddressType extends PureComponent {
+class PickMatchStatistics extends PureComponent {
   state = {
     currentPage: 1,
     pageSize: 10,
@@ -255,4 +255,4 @@ class AddressType extends PureComponent {
   }
 }
 
-export default AddressType;
+export default PickMatchStatistics;

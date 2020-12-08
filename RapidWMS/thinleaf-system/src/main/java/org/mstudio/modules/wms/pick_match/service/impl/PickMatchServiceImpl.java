@@ -28,10 +28,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.*;
 
 import static org.mstudio.utils.SecurityContextHolder.getUserDetails;
@@ -62,7 +59,7 @@ public class PickMatchServiceImpl implements PickMatchService {
     private UserRepository userRepo;
 
     @Override
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+    //@Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
     public Map queryAll(Pageable pageable) {
         Specification<PickMatchCoefficient> spec = (Specification<PickMatchCoefficient>) (root, criteriaQuery, criteriaBuilder) -> null;

@@ -14,7 +14,7 @@ const FormItem = Form.Item;
   loading: loading.models.pickMatch,
 }))
 @Form.create()
-class AddressType extends PureComponent {
+class PickMatch extends PureComponent {
   state = {
     currentPage: 1,
     pageSize: 10,
@@ -267,4 +267,4 @@ class AddressType extends PureComponent {
   }
 }
 
-export default AddressType;
+export default PickMatch;
