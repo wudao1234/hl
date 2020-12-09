@@ -10,7 +10,7 @@
 			</view>
 		</view>
 		<uni-list>
-			<uni-list-item v-for="goods in goodsList" :key="goods.id"
+			<uni-list-item v-for="goods in goodsList" :key="goods.id" clickable
 				:show-badge="true" :badge-text="formatQuantity(goods.stockCount)" 
 				:title="goods.name"
 				:note="formatNote(goods.sn, goods.price, goods.monthsOfWarranty)"

@@ -12,7 +12,7 @@
 		<uni-list>
 			<uni-list-item v-for="address in addressList" :key="address.id" 
 				:show-extra-icon="true" :extra-icon="{color: 'grey', size: '22', type: 'contact-filled'}"
-				:title="address.name" 
+				:title="address.name" clickable
 				:note="address.addressType.name + ' | ' + address.contact + ' | ' + address.phone"
 				@click="addAddress(address)" />
 		</uni-list>

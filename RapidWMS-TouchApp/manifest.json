@@ -1,7 +1,7 @@
 {
-    "name" : "迅仓云",
-    "appid" : "__UNI__FC157DE",
-    "description" : "迅仓云 - 仓库物流快速管理专家",
+    "name" : "展鹿商贸仓储",
+    "appid" : "__UNI__03A3F11",
+    "description" : "展鹿商贸仓储",
     "versionName" : "1.0.1",
     "versionCode" : 101,
     "transformPx" : false,
@@ -43,14 +43,17 @@
                     "<uses-feature android:name=\"android.hardware.camera\"/>",
                     "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
                     "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
-                ]
+                ],
+                "abiFilters" : [ "armeabi-v7a", "x86" ]
             },
             /* ios打包配置 */
             "ios" : {
                 "idfa" : false
             },
             /* SDK配置 */
-            "sdkConfigs" : {},
+            "sdkConfigs" : {
+                "ad" : {}
+            },
             "icons" : {
                 "android" : {
                     "hdpi" : "unpackage/res/icons/72x72.png",

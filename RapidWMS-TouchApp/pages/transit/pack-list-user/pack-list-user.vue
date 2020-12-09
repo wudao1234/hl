@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<uni-list>
-			<uni-list-item v-for="pack in packs" 
+			<uni-list-item v-for="pack in packs" clickable
 				:key="pack.id" :show-extra-icon="true" 
 				:extra-icon="formatIcon(pack.packStatus)" 
 				:show-badge="true" :badge-text="formatPrice(pack.totalPrice)"  :badge-type="pack.totalPrice > 0 ? 'error' : 'success'"

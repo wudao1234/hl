@@ -5,7 +5,7 @@
 		</view>
 		<view class="flex padding justify-center">
 			<view class="text-xl padding">
-				<text class="text-black text-bold">迅仓云 - 快速管理专家</text>
+				<text class="text-black text-bold">展鹿商贸仓储</text>
 			</view>
 		</view>
 		<view class="text">

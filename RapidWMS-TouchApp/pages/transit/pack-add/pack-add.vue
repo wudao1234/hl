@@ -38,7 +38,7 @@
 			<uni-list>
 				<block v-for="order in orders" :key="order.id">
 					<uni-swipe-action :options="options" @click="bindClickOrder(order.id)">
-						<uni-list-item :show-arrow="false"
+						<uni-list-item :show-arrow="false" clickable
 							:title="formatTitle(order.owner.shortNameCn, order.clientName)"
 							:note="formatNote(order.autoIncreaseSn, order.createTime)"
 							:show-badge="true" badge-type="error" :badge-text="formatPrice(order.totalPrice)" />

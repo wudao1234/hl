@@ -17,7 +17,7 @@
 				</view>
 			</view>
 			<uni-list>
-				<uni-list-item v-for="pack in myPacks" 
+				<uni-list-item v-for="pack in myPacks" clickable
 					:key="pack.id" :show-extra-icon="true" 
 					:extra-icon="formatIcon(pack.packStatus)" 
 					:show-badge="true" :badge-text="formatPrice(pack.totalPrice)"  :badge-type="pack.totalPrice > 0 ? 'error' : 'success'"
@@ -174,6 +174,7 @@
 		},
 		methods: {
 			onClickItem(index) {
+				index = index.currentIndex
 				if (this.current !== index) {
 					this.current = index;
 				}

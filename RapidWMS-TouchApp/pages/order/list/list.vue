@@ -14,10 +14,11 @@
 		</view>
 		<uni-segmented-control class='segment' :current="currentStatus" :values="statusItems" @clickItem="onClickStatusItem" style-type="text" active-color="#1296db"></uni-segmented-control>
 		<uni-list>
-			<uni-list-item v-for="order in orders" 
+			<uni-list-item v-for="order in orders" clickable
 				:key="order.id" :show-extra-icon="true" 
 				:extra-icon="formatIcon(order.orderStatus)" 
-				:show-badge="true" :badge-text="formatPrice(order.totalPrice)"  :badge-type="order.totalPrice > 0 ? 'error' : 'success'"
+				:show-badge="true" :badge-text="formatPrice(order.totalPrice)"  
+				:badge-type="order.totalPrice > 0 ? 'error' : 'success'"
 				:title="formatTitle(order.owner.shortNameCn, order.clientStore)" 
 				:note="formatNote(order.createTime, order.description)"
 				@click="viewOrderDetail(order.id)" />
@@ -185,6 +186,7 @@
 				});
 			},
 			onClickStatusItem(index) {
+				index = index.currentIndex
 				if (this.currentStatus !== index) {
 					this.currentStatus = index;
 				}

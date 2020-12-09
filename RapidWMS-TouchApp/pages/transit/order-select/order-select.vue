@@ -10,7 +10,7 @@
 			</view>
 		</view>
 		<uni-list>
-			<uni-list-item v-for="order in orders" 
+			<uni-list-item v-for="order in orders" clickable
 				:key="order.id" :show-extra-icon="true" 
 				:extra-icon="formatIcon" 
 				:show-badge="true" :badge-text="formatPrice(order.totalPrice)"  :badge-type="order.totalPrice > 0 ? 'error' : 'success'"

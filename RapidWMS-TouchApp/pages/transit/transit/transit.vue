@@ -16,7 +16,7 @@
 				</view>
 				<uni-segmented-control class='segment' :current="currentStatus" :values="statusItems" @clickItem="onClickStatusItem" style-type="text" active-color="#1296db"></uni-segmented-control>
 				<uni-list>
-					<uni-list-item v-for="order in orders" 
+					<uni-list-item v-for="order in orders" clickable
 						:key="order.id" :show-extra-icon="true" 
 						:extra-icon="formatIcon(order.orderStatus)" 
 						:show-badge="true" :badge-text="formatPriceOrGatheringUserName(order)"  :badge-type="order.totalPrice > 0 ? 'error' : 'success'"
@@ -41,7 +41,7 @@
 				</view>
 				<uni-segmented-control class='segment' :current="currentStatus2" :values="statusItems2" @clickItem="onClickStatusItem2" style-type="text" active-color="#1296db"></uni-segmented-control>
 				<uni-list>
-					<uni-list-item v-for="pack in packs" 
+					<uni-list-item v-for="pack in packs" clickable
 						:key="pack.id" :show-extra-icon="true" 
 						:extra-icon="formatIcon(pack.packStatus)" 
 						:show-badge="true" :badge-text="formatPrice(pack.totalPrice)"  :badge-type="pack.totalPrice > 0 ? 'error' : 'success'"
@@ -67,7 +67,7 @@
 				<uni-list>
 					<uni-list-item v-for="address in addressList" :key="address.id" 
 						:show-extra-icon="true" :extra-icon="{color: 'grey', size: '22', type: 'contact-filled'}"
-						:title="address.name" 
+						:title="address.name" clickable
 						:note="address.addressType.name + ' | ' + address.contact + ' | ' + address.phone"
 						@click="viewAddressDetail(address.id)" />
 				</uni-list>
@@ -77,7 +77,7 @@
 				<view class="segment_area">
 					<uni-list>
 						<uni-list-item v-for="user in userList" 
-							:key="user.id"
+							:key="user.id" clickable
 							:show-extra-icon="true"  :extra-icon="{color: 'grey', size: '22', type: 'contact-filled'}"
 							:show-badge="true" 
 							:badge-text="formatCount(user.packCounts, user.packageCounts)"  :badge-type="'error'"
@@ -283,6 +283,7 @@
 		},
 		methods: {
 			onClickItem(index) {
+				index = index.currentIndex
 				if (this.current !== index) {
 					this.current = index;
 				}
@@ -478,6 +479,7 @@
 				});
 			},
 			onClickStatusItem(index) {
+				index = index.currentIndex
 				if (this.currentStatus !== index) {
 					this.currentStatus = index;
 				}
@@ -486,6 +488,7 @@
 				this.loadOrders();
 			},
 			onClickStatusItem2(index) {
+				index = index.currentIndex
 				if (this.currentStatus2 !== index) {
 					this.currentStatus2 = index;
 				}

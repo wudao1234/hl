@@ -12,7 +12,7 @@
 		<uni-list>
 			<uni-list-item v-for="goods in goodsList" :key="goods.id"
 				:show-badge="true" :badge-text="formatQuantity(goods.stockCount)" 
-				:title="goods.name"
+				:title="goods.name" clickable
 				:note="formatNote(goods.sn, goods.price, goods.monthsOfWarranty)"
 				@click="chooseGoods(goods)" />
 		</uni-list>

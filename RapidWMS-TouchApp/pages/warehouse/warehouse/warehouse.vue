@@ -17,7 +17,7 @@
 				<uni-list>
 					<uni-list-item v-for="stock in stocks" :key="stock.id"
 						:show-badge="true" :badge-text="formatStockQuantity(stock.quantity)" :badge-type="stock.isActive ? 'error' : 'success'"
-						:title="formatStockTitle(stock)" 
+						:title="formatStockTitle(stock)" clickable
 						:note="formatNote(stock.goods.sn, stock.warePosition.name, stock.goods.customer.shortNameCn)"
 						@click="viewStockDetail(stock.id)" />
 				</uni-list>
@@ -39,7 +39,7 @@
 				<uni-segmented-control class='segment' :current="currentReceiveGoodsStatus" :values="receiveGoodsStatusItems" @clickItem="onClickReceiveGoodsStatusItem" style-type="text" active-color="#1296db"></uni-segmented-control>
 				<uni-list>
 					<uni-list-item v-for="item in receiveGoods" 
-						:key="item.id" :show-extra-icon="true" 
+						:key="item.id" :show-extra-icon="true" clickable
 						:extra-icon="formatIcon2(item.auditTime)"
 						:show-badge="true" :badge-text="formatType2(item.receiveGoodsType)" :badge-type="getBadgeType2(item.receiveGoodsType)"
 						:title="formatTitle2(item.customer.shortNameCn, item.description)" 
@@ -79,7 +79,7 @@
 				<uni-list>
 					<uni-list-item v-for="flow in stockFlows" :key="flow.id"
 						:show-badge="true" :badge-text="formatStockQuantity(flow.quantity)" :badge-type="getBadgeType3(flow.flowOperateType)"
-						:title="formatTitle3(flow)"
+						:title="formatTitle3(flow)" clickable
 						:note="formatNote3(flow.goods.sn, flow.warePositionIn, flow.warePositionOut)"
 						@click="viewStockFlowDetail(flow.id)" />
 				</uni-list>
@@ -270,6 +270,7 @@
 		},
 		methods: {
 			onClickItem(index) {
+				index = index.currentIndex
 				if (this.current !== index) {
 					this.current = index;
 				}
@@ -345,6 +346,7 @@
 				this.loadReceiveGoods();
 			},
 			onClickReceiveGoodsStatusItem(index) {
+				index = index.currentIndex
 				if (this.currentReceiveGoodsStatus !== index) {
 					this.currentReceiveGoodsStatus = index;
 				}
