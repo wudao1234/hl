@@ -2,36 +2,43 @@
 	<view>
 		<view class="cu-bar search bg-white">
 			<view class="action">
-				<button class="cu-btn round bg-blue" @click="add">新增</button>
+				<uni-icons type="plus-filled" color="#007aff" size="30" @click="add"></uni-icons>
+				<!-- <button type="primary" class="cu-btn round bg-blue" @click="add">新增</button> -->
 			</view>
 			<view class="search-form round">
 				<text class="cuIcon-search"></text>
 				<input v-model="searchValue" @confirm="search" :adjust-position="false" type="text" placeholder="流水号、客户、操作人" confirm-type="search"></input>
 			</view>
 			<view class="action">
-				<button class="cu-btn bg-red round" @click="scanOrder">扫码</button>
+				<uni-icons type="scan" size="30" @click="scanOrder"></uni-icons>
 			</view>
 		</view>
 		<uni-segmented-control class='segment' :current="currentStatus" :values="statusItems" @clickItem="onClickStatusItem" style-type="text" active-color="#1296db"></uni-segmented-control>
 		<uni-list>
-			<uni-list-item v-for="order in orders" clickable
-				:key="order.id" :show-extra-icon="true" 
+			<uni-list-item  v-for="order in orders" clickable
+				:key="order.id" 
+				:show-extra-icon="true" 
 				:extra-icon="formatIcon(order.orderStatus)" 
-				:show-badge="true" :badge-text="formatPrice(order.totalPrice)"  
-				:badge-type="order.totalPrice > 0 ? 'error' : 'success'"
-				:title="formatTitle(order.owner.shortNameCn, order.clientStore)" 
-				:note="formatNote(order.createTime, order.description)"
-				@click="viewOrderDetail(order.id)" />
+				:show-badge="true" 
+				:badge-text="formatPrice(order.totalPrice)"  
+				:badge-type="order.totalPrice > 0 ? 'primary' : 'default'"
+				@click="viewOrderDetail(order.id)" >
+				<view slot="body" style="flex: 1;">
+					<view class="flex-item">{{formatTitle(order.owner.shortNameCn, order.clientStore)}}</view>
+					<view class="flex-item note">{{formatNoteDescription(order.description)}}</view>
+					<view class="flex-item note">{{formatNoteTime(order.createTime)}}</view>
+				</view >
+			</uni-list-item>
 		</uni-list>
 		<view class="uni-loadmore" v-if="showLoadMore">{{loadMoreText}}</view>
 	</view>
 </template>
 
 <script>
-	import {uniList, uniListItem, uniSegmentedControl} from '@dcloudio/uni-ui'
+	import {uniListChat,uniList, uniListItem, uniSegmentedControl} from '@dcloudio/uni-ui'
 	
 	export default {
-		components: {uniList, uniListItem, uniSegmentedControl},
+		components: {uniListChat,uniList, uniListItem, uniSegmentedControl},
 		data() {
 			return {
 				orders: [],
@@ -57,9 +64,14 @@
 					return this.accounting.formatMoney(totalPrice);
 				}
 			},
-			formatNote() {
-				return (createTime, description) => {
-					return this.moment(createTime).format("YYYY-MM-DD HH:mm") + ' | ' + (description == null || description == undefined ? '未说明' : description);
+			formatNoteTime() {
+				return (createTime) => {
+					return this.moment(createTime).format("YYYY-MM-DD HH:mm");
+				}
+			},
+			formatNoteDescription() {
+				return (description) => {
+					return (description == null || description == undefined ? '未说明' : description);
 				}
 			},
 			formatIcon() {
@@ -254,5 +266,9 @@
 		line-height:80upx;
 		text-align:center;
 		padding-bottom:30upx;
+	}
+	.note{
+		font-size: 12px;
+		color: #999;
 	}
 </style>

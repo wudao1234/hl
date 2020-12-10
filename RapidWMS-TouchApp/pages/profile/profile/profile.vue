@@ -20,7 +20,7 @@
 			<uni-list>
 				<uni-list-item clickable :show-arrow="true" title="更改头像" @click="change_avatar" />
 				<uni-list-item clickable :show-arrow="true" title="修改密码" @click="change_password" />
-				<uni-list-item clickable :show-arrow="true" title="关于" @click="about()" />
+				<!-- <uni-list-item clickable :show-arrow="true" title="关于" @click="about()" /> -->
 			</uni-list>
 		</view>
 		<view class='logout_area'>

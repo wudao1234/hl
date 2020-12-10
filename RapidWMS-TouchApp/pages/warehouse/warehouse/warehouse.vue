@@ -1,7 +1,7 @@
 <template>
 	<view>
 		<view class="segment_area">
-			<uni-segmented-control class='segment' :current="current" :values="items" @clickItem="onClickItem" style-type="button" active-color="#1296db"></uni-segmented-control>
+			<uni-segmented-control class='segment' :current="current" :values="items" @clickItem="onClickItem" style-type="button" active-color="#409eff"></uni-segmented-control>
 		</view>
 		<view class="content">
 			<view v-show="current === 0">
@@ -11,37 +11,53 @@
 						<input v-model="searchValue" @confirm="searchStocks" :adjust-position="false" type="text" placeholder="商品名、条码、库位" confirm-type="search"></input>
 					</view>
 					<view class="action">
-						<button class="cu-btn bg-red round" @click="scanStock">扫码</button>
+						<uni-icons type="scan" size="30" @click="scanOrder"></uni-icons>
+						<!-- <button class="cu-btn bg-red round" @click="scanStock">扫码</button> -->
 					</view>
 				</view>
 				<uni-list>
 					<uni-list-item v-for="stock in stocks" :key="stock.id"
-						:show-badge="true" :badge-text="formatStockQuantity(stock.quantity)" :badge-type="stock.isActive ? 'error' : 'success'"
-						:title="formatStockTitle(stock)" clickable
+						:show-badge="true" 
+						:badge-text="formatStockQuantity(stock.quantity)" 
+						:badge-type="stock.isActive ? 'primary' : 'default'"
+						clickable
 						:note="formatNote(stock.goods.sn, stock.warePosition.name, stock.goods.customer.shortNameCn)"
-						@click="viewStockDetail(stock.id)" />
+						@click="viewStockDetail(stock.id)">
+						<view slot="body" style="flex: 1;">
+							<view class="flex-item">{{formatStockTitle(stock)}}</view>
+							<view class="flex-item note">客户:{{stock.goods.customer.shortNameCn}}</view>
+							<view class="flex-item note">库位:{{stock.warePosition.name}}</view>
+							<view class="flex-item note">条码:{{stock.goods.sn}}</view>
+						</view>
+					</uni-list-item>
 				</uni-list>
 				<view class="uni-loadmore" v-if="showLoadMore">{{loadMoreText}}</view>
 			</view>
 			<view v-show="current === 1">
 				<view class="cu-bar search bg-white segment_area">
 					<view class="action">
-						<button class="cu-btn round bg-blue" @click="addReceiveGoods">新增</button>
+						<uni-icons type="plus-filled" color="#007aff" size="30" @click="addReceiveGoods"></uni-icons>
+						<!-- <button class="cu-btn round bg-blue" @click="addReceiveGoods">新增</button> -->
 					</view>
 					<view class="search-form round">
 						<text class="cuIcon-search"></text>
 						<input v-model="searchValue2" @confirm="searchReceiveGoods" :adjust-position="false" type="text" placeholder="流水号、客户、操作人" confirm-type="search"></input>
 					</view>
-					<view class="action">
-						<button class="cu-btn bg-green round" @click="searchReceiveGoods">搜索</button>
+					<view class="action">						
+						<uni-icons type="search" color="#007aff" size="30" @click="searchReceiveGoods"></uni-icons>
+						<!-- <button class="cu-btn bg-green round" @click="searchReceiveGoods">搜索</button> -->
 					</view>
 				</view>
 				<uni-segmented-control class='segment' :current="currentReceiveGoodsStatus" :values="receiveGoodsStatusItems" @clickItem="onClickReceiveGoodsStatusItem" style-type="text" active-color="#1296db"></uni-segmented-control>
 				<uni-list>
 					<uni-list-item v-for="item in receiveGoods" 
-						:key="item.id" :show-extra-icon="true" clickable
+						:key="item.id" 
+						:show-extra-icon="true" 
+						clickable
 						:extra-icon="formatIcon2(item.auditTime)"
-						:show-badge="true" :badge-text="formatType2(item.receiveGoodsType)" :badge-type="getBadgeType2(item.receiveGoodsType)"
+						:show-badge="true" 
+						:badge-text="formatType2(item.receiveGoodsType)" 
+						:badge-type="getBadgeType2(item.receiveGoodsType)"
 						:title="formatTitle2(item.customer.shortNameCn, item.description)" 
 						:note="formatNote2(item.createTime)"
 						@click="viewReceiveGoodsDetail(item.id)" />
@@ -55,7 +71,8 @@
 						<input v-model="searchValue3_1" @confirm="searchStockFlows" :adjust-position="false" type="text" placeholder="商品名、条码" confirm-type="search"></input>
 					</view>
 					<view class="action">
-						<button class="cu-btn bg-red round" @click="scanGoods">商品扫码</button>
+						<uni-icons type="scan" size="30" @click="scanGoods"></uni-icons>
+						<!-- <button class="cu-btn bg-red round" @click="scanGoods">商品扫码</button> -->
 					</view>
 				</view>
 				<view class="cu-bar search bg-white second_search_area">
@@ -64,7 +81,8 @@
 						<input v-model="searchValue3_2" @confirm="searchStockFlows" :adjust-position="false" type="text" placeholder="入库库位" confirm-type="search"></input>
 					</view>
 					<view class="action">
-						<button class="cu-btn bg-orange round" @click="scanWarePositionIn">入库位扫码</button>
+						<uni-icons type="scan" size="30" @click="scanWarePositionIn"></uni-icons>
+						<!-- <button class="cu-btn bg-orange round" @click="scanWarePositionIn">入库位扫码</button> -->
 					</view>
 				</view>
 				<view class="cu-bar search bg-white second_search_area">
@@ -73,15 +91,25 @@
 						<input v-model="searchValue3_3" @confirm="searchStockFlows" :adjust-position="false" type="text" placeholder="出库库位" confirm-type="search"></input>
 					</view>
 					<view class="action">
-						<button class="cu-btn bg-mauve round" @click="scanWarePositionOut">出库位扫码</button>
+						<uni-icons type="scan" size="30" @click="scanWarePositionOut"></uni-icons>
+						<!-- <button class="cu-btn bg-mauve round" @click="scanWarePositionOut">出库位扫码</button> -->
 					</view>
 				</view>
 				<uni-list>
 					<uni-list-item v-for="flow in stockFlows" :key="flow.id"
-						:show-badge="true" :badge-text="formatStockQuantity(flow.quantity)" :badge-type="getBadgeType3(flow.flowOperateType)"
-						:title="formatTitle3(flow)" clickable
+						:show-badge="true" 
+						:badge-text="formatStockQuantity(flow.quantity)" 
+						:badge-type="getBadgeType3(flow.flowOperateType)"
+						:title="formatTitle3(flow)" 
+						clickable
 						:note="formatNote3(flow.goods.sn, flow.warePositionIn, flow.warePositionOut)"
-						@click="viewStockFlowDetail(flow.id)" />
+						@click="viewStockFlowDetail(flow.id)">
+						<view slot="body" style="flex: 1;">
+							<view class="flex-item">{{formatTitle3(flow)}}</view>
+							<view class="flex-item note">条码:{{flow.goods.sn}}</view>
+							<view class="flex-item note">{{(flow.warePositionOut ? flow.warePositionOut.name : '空') + ' -> ' + (flow.warePositionIn ? flow.warePositionIn.name : '空')}}</view>
+						</view>
+					</uni-list-item>
 				</uni-list>
 				<view class="uni-loadmore" v-if="showLoadMore3">{{loadMoreText3}}</view>
 			</view>
@@ -185,7 +213,7 @@
 				return (type) => {
 					switch (type) {
 						case 'NEW':
-							return "error";
+							return "primary";
 							break;
 						case 'REJECTED':
 							return "warning";
@@ -558,5 +586,9 @@
 		line-height:80upx;
 		text-align:center;
 		padding-bottom:30upx;
+	}
+	.note{
+		font-size: 12px;
+		color: #999;
 	}
 </style>

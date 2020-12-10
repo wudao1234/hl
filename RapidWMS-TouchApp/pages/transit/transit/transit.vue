@@ -1,7 +1,7 @@
 <template>
 	<view>
 		<view class="segment_area">
-			<uni-segmented-control class='segment' :current="current" :values="items" @clickItem="onClickItem" style-type="button" active-color="#1296db"></uni-segmented-control>
+			<uni-segmented-control class='segment' :current="current" :values="items" @clickItem="onClickItem" style-type="button" active-color="#409eff"></uni-segmented-control>
 		</view>
 		<view class="content">
 			<view v-show="current === 0">
@@ -11,32 +11,44 @@
 						<input v-model="searchValue" @confirm="search" :adjust-position="false" type="text" placeholder="流水号、客户、操作人" confirm-type="search"></input>
 					</view>
 					<view class="action">
-						<button class="cu-btn bg-red round" @click="scanOrder">扫码</button>
+						<uni-icons type="scan" size="30" @click="scanOrder"></uni-icons>
+						<!-- <button class="cu-btn bg-red round" @click="scanOrder">扫码</button> -->
 					</view>
 				</view>
 				<uni-segmented-control class='segment' :current="currentStatus" :values="statusItems" @clickItem="onClickStatusItem" style-type="text" active-color="#1296db"></uni-segmented-control>
 				<uni-list>
 					<uni-list-item v-for="order in orders" clickable
-						:key="order.id" :show-extra-icon="true" 
+						:key="order.id" 
+						:show-extra-icon="true" 
 						:extra-icon="formatIcon(order.orderStatus)" 
-						:show-badge="true" :badge-text="formatPriceOrGatheringUserName(order)"  :badge-type="order.totalPrice > 0 ? 'error' : 'success'"
+						:show-badge="true" 
+						:badge-text="formatPriceOrGatheringUserName(order)"  
+						:badge-type="order.totalPrice > 0 ? 'error' : 'success'"
 						:title="formatTitle(order.owner.shortNameCn, order.clientStore)" 
 						:note="formatNote(order.createTime, order.description)"
-						@click="viewOrderDetail(order.id)" />
+						@click="viewOrderDetail(order.id)" >
+						<view slot="body" style="flex: 1;">
+								<view class="flex-item">{{formatTitle(order.owner.shortNameCn, order.clientStore)}}</view>
+								<view class="flex-item note">{{(description == null || description == undefined ? '未说明' : description)}}</view>
+								<view class="flex-item note">{{formatNoteCreateTime(order.createTime)}}</view>
+							</view >
+					</uni-list-item>
 				</uni-list>
 				<view class="uni-loadmore" v-if="showLoadMore">{{loadMoreText}}</view>
 			</view>
 			<view v-show="current === 1">
 				<view class="cu-bar search bg-white segment_area">
 					<view class="action">
-						<button class="cu-btn round bg-blue" @click="addPack">新增</button>
+						<uni-icons type="plus-filled" color="#007aff" size="30" @click="addPack" />
+						<!-- <button class="cu-btn round bg-blue" @click="addPack">新增</button> -->
 					</view>
 					<view class="search-form round">
 						<text class="cuIcon-search"></text>
 						<input v-model="searchValue2" @confirm="search2" :adjust-position="false" type="text" placeholder="流水号、说明" confirm-type="search2"></input>
 					</view>
 					<view class="action">
-						<button class="cu-btn bg-red round" @click="scanPack">扫码</button>
+						<uni-icons type="scan" size="30" @click="scanPack"></uni-icons>
+						<!-- <button class="cu-btn bg-red round" @click="scanPack">扫码</button> -->
 					</view>
 				</view>
 				<uni-segmented-control class='segment' :current="currentStatus2" :values="statusItems2" @clickItem="onClickStatusItem2" style-type="text" active-color="#1296db"></uni-segmented-control>
@@ -46,22 +58,30 @@
 						:extra-icon="formatIcon(pack.packStatus)" 
 						:show-badge="true" :badge-text="formatPrice(pack.totalPrice)"  :badge-type="pack.totalPrice > 0 ? 'error' : 'success'"
 						:title="formatTitle2(pack)" 
-						:note="formatNote2(pack.user, pack.packages, pack.packType, pack.description)"
-						@click="viewPackDetail(pack.id)" />
+						@click="viewPackDetail(pack.id)" >
+						<view slot="body" style="flex: 1;">
+							<view class="flex-item">{{formatTitle2(pack)}}</view>
+							<view class="flex-item note">{{formatNote2(pack.user, pack.packages, pack.packType, pack.description)[0]+'|'+formatNote2(pack.user, pack.packages, pack.packType, pack.description)[1]}}</view>
+							<view class="flex-item note">{{formatNote2(pack.user, pack.packages, pack.packType, pack.description)[2]}}</view>
+							<view class="flex-item note">{{formatNote2(pack.user, pack.packages, pack.packType, pack.description)[3]}}</view>
+						</view >
+					</uni-list-item>
 				</uni-list>
 				<view class="uni-loadmore" v-if="showLoadMore2">{{loadMoreText2}}</view>
 			</view>
 			<view v-show="current === 2">
 				<view class="cu-bar search bg-white  segment_area">
 					<view class="action">
-						<button class="cu-btn round bg-blue" @click="addAddress">新增</button>
+						<uni-icons type="plus-filled" color="#007aff" size="30" @click="addAddress"></uni-icons>
+						<!-- <button class="cu-btn round bg-blue" @click="addAddress">新增</button> -->
 					</view>
 					<view class="search-form round">
 						<text class="cuIcon-search"></text>
 						<input v-model="searchValue3" @confirm="search3" :adjust-position="false" type="text" placeholder="地址、联系人" confirm-type="search3"></input>
 					</view>
 					<view class="action">
-						<button class="cu-btn bg-green round" @click="search3">搜索</button>
+						<uni-icons type="search" color="#007aff" size="30" @click="search3"></uni-icons>
+						<!-- <button class="cu-btn bg-green round" @click="search3">搜索</button> -->
 					</view>
 				</view>
 				<uni-list>
@@ -182,6 +202,11 @@
 					return this.moment(createTime).format("YYYY-MM-DD") + ' | ' + (description == null || description == undefined ? '未说明' : description);
 				}
 			},
+			formatNoteCreateTime() {
+				return (createTime, description) => {
+					return this.moment(createTime).format("YYYY-MM-DD");
+				}
+			},
 			formatNote2() {
 				return (user, packages, packType, description) => {
 					const userName = user ? user.username : '未指定';
@@ -201,7 +226,8 @@
 							break;
 					}
 					const descriptionResult = description == null || description == undefined || description == '' ? '无说明' : description;
-					return userName + ' | ' + packages + '件 | ' + packTypeName + ' | ' + descriptionResult;
+					const str = userName + ' | ' + packages + '件 | ' + packTypeName + ' | ' + descriptionResult;
+					return str.split('|')
 				}
 			},
 			formatIcon() {
@@ -695,5 +721,9 @@
 		line-height:80upx;
 		text-align:center;
 		padding-bottom:30upx;
+	}
+	.note{
+		font-size: 12px;
+		color: #999;
 	}
 </style>

@@ -1,6 +1,6 @@
 import md5 from '../plugin/md5/build/md5.min.js'
 
-const defaultBaseUrl = 'http://127.0.0.1:8019';
+const defaultBaseUrl = 'http://127.0.0.1:8016';
 let _baseUrl = null;
 
 const getBaseUrl = () => {
@@ -19,7 +19,7 @@ const setBaseUrl = (url, callback) => {
 		key: 'rapidWMS-server-address',
 		data : url,
 		success: () => {
-			callback();
+			callback&&callback();
 		}
 	});
 }

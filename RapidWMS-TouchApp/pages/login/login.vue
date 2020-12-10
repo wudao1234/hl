@@ -10,12 +10,12 @@
 		</view>
 		<form>
 			<view class="cu-form-group margin-top">
-				<view class="title">登录名</view>
-				<input placeholder="不少于2个字符" v-model="username" type="text"></input>
+				<!-- <view class="title">登录名</view> -->
+				<input placeholder="账号" v-model="username" type="text"></input>
 			</view>
 			<view class="cu-form-group">
-				<view class="title">密码</view>
-				<input placeholder="不少于6个字符" v-model="password" type="password"></input>
+				<!-- <view class="title">密码</view> -->
+				<input placeholder="密码" v-model="password" type="password"></input>
 			</view>
 			<view class="padding" @click="check_remember">
 				<checkbox :class="rememberMe ? 'checked remember' : 'remember'" class :checked="rememberMe" />记住密码
@@ -23,15 +23,16 @@
 			<view class="padding flex flex-direction">
 				<button class="cu-btn bg-blue margin-tb-sm lg" type="primary" :loading="loading" @click="login">登 录</button>
 			</view>
-			<view class="padding flex flex-direction server-setting">
+			<!-- <view class="padding flex flex-direction server-setting">
 				<span @click="setServer">配置服务器地址</span>
-			</view>
+			</view> -->
 		</form>
 	</view>
 </template>
 
 <script>
 	import md5 from '../../plugin/md5/build/md5.min.js'
+	
 
 	export default {
 		
