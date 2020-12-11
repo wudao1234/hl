@@ -26,4 +26,5 @@ public interface WarePositionService {
 
     byte[] exportExcelData(List<WarePositionDTO> warePositions);
 
+    Map spare(String name, Pageable pageable);
 }

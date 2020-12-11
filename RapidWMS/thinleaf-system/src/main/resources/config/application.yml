@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: dqy
+    active: pord
   jackson:
     time-zone: GMT+8
   data:

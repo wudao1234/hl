@@ -17,9 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
-* @author Macrow
-* @date 2019-02-22
-*/
+ * @author Macrow
+ * @date 2019-02-22
+ */
 
 @RestController
 @RequestMapping("api/ware_positions")
@@ -30,6 +30,14 @@ public class WarePositionController {
 
     private static final String ENTITY_NAME = "WarePosition";
 
+    @GetMapping("spare")
+    @PreAuthorize("hasAnyRole('ADMIN', 'S_WARE_POSITION_LIST')")
+    public ResponseEntity spare(
+            @RequestParam(value = "search", required = false) String name,
+            Pageable pageable) {
+        return new ResponseEntity<>(warePositionService.spare(name, pageable), HttpStatus.OK);
+    }
+
     @GetMapping("")
     @PreAuthorize("hasAnyRole('ADMIN', 'S_WARE_POSITION_LIST')")
     public ResponseEntity list(
@@ -39,7 +47,7 @@ public class WarePositionController {
             Pageable pageable) {
         if (exportExcel != null && exportExcel) {
             Map result = warePositionService.queryAll(true, wareZoneFilter, name, pageable);
-            List<WarePositionDTO> warePositions = (List)result.get("content");
+            List<WarePositionDTO> warePositions = (List) result.get("content");
             return new ResponseEntity<>(warePositionService.exportExcelData(warePositions), WmsUtil.getExportExcelHeaders(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(warePositionService.queryAll(false, wareZoneFilter, name, pageable), HttpStatus.OK);

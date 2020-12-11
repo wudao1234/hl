@@ -11,7 +11,7 @@
 						<input v-model="searchValue" @confirm="searchStocks" :adjust-position="false" type="text" placeholder="商品名、条码、库位" confirm-type="search"></input>
 					</view>
 					<view class="action">
-						<uni-icons type="scan" size="30" @click="scanOrder"></uni-icons>
+						<uni-icons type="scan" size="30" @click="scanStock"></uni-icons>
 						<!-- <button class="cu-btn bg-red round" @click="scanStock">扫码</button> -->
 					</view>
 				</view>
@@ -113,6 +113,25 @@
 				</uni-list>
 				<view class="uni-loadmore" v-if="showLoadMore3">{{loadMoreText3}}</view>
 			</view>
+			<view v-show="current === 3">
+				<view class="cu-bar search bg-white segment_area">
+					<view class="search-form round">
+						<text class="cuIcon-search"></text>
+						<input v-model="searchValue4" @confirm="searchSpareWarePosition" :adjust-position="false" type="text" placeholder="库位" confirm-type="search"></input>
+					</view>
+					<view class="action">
+						<uni-icons type="scan" size="30" @click="scanSpareWarePosition"></uni-icons>
+					</view>
+				</view>
+				<uni-list>
+					<uni-list-item 
+						v-for="warePosition in spareWarePosition" 
+						:key="warePosition.id"
+						:title="warePosition.name"
+						:note="warePosition.description===null?'未添加描述':warePosition.description"/>
+				</uni-list>
+				<view class="uni-loadmore" v-if="showLoadMore4">{{loadMoreText4}}</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -125,7 +144,7 @@
 		data() {
 			return {
 				current: 0,
-				items: ['实时库存', '入库管理', '流水明细'],
+				items: ['实时库存', '入库管理', '流水明细', '空余库位'],
 				// 库存
 				totalCount: 0,
 				currentPage: 0,
@@ -157,6 +176,15 @@
 				searchValue3_2: '',
 				searchValue3_3: '',
 				stockFlows: [],
+				// 空库位
+				loading4: false,
+				searchValue4:'',
+				spareWarePosition:[],
+				totalCount4: 0,
+				currentPage4: 0,
+				pageCount4: 10,
+				showLoadMore4:false,
+				loadMoreText4:''
 			}
 		},
 		computed: {
@@ -308,6 +336,42 @@
 				if (index == 2 && this.stockFlows.length == 0) {
 					this.loadStockFlows();
 				}
+				if (index == 3 && this.spareWarePosition.length == 0) {
+					this.loadSpareWarePosition();
+				}
+			},
+			loadSpareWarePosition() {
+				const url = `/api/ware_positions/spare?size=${this.pageCount4}&page=${this.currentPage4}${(this.searchValue4 ? "&search=" + this.searchValue4 : "")}`
+				console.log(url)
+				this.api.get(url).then(res => {
+					if (res.statusCode == 200) {
+						this.spareWarePosition = this.spareWarePosition.concat(res.data.content);
+						this.totalCount4 = res.data.totalElements;
+						if (this.totalCount4 < this.pageCount) {
+							this.showLoadMore4 = true;
+							this.loadMoreText4 = '没有更多数据了！';
+						}
+						if (this.totalCount4 == 0) {
+							this.showLoadMore4 = true;
+							this.loadMoreText4 = '没有找到符合条件的数据！';
+						}
+					}
+				}).finally(() => {
+					uni.stopPullDownRefresh();
+				});
+			},
+			searchSpareWarePosition() {
+				this.spareWarePosition = [];
+				this.currentPage4 = 0;
+				this.loadSpareWarePosition();
+			},
+			scanSpareWarePosition() {
+				uni.scanCode({
+					success: (res) => {
+						this.searchValue4 = res.result;
+						this.searchSpareWarePosition();
+					}
+				});
 			},
 			loadStocks() {
 				this.loading = true;
@@ -334,6 +398,7 @@
 				this.currentPage = 0;
 				this.loadStocks();
 			},
+			
 			scanStock() {
 				uni.scanCode({
 					success: (res) => {

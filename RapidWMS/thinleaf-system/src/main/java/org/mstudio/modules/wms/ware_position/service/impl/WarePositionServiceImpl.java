@@ -2,9 +2,13 @@ package org.mstudio.modules.wms.ware_position.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import lombok.Synchronized;
+import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.pack.domain.Pack;
+import org.mstudio.modules.wms.stock.domain.Stock;
 import org.mstudio.modules.wms.stock.service.StockService;
 import org.mstudio.modules.wms.ware_position.domain.WarePosition;
 import org.mstudio.modules.wms.ware_position.repository.WarePositionRepository;
@@ -14,6 +18,7 @@ import org.mstudio.modules.wms.ware_position.service.object.WarePositionDTO;
 import org.mstudio.modules.wms.ware_position.service.object.WarePositionExcelObj;
 import org.mstudio.modules.wms.ware_zone.service.impl.WareZoneServiceImpl;
 import org.mstudio.utils.PageUtil;
+import org.mstudio.utils.StringUtils;
 import org.mstudio.utils.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,17 +34,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
-* @author Macrow
-* @date 2019-02-22
-*/
+ * @author Macrow
+ * @date 2019-02-22
+ */
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -171,6 +174,36 @@ public class WarePositionServiceImpl implements WarePositionService {
         writer.flush(outByteStream);
         writer.close();
         return outByteStream.toByteArray();
+    }
+
+    @Override
+    public Map spare(String name, Pageable pageable) {
+        Specification<WarePosition> spec = new Specification<WarePosition>() {
+            @Override
+            public Predicate toPredicate(Root<WarePosition> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = new ArrayList<>();
+                if (StringUtils.isNotEmpty(name)) {
+                    predicates.add(criteriaBuilder.like(root.get("name").as(String.class), "%" + name + "%"));
+                }
+
+                if (predicates.size() != 0) {
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                } else {
+                    return null;
+                }
+            }
+        };
+        Sort sort = pageable.getSort().and(new Sort(Sort.Direction.DESC, "id"));
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<WarePosition> page = warePositionRepository.findAll(spec, newPageable);
+        List<WarePositionDTO> pageFilter = page.stream().filter(warePosition ->
+                ObjectUtil.isNull(warePosition.getStocks()) || warePosition.getStocks().size() == 0)
+                .collect(Collectors.toList())
+                .stream().map(warePositionMapper::toDto)
+                .collect(Collectors.toList());
+        return PageUtil.toPage(pageFilter);
+//        return PageUtil.toPage(page.map(warePositionMapper::toDto));
     }
 
 }
