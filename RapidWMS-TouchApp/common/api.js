@@ -1,6 +1,7 @@
 import md5 from '../plugin/md5/build/md5.min.js'
 
-const defaultBaseUrl = 'http://127.0.0.1:8016';
+// const defaultBaseUrl = 'http://127.0.0.1:8016';
+const defaultBaseUrl = 'http://8.131.84.103:8016';
 let _baseUrl = null;
 
 const getBaseUrl = () => {

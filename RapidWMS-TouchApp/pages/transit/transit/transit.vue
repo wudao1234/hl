@@ -29,7 +29,7 @@
 						@click="viewOrderDetail(order.id)" >
 						<view slot="body" style="flex: 1;">
 								<view class="flex-item">{{formatTitle(order.owner.shortNameCn, order.clientStore)}}</view>
-								<view class="flex-item note">{{(description == null || description == undefined ? '未说明' : description)}}</view>
+								<view class="flex-item note">{{(order.description == null || order.description == undefined ? '未说明' : order.description)}}</view>
 								<view class="flex-item note">{{formatNoteCreateTime(order.createTime)}}</view>
 							</view >
 					</uni-list-item>
