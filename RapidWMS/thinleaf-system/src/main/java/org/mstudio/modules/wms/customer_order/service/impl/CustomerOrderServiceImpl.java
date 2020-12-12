@@ -63,8 +63,6 @@ import org.mstudio.modules.wms.operate_snapshot.service.OperateSnapshotService;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pack.service.impl.PackServiceImpl;
-import org.mstudio.modules.wms.pick_match.domain.PickMatchType;
-import org.mstudio.modules.wms.pick_match.repository.PickMatchRepository;
 import org.mstudio.modules.wms.pick_match.service.PickMatchService;
 import org.mstudio.modules.wms.stock.domain.Stock;
 import org.mstudio.modules.wms.stock.dto.AddDTO;
@@ -1578,7 +1576,11 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         return orderStocks;
     }
 
-    private Map query(Set<CustomerVO> customers, Boolean exportExcel, Boolean isPrintedFilter, String isSatisfiedFilter, String customerFilter, String orderStatusFilter, String receiveTypeFilter, Boolean isActiveFilter, String startDate, String endDate, String search, Pageable pageable) {
+    private Map query(Set<CustomerVO> customers, Boolean exportExcel, Boolean isPrintedFilter,
+                      String isSatisfiedFilter, String customerFilter, String orderStatusFilter,
+                      String receiveTypeFilter, Boolean isActiveFilter,
+                      String startDate, String endDate, String search,
+                      Pageable pageable) {
         Specification<CustomerOrder> spec = new Specification<CustomerOrder>() {
             @Override
             public Predicate toPredicate(Root<CustomerOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {

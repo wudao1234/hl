@@ -11,6 +11,7 @@ import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
+import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
 import org.mstudio.modules.wms.operate_snapshot.domain.OperateSnapshot;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 
@@ -115,7 +116,21 @@ public class Pack extends BaseEntity {
      */
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "pack", fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
+    @Fetch(FetchMode.SUBSELECT)
     private List<PickMatch> pickMatch;
+
+    @JSONField(serialize = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private DispatchPiece dispatchPiece;
+
+    /**
+     * 派送人
+     */
+    @JSONField(serialize = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private User dispatchUser;
+
 
 }

@@ -5,7 +5,7 @@ package org.mstudio.modules.wms.pick_match.domain;
  * @date 2019-03-11
  */
 
-public enum PickMatchType {
+public enum PickMatchTypeEnum {
 
     /**
      * 拣配
@@ -20,7 +20,7 @@ public enum PickMatchType {
     private String name;
     private int index;
 
-    PickMatchType(String name, int index) {
+    PickMatchTypeEnum(String name, int index) {
         this.name = name;
         this.index = index;
     }

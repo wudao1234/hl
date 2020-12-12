@@ -7,6 +7,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 
@@ -21,12 +22,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
  * @date 2018-11-22
  */
 @Entity
 @Data
-@Table(name="user")
+@Table(name = "user")
 public class User implements Serializable {
 
     @Id
@@ -58,7 +58,7 @@ public class User implements Serializable {
     private Date lastPasswordResetTime;
 
     @ManyToMany
-    @JoinTable(name = "users_roles", joinColumns = {@JoinColumn(name = "user_id",referencedColumnName = "id")}, inverseJoinColumns = {@JoinColumn(name = "role_id",referencedColumnName = "id")})
+    @JoinTable(name = "users_roles", joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")}, inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")})
     private Set<Role> roles;
 
     @Override
@@ -75,7 +75,8 @@ public class User implements Serializable {
                 '}';
     }
 
-    public @interface Update {}
+    public @interface Update {
+    }
 
     @JSONField(serialize = false)
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
@@ -111,4 +112,17 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<PickMatch> pickMatchs;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<DispatchPiece> dispatchPieces;
+
+    /**
+     * 配送的打包
+     */
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "dispatchUser", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<Pack> dispatchPacks;
 }

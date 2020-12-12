@@ -1,18 +1,18 @@
 package org.mstudio.modules.wms.pick_match.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import org.mstudio.exception.BadRequestException;
-import org.mstudio.modules.security.security.JwtUser;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.address.repository.AddressRepository;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
-import org.mstudio.modules.wms.customer_order.domain.CustomerOrderItem;
+import org.mstudio.modules.wms.dispatch.service.object.StatisticsDTO;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 import org.mstudio.modules.wms.pick_match.domain.PickMatchCoefficient;
-import org.mstudio.modules.wms.pick_match.domain.PickMatchType;
+import org.mstudio.modules.wms.pick_match.domain.PickMatchTypeEnum;
 import org.mstudio.modules.wms.pick_match.repository.PickMatchCoefficientRepository;
 import org.mstudio.modules.wms.pick_match.repository.PickMatchRepository;
 import org.mstudio.modules.wms.pick_match.service.PickMatchService;
@@ -30,10 +30,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
-
-import static org.mstudio.utils.SecurityContextHolder.getUserDetails;
 
 /**
  * @author lfj
@@ -111,8 +111,8 @@ public class PickMatchServiceImpl implements PickMatchService {
         // 获取系数信息
         PickMatchCoefficient c = pickMatchCoefficientRepository.findAll().get(0);
 
-        PickMatchType[] pickMatchTypes = PickMatchType.values();
-        for (PickMatchType pickMatchType : pickMatchTypes) {
+        PickMatchTypeEnum[] pickMatchTypeEnums = PickMatchTypeEnum.values();
+        for (PickMatchTypeEnum pickMatchTypeEnum : pickMatchTypeEnums) {
             // init PickMatch
             PickMatch pickMatch = new PickMatch();
             pickMatch.setPiece(c.getPiece());
@@ -120,12 +120,12 @@ public class PickMatchServiceImpl implements PickMatchService {
             pickMatch.setPickMatch(c.getPickMatch());
             pickMatch.setReview(c.getReview());
             pickMatch.setPack(pack);
-            pickMatch.setType(PickMatchType.PICK_MATCH);
+            pickMatch.setType(PickMatchTypeEnum.PICK_MATCH);
             pickMatch.setUser(pack.getOrders().get(0).getUserGathering());
             // get 拣配复核系数
-            Float diffCoe = pickMatchType.equals(PickMatchType.PICK_MATCH) ? pickMatch.getPickMatch() : pickMatch.getReview();
+            Float diffCoe = pickMatchTypeEnum.equals(PickMatchTypeEnum.PICK_MATCH) ? pickMatch.getPickMatch() : pickMatch.getReview();
             CustomerOrder customerOrder = pack.getOrders().get(0);
-            Float customerCoefficient = pickMatchType.equals(PickMatchType.PICK_MATCH) ?
+            Float customerCoefficient = pickMatchTypeEnum.equals(PickMatchTypeEnum.PICK_MATCH) ?
                     customerOrder.getUserGathering().getCoefficient() :
                     customerOrder.getUserReviewer().getCoefficient();
             Float score = ((pack.getPackages() * pickMatch.getPiece()) +
@@ -137,17 +137,34 @@ public class PickMatchServiceImpl implements PickMatchService {
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME, key = "#p1")
-    public Map statistics(String name, Pageable pageable) {
-        Specification<User> spec = (Specification<User>) (root, criteriaQuery, cb) -> {
-            List<Predicate> list = new ArrayList<Predicate>();
-            if (!ObjectUtils.isEmpty(name)) {
-                list.add(cb.like(root.get("username").as(String.class), "%" + name + "%"));
+//    @Cacheable(value = CACHE_NAME, key = "#p1")
+    public Map statistics(String startDate, String endDate, String search, Pageable pageable) {
+        Specification<User> spec = (Specification<User>) (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<Predicate>();
+            if (!ObjectUtils.isEmpty(search)) {
+                predicates.add(criteriaBuilder.like(root.get("username").as(String.class), "%" + search + "%"));
             }
-            Predicate[] p = new Predicate[list.size()];
-            return cb.and(list.toArray(p));
+            Predicate[] p = new Predicate[predicates.size()];
+            return criteriaBuilder.and(predicates.toArray(p));
         };
-        Page<User> page = userRepo.findAll(spec, pageable);
+        Sort sort = pageable.getSort().and(new Sort(Sort.Direction.DESC, "id"));
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<User> page = userRepo.findAll(spec, newPageable);
+
+        Date start = null;
+        Date end = null;
+        if (startDate != null && endDate != null) {
+            start = DateUtil.parse(startDate);
+            end = DateUtil.parse(endDate);
+            // 必须在结束日期基础上加上一天，第二天凌晨0点作为结束时间点
+            Calendar c = Calendar.getInstance();
+            c.setTime(end);
+            c.add(Calendar.DAY_OF_MONTH, 1);
+            end = c.getTime();
+        }
+        Date finalStart = start;
+        Date finalEnd = end;
+
         return PageUtil.toPage(page.map(user -> {
             Map m = new HashMap();
             m.put("id", user.getId());
@@ -155,8 +172,13 @@ public class PickMatchServiceImpl implements PickMatchService {
             Float pickMatchScore = 0f;
             Float reviewScore = 0f;
             for (PickMatch pm : user.getPickMatchs()) {
+                if (startDate != null && endDate != null) {
+                    if (pm.getCreateTime().before(finalStart) || pm.getCreateTime().after(finalEnd)) {
+                        continue;
+                    }
+                }
                 if (null != pm.getType()) {
-                    if (PickMatchType.PICK_MATCH.equals(pm.getType())) {
+                    if (PickMatchTypeEnum.PICK_MATCH.equals(pm.getType())) {
                         pickMatchScore += pm.getScore();
                     } else {
                         reviewScore += pm.getScore();

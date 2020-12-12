@@ -19,17 +19,17 @@ import javax.persistence.Table;
 public class DispatchCoefficient extends BaseEntity {
 
     /**
-     * 门店系数
+     * 门店数单价
      */
     private Float store;
 
     /**
-     *配送系数
+     *件数单价
      */
     private Float dispatch;
 
     /**
-     * 里程系数
+     * 里程单价
      */
     private Float mileage;
 

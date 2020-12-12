@@ -3,6 +3,7 @@ package org.mstudio.modules.wms.pick_match.rest;
 import org.mstudio.aop.log.Log;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.system.service.dto.UserDTO;
+import org.mstudio.modules.wms.dispatch.service.object.StatisticsDTO;
 import org.mstudio.modules.wms.pick_match.domain.PickMatchCoefficient;
 import org.mstudio.modules.wms.pick_match.service.PickMatchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +50,12 @@ public class PickMatchController {
     @Log("统计")
     @GetMapping(value = "/statistics")
     @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
-    public ResponseEntity statistics(@RequestParam(value = "search", required = false) String name, Pageable pageable) {
-        return new ResponseEntity(pickMatchService.statistics(name, pageable), HttpStatus.OK);
+    public ResponseEntity statistics(
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate,
+            @RequestParam(value = "search", required = false) String search,
+            Pageable pageable) {
+        return new ResponseEntity(pickMatchService.statistics(startDate, endDate, search, pageable), HttpStatus.OK);
     }
 
 }

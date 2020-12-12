@@ -223,6 +223,7 @@ public class CustomerOrder extends BaseEntity {
 
     @JSONField(serialize = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     private Pack pack;
 
 

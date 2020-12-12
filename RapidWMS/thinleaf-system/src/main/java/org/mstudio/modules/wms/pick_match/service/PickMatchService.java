@@ -1,13 +1,8 @@
 package org.mstudio.modules.wms.pick_match.service;
 
-import org.mstudio.modules.security.security.JwtUser;
-import org.mstudio.modules.wms.address_type.domain.AddressType;
-import org.mstudio.modules.wms.address_type.service.object.AddressTypeDTO;
-import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.dispatch.service.object.StatisticsDTO;
 import org.mstudio.modules.wms.pack.domain.Pack;
-import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 import org.mstudio.modules.wms.pick_match.domain.PickMatchCoefficient;
-import org.mstudio.modules.wms.pick_match.domain.PickMatchType;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Map;
@@ -26,5 +21,5 @@ public interface PickMatchService {
 
     void create(Pack pack);
 
-    Map statistics(String name, Pageable pageable);
+    Map statistics(String startDate, String endDate, String search, Pageable pageable);
 }

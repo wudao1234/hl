@@ -5,9 +5,7 @@ import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.system.domain.User;
-import org.mstudio.modules.system.service.dto.UserVO;
 import org.mstudio.modules.wms.common.BaseEntity;
-import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.pack.domain.Pack;
 
 import javax.persistence.*;
@@ -47,7 +45,7 @@ public class PickMatch extends BaseEntity {
     /**
      * 拣配/复核
      */
-    private PickMatchType type;
+    private PickMatchTypeEnum type;
 
     /**
      * 分数

@@ -2,11 +2,13 @@ import request from '@/utils/request';
 
 export async function queryPickMatch(params) {
   const {
-    payload: { search, pageSize, currentPage, orderBy },
+    payload: { search, startDate, endDate, pageSize, currentPage, orderBy },
   } = params;
 
   let queryString = '/api/pick_match/statistics?';
   if (search && search !== '') queryString += `search=${search}&`;
+  if (startDate && startDate !== '' && endDate && endDate !== '')
+    queryString += `startDate=${startDate}&endDate=${endDate}&`;
   if (pageSize && pageSize !== '') queryString += `size=${pageSize}&`;
   if (currentPage && currentPage !== '') queryString += `page=${currentPage - 1}&`;
   if (orderBy && orderBy !== '') queryString += `sort=${orderBy.substring(0, orderBy.length - 3)}`;
