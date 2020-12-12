@@ -49,7 +49,7 @@ public class DispatchController {
         return new ResponseEntity<>(dispatchService.save(), HttpStatus.CREATED);
     }
 
-    @PostMapping("finish")
+    @GetMapping("finish")
     @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity finish(@RequestParam(value = "mileage", required = false) Float mileage, DispatchSys dispatchSys) {
         return new ResponseEntity<>(dispatchService.finish(mileage, dispatchSys), HttpStatus.CREATED);

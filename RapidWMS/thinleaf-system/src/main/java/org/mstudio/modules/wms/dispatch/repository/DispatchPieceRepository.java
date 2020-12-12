@@ -15,6 +15,6 @@ import java.util.Optional;
  * @date 2020-12-01
  */
 
-public interface DispatchPieceRepository extends JpaRepository<DispatchPiece, Long>, JpaSpecificationExecutor {
+public interface DispatchPieceRepository extends JpaRepository<DispatchPiece, Long>, JpaSpecificationExecutor<DispatchPiece> {
 
 }

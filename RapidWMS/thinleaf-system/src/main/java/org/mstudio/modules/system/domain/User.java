@@ -83,6 +83,9 @@ public class User implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private List<Customer> customers;
 
+    /**
+     * 配送和打包的打包
+     */
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
@@ -117,12 +120,4 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<DispatchPiece> dispatchPieces;
-
-    /**
-     * 配送的打包
-     */
-    @JSONField(serialize = false)
-    @OneToMany(mappedBy = "dispatchUser", fetch = FetchType.LAZY)
-    @Fetch(FetchMode.SUBSELECT)
-    private List<Pack> dispatchPacks;
 }

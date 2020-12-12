@@ -26,7 +26,7 @@ public interface DispatchService {
 
     Map statistics(String startDate, String endDate, String search, Pageable pageable);
 
-    DispatchPiece save();
+    Long save();
 
     DispatchPiece finish(Float mileage, DispatchSys dispatchSys);
 

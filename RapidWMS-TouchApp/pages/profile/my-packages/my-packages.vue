@@ -7,6 +7,11 @@
 			<view class="action">
 				<button class="cu-btn bg-green round" @click="startCar">发车</button>
 			</view>
+		</view>
+		<view class="cu-bar bg-white segment_area">
+			<view class="action">
+				<button class="cu-btn bg-blue round" @click="scanToSending">扫码派送</button>
+			</view>
 			<view class="action">
 				<button class="cu-btn bg-orange round" @click="comeBackCar">收车</button>
 			</view>
@@ -186,12 +191,21 @@
 					title: '发车',
 					content: '已确认全部货物装车完毕，开始派送？',
 					success: (res) => {
-						// if (res.confirm) {
-						// 	uni.removeStorageSync('jwt-token');
-						// 	uni.reLaunch({
-						// 		url: '/pages/login/login'
-						// 	});
-						// }
+						if (res.confirm) {
+							this.loading = true;
+							this.api.post('/api/dispatch').then(res => {
+								if (res.statusCode == 201) {
+									uni.showToast({
+										title: '发车成功',
+										icon: 'success'
+									});
+								} else {
+									this.loading = false;
+								}
+							}).finally(() => {
+								this.loading = false;
+							});
+						}
 					}
 				});
 			},
@@ -200,12 +214,21 @@
 					title: '收车',
 					content: '已确认全部货物签收完毕，完成派送？',
 					success: (res) => {
-						// if (res.confirm) {
-						// 	uni.removeStorageSync('jwt-token');
-						// 	uni.reLaunch({
-						// 		url: '/pages/login/login'
-						// 	});
-						// }
+						if (res.confirm) {
+							this.loading = true;
+							this.api.get('/api/dispatch/finish').then(res => {
+								if (res.statusCode == 201) {
+									uni.showToast({
+										title: '收车成功',
+										icon: 'success'
+									});
+								} else {
+									this.loading = false;
+								}
+							}).finally(() => {
+								this.loading = false;
+							});
+						}
 					}
 				});
 			},

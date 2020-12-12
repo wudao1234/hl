@@ -145,7 +145,7 @@ public class DispatchServiceImpl implements DispatchService {
     }
 
     @Override
-    public DispatchPiece save() {
+    public Long save() {
         // 获取用户
         User user = userRepository.findByUsername(getUserDetails().getUsername());
 
@@ -154,7 +154,7 @@ public class DispatchServiceImpl implements DispatchService {
             @Override
             public Predicate toPredicate(Root<Pack> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<>();
-                predicates.add(criteriaBuilder.equal(root.get("dispatchUser").get("username"), user.getUsername()));
+                predicates.add(criteriaBuilder.equal(root.get("user").get("username"), user.getUsername()));
                 predicates.add(criteriaBuilder.equal(root.get("packStatus"), OrderStatus.SENDING));
 
                 if (predicates.size() != 0) {
@@ -175,13 +175,14 @@ public class DispatchServiceImpl implements DispatchService {
             @Override
             public Predicate toPredicate(Root<DispatchPiece> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<>();
-                predicates.add(criteriaBuilder.equal(root.get("user").get("username"), getUserDetails().getUsername()));
+                predicates.add(criteriaBuilder.equal(root.get("user").get("username"), user.getUsername()));
                 predicates.add(criteriaBuilder.equal(root.get("status"), DispatchStatusEnum.UN_FINISH));
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
             }
         };
-        DispatchPiece dispatchPiece = (DispatchPiece) dispatchPieceRepository.findOne(dispatchPieceSpec).get();
+        Optional<DispatchPiece> optionalDispatchPiece = dispatchPieceRepository.findOne(dispatchPieceSpec);
+        DispatchPiece dispatchPiece = optionalDispatchPiece.isPresent() ? optionalDispatchPiece.get() : new DispatchPiece();
         dispatchPiece.setStorePrice(dispatchCoefficient.getStore());
         AtomicReference<Integer> storeNum = new AtomicReference<>(0);
         AtomicReference<Integer> dispatchSum = new AtomicReference<>(0);
@@ -200,7 +201,7 @@ public class DispatchServiceImpl implements DispatchService {
         dispatchPiece.setStatus(DispatchStatusEnum.UN_FINISH);
         dispatchPiece.setUser(user);
         dispatchPiece.setPacks(packs);
-        return dispatchPieceRepository.save(dispatchPiece);
+        return dispatchPieceRepository.save(dispatchPiece).getId();
     }
 
     @Override

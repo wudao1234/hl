@@ -106,6 +106,9 @@ public class Pack extends BaseEntity {
     @OrderBy("createTime asc")
     private List<OperateSnapshot> operateSnapshots;
 
+    /**
+     * 打包、派送人
+     */
     @JSONField(serialize = false)
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
@@ -123,14 +126,5 @@ public class Pack extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private DispatchPiece dispatchPiece;
-
-    /**
-     * 派送人
-     */
-    @JSONField(serialize = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
-    private User dispatchUser;
-
 
 }

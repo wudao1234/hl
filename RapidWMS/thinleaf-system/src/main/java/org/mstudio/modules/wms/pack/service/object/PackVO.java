@@ -8,6 +8,8 @@ import org.mstudio.modules.wms.customer.service.object.CustomerVO;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderVO;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
+import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
+import org.mstudio.modules.wms.dispatch.service.object.DispatchPieceVO;
 import org.mstudio.modules.wms.pack.domain.PackType;
 
 import java.math.BigDecimal;
@@ -56,5 +58,7 @@ public class PackVO extends BaseObject {
     private Boolean isPackaged;
 
     private ReceiveType receiveType;
+
+    private DispatchPieceVO dispatchPiece;
 
 }
