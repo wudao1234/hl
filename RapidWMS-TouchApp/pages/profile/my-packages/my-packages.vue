@@ -1,13 +1,20 @@
 <template>
 	<view>
-		<view class="segment_area">
-			<uni-segmented-control class='segment' :current="current" :values="items" @clickItem="onClickItem" style-type="button" active-color="#1296db"></uni-segmented-control>
+		<view class="cu-bar bg-white segment_area">
+			<view class="action">
+				<button class="cu-btn bg-blue round" @click="scanToSending">扫码派送</button>
+			</view>
+			<view class="action">
+				<button class="cu-btn bg-green round" @click="startCar">发车</button>
+			</view>
+			<view class="action">
+				<button class="cu-btn bg-orange round" @click="comeBackCar">收车</button>
+			</view>
 		</view>
-		<view class="content">
-			<view class="cu-bar search bg-white segment_area">
-				<view class="action">
-					<button class="cu-btn bg-blue round" @click="scanToSending">扫码派送</button>
-				</view>
+		<view class="segment_area">
+			<uni-segmented-control class='segment' :current="current" :values="items" @clickItem="onClickItem" style-type="text" active-color="#1296db"></uni-segmented-control>
+		</view>
+		<view class="cu-bar search bg-white segment_area">
 				<view class="search-form round">
 					<text class="cuIcon-search"></text>
 					<input v-model="searchValue" @confirm="search" :adjust-position="false" type="text" placeholder="流水号、说明" confirm-type="search"></input>
@@ -15,7 +22,8 @@
 				<view class="action">
 					<button class="cu-btn bg-red round" @click="scanPack">扫码</button>
 				</view>
-			</view>
+		</view>
+		<view class="content">
 			<uni-list>
 				<uni-list-item v-for="pack in myPacks" clickable
 					:key="pack.id" :show-extra-icon="true" 
@@ -173,6 +181,34 @@
 			},
 		},
 		methods: {
+			startCar(){
+				uni.showModal({
+					title: '发车',
+					content: '已确认全部货物装车完毕，开始派送？',
+					success: (res) => {
+						// if (res.confirm) {
+						// 	uni.removeStorageSync('jwt-token');
+						// 	uni.reLaunch({
+						// 		url: '/pages/login/login'
+						// 	});
+						// }
+					}
+				});
+			},
+			comeBackCar(){
+				uni.showModal({
+					title: '收车',
+					content: '已确认全部货物签收完毕，完成派送？',
+					success: (res) => {
+						// if (res.confirm) {
+						// 	uni.removeStorageSync('jwt-token');
+						// 	uni.reLaunch({
+						// 		url: '/pages/login/login'
+						// 	});
+						// }
+					}
+				});
+			},
 			onClickItem(index) {
 				index = index.currentIndex
 				if (this.current !== index) {

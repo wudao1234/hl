@@ -8,6 +8,7 @@ import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.service.dto.UserVO;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.pack.domain.Pack;
 
 import javax.persistence.*;
 
@@ -24,7 +25,7 @@ import javax.persistence.*;
 public class PickMatch extends BaseEntity {
 
     /**
-     * 计件系数
+     * 计件单价
      */
     private Float piece;
 
@@ -53,13 +54,19 @@ public class PickMatch extends BaseEntity {
      */
     private Float score;
 
+    /**
+     * 拣配、复核人
+     */
     @JSONField(serialize = false)
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private User user;
 
+    /**
+     * 计件对应的包
+     */
     @JSONField(serialize = false)
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
-    private CustomerOrder customerOrder;
+    private Pack pack;
 }

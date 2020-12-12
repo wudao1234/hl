@@ -80,6 +80,8 @@ public class CustomerOrderVO extends BaseObject {
 
     private UserVO userSending;
 
+    private UserVO userReviewer;
+
     private PackInfoVO pack;
 
 }

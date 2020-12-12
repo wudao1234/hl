@@ -180,19 +180,19 @@ class OrderDetail extends PureComponent {
         title: '商品名称',
         dataIndex: 'goods.name',
         key: 'goods.name',
-        width: '15%',
+        width: '10%',
       },
       {
         title: '条码',
         dataIndex: 'goods.sn',
         key: 'goods.sn',
-        width: '1%',
+        width: '15%',
       },
       {
         title: '规格',
         dataIndex: 'goods.packCount',
         key: 'goods.packCount',
-        width: '5%',
+        width: '1%',
         align: 'right',
         render: text => {
           return <Tag color="#2db7f5">{text}</Tag>;
@@ -202,7 +202,7 @@ class OrderDetail extends PureComponent {
         title: '过期日',
         dataIndex: 'expireDate',
         key: 'expireDate',
-        width: '10%',
+        width: '5%',
         render: text => {
           if (text) {
             return <Tag>{moment(text).format('YYYY-MM-DD')}</Tag>;
@@ -214,7 +214,7 @@ class OrderDetail extends PureComponent {
         title: '指定库位',
         dataIndex: 'warePositionIn',
         key: 'warePositionIn',
-        width: '10%',
+        width: '15%',
         render: (text, record) => {
           if (record !== null && record !== undefined && record.warePosition != null) {
             return `${record.warePosition.wareZone.name} / ${record.warePosition.name}`;
@@ -226,7 +226,7 @@ class OrderDetail extends PureComponent {
         title: '价格',
         dataIndex: 'price',
         key: 'price',
-        width: '5%',
+        width: '1%',
         render: (text, record) => {
           if (record !== null && record !== undefined) {
             return <Tag color="blue">{accounting.formatMoney(text, '￥')}</Tag>;
@@ -244,7 +244,7 @@ class OrderDetail extends PureComponent {
         title: '出货数量',
         dataIndex: 'quantity',
         key: 'quantity',
-        width: '5%',
+        width: '3%',
         render: (text, record) => {
           if (record) {
             if (record.quantityInitial !== record.quantity) {
@@ -316,7 +316,7 @@ class OrderDetail extends PureComponent {
         title: '时间',
         dataIndex: 'createTime',
         key: 'createTime',
-        width: '1%',
+        width: '5%',
         render: text => {
           return <Tag>{moment(text).format('lll')}</Tag>;
         },

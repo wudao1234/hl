@@ -1474,7 +1474,7 @@ class Pack extends PureComponent {
         title: '地址类型',
         dataIndex: 'address.addressType.name',
         key: 'address.addressType.name',
-        width: '15%',
+        width: '5%',
         filters: this.handleAddressTypeFilters(),
         filteredValue: addressTypeFilter,
       },
@@ -1482,7 +1482,7 @@ class Pack extends PureComponent {
         title: '说明',
         dataIndex: 'description',
         key: 'description',
-        width: '20%',
+        width: '10%',
         render: text => {
           if (text) {
             return (
@@ -1548,7 +1548,7 @@ class Pack extends PureComponent {
         title: '流水号',
         dataIndex: 'flowSn',
         key: 'flowSn',
-        width: '1%',
+        width: '22%',
         sorter: true,
         sortOrder: sortFlowSn,
         render: text => {
@@ -1843,9 +1843,10 @@ class Pack extends PureComponent {
             })(<Input hidden />)}
           </FormItem>
           <FormItem label="上传签收快照(可选)" {...this.formLayout}>
-            {getFieldDecorator('uploadFileList', {})(
-              <Upload {...uploadProps}>{uploadFileList.length >= 1 ? null : uploadButton}</Upload>
-            )}
+            {getFieldDecorator(
+              'uploadFileList',
+              {}
+            )(<Upload {...uploadProps}>{uploadFileList.length >= 1 ? null : uploadButton}</Upload>)}
           </FormItem>
           <Modal visible={previewVisible} footer={null} onCancel={handlePreviewCancel}>
             <img alt="example" style={{ width: '100%' }} src={previewImage} />

@@ -131,7 +131,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Autowired
     private CustomerOrderRepository customerOrderRepository;
-    
+
     @Autowired
     private CustomerOrderMapper customerOrderMapper;
 
@@ -597,7 +597,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 order.setOrderStatus(OrderStatus.GATHER_GOODS);
                 customerOrderRepository.save(order);
                 operateSnapshotService.create(OrderStatus.GATHER_GOODS.getName(), order);
-                pickMatchService.create(order, PickMatchType.PICK_MATCH);
+
+                // 非拣配完成时添加 拣配计件
+                // pickMatchService.create(order, PickMatchType.PICK_MATCH);
             } else {
                 throw new BadRequestException("确认分拣与开始分拣必须是同一人");
             }
@@ -633,10 +635,14 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Transactional(rollbackFor = Exception.class)
     synchronized public void confirm(CustomerOrder order) {
         if (order.getOrderStatus() == OrderStatus.GATHER_GOODS) {
+            // 添加复核人
+            order.setUserReviewer(userRepository.findByUsername(getUserDetails().getUsername()));
             order.setOrderStatus(OrderStatus.CONFIRM);
             customerOrderRepository.save(order);
             operateSnapshotService.create(OrderStatus.CONFIRM.getName(), order);
-            pickMatchService.create(order, PickMatchType.REVIEW);
+
+            // 非拣配完成时添加 拣配计件
+            // pickMatchService.create(order, PickMatchType.REVIEW);
         } else {
             throw new BadRequestException("订单状态错误");
         }
@@ -1413,7 +1419,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
             final List<StockFlowDTO> stockFlowPrint = new ArrayList<>();
 
-            if(isOriginal) {
+            if (isOriginal) {
                 AtomicReference<String> sn = new AtomicReference<>();
                 orderItems.forEach(item -> {
                     sn.set(null);
@@ -1521,7 +1527,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         PdfDocument pdfAll = new PdfDocument(new PdfWriter(output));
         PdfMerger merger = new PdfMerger(pdfAll);
 
-        for (int i=0; i<allData.size(); i++) {
+        for (int i = 0; i < allData.size(); i++) {
             PdfDocument pdf = new PdfDocument(new PdfReader(new ByteArrayInputStream(allData.get(i).toByteArray())));
             merger.merge(pdf, 1, pdf.getNumberOfPages());
             pdf.close();
@@ -1753,10 +1759,12 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         protected float space = 4.5f;
         protected float descent = 3;
         protected PdfFont font;
+
         public PageXofY(PdfDocument pdf, PdfFont font) {
             placeholder = new PdfFormXObject(new Rectangle(0, 0, side, side));
             this.font = font;
         }
+
         @Override
         public void handleEvent(Event event) {
             PdfDocumentEvent docEvent = (PdfDocumentEvent) event;
@@ -1775,6 +1783,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             pdfCanvas.addXObject(placeholder, x + space, y - descent);
             pdfCanvas.release();
         }
+
         public void writeTotal(PdfDocument pdf) {
             Canvas canvas = new Canvas(placeholder, pdf);
             canvas.setFont(font);

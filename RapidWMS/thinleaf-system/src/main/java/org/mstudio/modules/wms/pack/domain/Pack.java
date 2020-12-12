@@ -12,6 +12,7 @@ import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
 import org.mstudio.modules.wms.operate_snapshot.domain.OperateSnapshot;
+import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -108,5 +109,13 @@ public class Pack extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private User user;
+
+    /**
+     * 拣配、复核计件信息
+     */
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "pack", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private List<PickMatch> pickMatch;
 
 }

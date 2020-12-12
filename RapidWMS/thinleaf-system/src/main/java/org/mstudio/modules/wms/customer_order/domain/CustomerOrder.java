@@ -184,6 +184,13 @@ public class CustomerOrder extends BaseEntity {
     private User userGathering;
 
     /**
+     * 订单复核人
+     */
+    @ManyToOne
+    @Fetch(FetchMode.JOIN)
+    private User userReviewer;
+
+    /**
      * 订单派送人
      */
     @ManyToOne
@@ -218,9 +225,5 @@ public class CustomerOrder extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Pack pack;
 
-    @JSONField(serialize = false)
-    @OneToMany(mappedBy = "customerOrder", fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
-    private List<PickMatch> pickMatch;
 
 }

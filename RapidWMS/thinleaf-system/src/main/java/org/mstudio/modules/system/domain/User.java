@@ -93,6 +93,11 @@ public class User implements Serializable {
     private List<CustomerOrder> ordersCreator;
 
     @JSONField(serialize = false)
+    @OneToMany(mappedBy = "userReviewer", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<CustomerOrder> ordersReviewer;
+
+    @JSONField(serialize = false)
     @OneToMany(mappedBy = "userGathering", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<CustomerOrder> ordersGathering;

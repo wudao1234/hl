@@ -8,6 +8,8 @@ import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.address.repository.AddressRepository;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrderItem;
+import org.mstudio.modules.wms.pack.domain.Pack;
+import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 import org.mstudio.modules.wms.pick_match.domain.PickMatchCoefficient;
 import org.mstudio.modules.wms.pick_match.domain.PickMatchType;
@@ -58,6 +60,9 @@ public class PickMatchServiceImpl implements PickMatchService {
     @Autowired
     private UserRepository userRepo;
 
+    @Autowired
+    private PackRepository packRepository;
+
     @Override
     //@Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
@@ -97,48 +102,42 @@ public class PickMatchServiceImpl implements PickMatchService {
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
-    public void create(CustomerOrder order, PickMatchType type) {
-        JwtUser user = (JwtUser) getUserDetails();
+    public void create(Pack pack) {
         // 获取门店信息
-        Address address = addressRepository.findOneByClientStore(order.getClientStore());
-        if (null == address || null == address.getCoefficient()) {
-            throw new BadRequestException("订单门店信息错误");
+        Address address = addressRepository.getOne(pack.getAddress().getId());
+        if (Objects.isNull(address.getCoefficient())) {
+            throw new BadRequestException("门店系数错误");
         }
-        User u = userRepository.findById(user.getId()).get();
         // 获取系数信息
         PickMatchCoefficient c = pickMatchCoefficientRepository.findAll().get(0);
 
-        PickMatch pickMatch = new PickMatch();
-        if (null != order.getPickMatch()) {
-            PickMatch pm = order.getPickMatch().stream().filter(item -> item.getType().equals(type))
-                    .findFirst()
-                    .orElse(null);
-            if (null != pm) {
-                pickMatch.setId(pm.getId());
-            }
+        PickMatchType[] pickMatchTypes = PickMatchType.values();
+        for (PickMatchType pickMatchType : pickMatchTypes) {
+            // init PickMatch
+            PickMatch pickMatch = new PickMatch();
+            pickMatch.setPiece(c.getPiece());
+            pickMatch.setMoney(c.getMoney());
+            pickMatch.setPickMatch(c.getPickMatch());
+            pickMatch.setReview(c.getReview());
+            pickMatch.setPack(pack);
+            pickMatch.setType(PickMatchType.PICK_MATCH);
+            pickMatch.setUser(pack.getOrders().get(0).getUserGathering());
+            // get 拣配复核系数
+            Float diffCoe = pickMatchType.equals(PickMatchType.PICK_MATCH) ? pickMatch.getPickMatch() : pickMatch.getReview();
+            CustomerOrder customerOrder = pack.getOrders().get(0);
+            Float customerCoefficient = pickMatchType.equals(PickMatchType.PICK_MATCH) ?
+                    customerOrder.getUserGathering().getCoefficient() :
+                    customerOrder.getUserReviewer().getCoefficient();
+            Float score = ((pack.getPackages() * pickMatch.getPiece()) +
+                    (pack.getTotalPrice().floatValue() * pickMatch.getMoney())
+            ) * customerCoefficient * diffCoe * address.getCoefficient();
+            pickMatch.setScore(score);
+            pickMatchRepository.save(pickMatch);
         }
-        pickMatch.setPiece(c.getPiece());
-        pickMatch.setMoney(c.getMoney());
-        pickMatch.setPickMatch(c.getPickMatch());
-        pickMatch.setReview(c.getReview());
-        pickMatch.setCustomerOrder(order);
-        pickMatch.setType(type);
-        u.setId(user.getId());
-
-        pickMatch.setUser(u);
-        Long quantityInitial = order.getCustomerOrderItems().stream().mapToLong(CustomerOrderItem::getQuantityInitial).sum();
-
-        Float diffCoe = type.equals(PickMatchType.PICK_MATCH) ? pickMatch.getPickMatch() : pickMatch.getReview();
-        Float score = ((quantityInitial * pickMatch.getPiece()) +
-                (order.getTotalPrice().floatValue() * pickMatch.getMoney())
-        ) * u.getCoefficient() * diffCoe * address.getCoefficient();
-
-        pickMatch.setScore(score);
-        pickMatchRepository.save(pickMatch);
     }
 
     @Override
-//    @Cacheable(value = CACHE_NAME, key = "#p1")
+    @Cacheable(value = CACHE_NAME, key = "#p1")
     public Map statistics(String name, Pageable pageable) {
         Specification<User> spec = (Specification<User>) (root, criteriaQuery, cb) -> {
             List<Predicate> list = new ArrayList<Predicate>();

@@ -375,7 +375,7 @@ class OrderForm extends PureComponent {
         title: '条码',
         dataIndex: 'sn',
         key: 'sn',
-        width: '8%',
+        width: '20%',
         render: text => {
           return (
             <Highlighter
@@ -492,6 +492,7 @@ class OrderForm extends PureComponent {
       },
       {
         title: '商品名称',
+        width: '10%',
         dataIndex: 'goods.name',
         key: 'stock.goods.name',
         render: text => {
@@ -521,13 +522,13 @@ class OrderForm extends PureComponent {
         title: '所属客户',
         dataIndex: 'goods.customer.name',
         key: 'goods.customer.name',
-        width: '12%',
+        width: '10%',
       },
       {
         title: '存量',
         dataIndex: 'quantity',
         key: 'quantity',
-        width: '1%',
+        width: '5%',
         align: 'right',
         render: text => {
           if (text === 0) {
@@ -540,7 +541,7 @@ class OrderForm extends PureComponent {
         title: '条码',
         dataIndex: 'goods.sn',
         key: 'goods.sn',
-        width: '1%',
+        width: '12%',
         render: text => {
           return (
             <Highlighter
@@ -556,7 +557,7 @@ class OrderForm extends PureComponent {
         title: '到期',
         dataIndex: 'expireDate',
         key: 'expireDate',
-        width: '1%',
+        width: '8%',
         align: 'right',
         render: text => {
           let result;
@@ -582,7 +583,7 @@ class OrderForm extends PureComponent {
         title: '价格',
         dataIndex: 'goods.price',
         key: 'goods.price',
-        width: '1%',
+        width: '5%',
         align: 'right',
         render: text => {
           if (text === 0) {
@@ -595,7 +596,7 @@ class OrderForm extends PureComponent {
         title: '质保',
         dataIndex: 'goods.monthsOfWarranty',
         key: 'goods.monthsOfWarranty',
-        width: '1%',
+        width: '5%',
         align: 'right',
         render: text => {
           if (text % 12 === 0) {
@@ -615,7 +616,7 @@ class OrderForm extends PureComponent {
         title: '规格',
         dataIndex: 'goods.packCount',
         key: 'goods.packCount',
-        width: '1%',
+        width: '5%',
         align: 'right',
         render: text => {
           return <Tag color="#2db7f5">{text}</Tag>;
@@ -858,7 +859,9 @@ class OrderForm extends PureComponent {
             return (
               <span>
                 {text}
-                <FormItem>{<Input hidden />}</FormItem>
+                <FormItem>
+                  <Input hidden />
+                </FormItem>
               </span>
             );
           }
@@ -880,7 +883,9 @@ class OrderForm extends PureComponent {
               <Button htmlType="button" href="#" type="danger">
                 删除
               </Button>
-              <FormItem>{<Input hidden />}</FormItem>
+              <FormItem>
+                <Input hidden />
+              </FormItem>
             </Popconfirm>
           );
         },

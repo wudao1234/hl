@@ -354,7 +354,7 @@ class PackForm extends PureComponent {
         title: '金额',
         dataIndex: 'totalPrice',
         key: 'totalPrice',
-        width: '1%',
+        width: '5%',
         align: 'right',
         render: text => {
           return <Tag color="blue">{accounting.formatMoney(text, '￥')}</Tag>;
@@ -364,7 +364,7 @@ class PackForm extends PureComponent {
         title: '提交时间',
         dataIndex: 'createTime',
         key: 'createTime',
-        width: '1%',
+        width: '5%',
         render: text => {
           return <Tag>{moment(text).format('YY/MM/DD/HH:mm')}</Tag>;
         },
@@ -373,7 +373,7 @@ class PackForm extends PureComponent {
         title: '流水号',
         dataIndex: 'flowSn',
         key: 'flowSn',
-        width: '1%',
+        width: '15%',
         render: text => {
           return (
             <Highlighter
@@ -389,7 +389,7 @@ class PackForm extends PureComponent {
         title: '自编号',
         dataIndex: 'autoIncreaseSn',
         key: 'autoIncreaseSn',
-        width: '1%',
+        width: '10%',
         render: text => {
           return (
             <Highlighter
@@ -407,7 +407,7 @@ class PackForm extends PureComponent {
       ...columns,
       {
         title: '操作',
-        width: '1%',
+        width: '5%',
         align: 'right',
         render: (text, row) => {
           return (

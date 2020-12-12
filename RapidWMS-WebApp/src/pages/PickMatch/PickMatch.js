@@ -37,7 +37,7 @@ class PickMatch extends PureComponent {
       render: (text, record, index) => `${index + 1}`,
     },
     {
-      title: '计件系数',
+      title: '计件单价',
       dataIndex: 'piece',
       key: 'piece',
       width: '15%',
@@ -202,7 +202,7 @@ class PickMatch extends PureComponent {
       }
       return (
         <Form onSubmit={this.handleSubmit}>
-          <FormItem label="计件系数" {...this.formLayout} hasFeedback>
+          <FormItem label="计件单价" {...this.formLayout} hasFeedback>
             {getFieldDecorator('piece', {
               rules: [{ required: true, message: '请输入计件系数' }],
               initialValue: currentItem.piece,

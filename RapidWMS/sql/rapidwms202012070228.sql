@@ -1640,7 +1640,7 @@ CREATE TABLE `wms_pick_match_coefficient`  (
   `update_time` datetime(0) NOT NULL,
   `money` float NULL DEFAULT NULL,
   `pick_match` float NULL DEFAULT NULL,
-  `piece` float NULL DEFAULT NULL COMMENT '计件系数',
+  `piece` float NULL DEFAULT NULL COMMENT '计件单价',
   `review` float NULL DEFAULT NULL,
   `dtype` varchar(31) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `score` float NULL DEFAULT NULL,

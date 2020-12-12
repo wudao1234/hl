@@ -41,6 +41,7 @@ import org.mstudio.modules.wms.pack.service.object.PackDTO;
 import org.mstudio.modules.wms.pack.service.object.PackExcelObj;
 import org.mstudio.modules.wms.pack.service.object.PackMultipleOperateDTO;
 import org.mstudio.modules.wms.pack.service.object.PackVO;
+import org.mstudio.modules.wms.pick_match.service.PickMatchService;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 import org.mstudio.modules.wms.stock_flow.repository.StockFlowRepository;
 import org.mstudio.modules.wms.stock_flow.service.mapper.StockFlowMapper;
@@ -124,6 +125,10 @@ public class PackServiceImpl implements PackService {
 
     @Autowired
     private StockFlowRepository stockFlowRepository;
+
+    @Autowired
+    private PickMatchService pickMatchService;
+
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
@@ -281,6 +286,8 @@ public class PackServiceImpl implements PackService {
                 packRepository.save(pack);
             }
         }
+        // 添加拣配、复核计件信息
+        pickMatchService.create(pack);
         return packMapper.toDto(pack);
     }
 

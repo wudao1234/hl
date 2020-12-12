@@ -526,7 +526,7 @@ class Address extends PureComponent {
         <div className={styles.standardList}>
           <Card
             bordered={false}
-            title="地址管理"
+            title="门店地址管理"
             style={{ marginTop: 24 }}
             bodyStyle={{ padding: '0 32px 40px 32px' }}
             extra={searchContent}

@@ -1,16 +1,16 @@
 import md5 from '../plugin/md5/build/md5.min.js'
 
 // const defaultBaseUrl = 'http://127.0.0.1:8016';
-const defaultBaseUrl = 'http://8.131.84.103:8016';
-let _baseUrl = null;
+const defaultBaseUrl = process.env.NODE_ENV === 'development'?'http://127.0.0.1:8016':'http://8.131.84.103';
+let _baseUrl = defaultBaseUrl;
 
 const getBaseUrl = () => {
-	if (_baseUrl == null) {
-		_baseUrl = uni.getStorageSync('rapidWMS-server-address');
-	}
-	if (_baseUrl == null || _baseUrl == "") {
+	// if (_baseUrl == null) {
+	// 	_baseUrl = uni.getStorageSync('rapidWMS-server-address');
+	// }
+	// if (_baseUrl == null || _baseUrl == "") {
 		setBaseUrl(defaultBaseUrl);
-	}
+	// }
 	return _baseUrl;
 }
 
@@ -18,9 +18,9 @@ const setBaseUrl = (url, callback) => {
 	_baseUrl = url;
 	uni.setStorage({
 		key: 'rapidWMS-server-address',
-		data : url,
+		data: url,
 		success: () => {
-			callback&&callback();
+			callback && callback();
 		}
 	});
 }
@@ -39,12 +39,14 @@ const request = (url, data, method) => {
 		});
 		return;
 	}
-    return new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		uni.request({
 			url: getBaseUrl() + url,
 			method,
 			data,
-			header: {"Authorization": "Bearer " + token},
+			header: {
+				"Authorization": "Bearer " + token
+			},
 			success: (res) => {
 				if (res.statusCode == 401) {
 					uni.reLaunch({
@@ -91,10 +93,10 @@ const request = (url, data, method) => {
 				reject(err);
 			},
 			complete: () => {
-				
+
 			}
 		});
-    });
+	});
 };
 
 const get = (url) => {

@@ -37,19 +37,19 @@ class Dispatch extends PureComponent {
       render: (text, record, index) => `${index + 1}`,
     },
     {
-      title: '门店系数',
+      title: '门店数单价',
       dataIndex: 'store',
       key: 'store',
       width: '10%',
     },
     {
-      title: '配送系数',
+      title: '件数单价',
       dataIndex: 'dispatch',
       key: 'dispatch',
       width: '10%',
     },
     {
-      title: '里程系数',
+      title: '里程单价',
       dataIndex: 'mileage',
       key: 'mileage',
       width: '10%',
@@ -196,23 +196,23 @@ class Dispatch extends PureComponent {
       }
       return (
         <Form onSubmit={this.handleSubmit}>
-          <FormItem label="门店系数" {...this.formLayout} hasFeedback>
+          <FormItem label="门店数单价" {...this.formLayout} hasFeedback>
             {getFieldDecorator('store', {
-              rules: [{ required: true, message: '请输入门店系数' }],
+              rules: [{ required: true, message: '请输入门店数单价' }],
               initialValue: currentItem.store,
-            })(<Input placeholder="请输入门店系数" />)}
+            })(<Input placeholder="请输入门店数单价" />)}
           </FormItem>
-          <FormItem label="配送系数" {...this.formLayout} hasFeedback>
+          <FormItem label="件数单价" {...this.formLayout} hasFeedback>
             {getFieldDecorator('dispatch', {
-              rules: [{ required: true, message: '请输入配送系数' }],
+              rules: [{ required: true, message: '请输入件数单价' }],
               initialValue: currentItem.dispatch,
-            })(<Input placeholder="请输入配送系数" />)}
+            })(<Input placeholder="请输入件数单价" />)}
           </FormItem>
-          <FormItem label="里程系数" {...this.formLayout} hasFeedback>
+          <FormItem label="里程单价" {...this.formLayout} hasFeedback>
             {getFieldDecorator('mileage', {
-              rules: [{ required: true, message: '请输入里程系数' }],
+              rules: [{ required: true, message: '请输入里程单价' }],
               initialValue: currentItem.mileage,
-            })(<Input placeholder="请输入里程系数" />)}
+            })(<Input placeholder="请输入里程单价" />)}
           </FormItem>
         </Form>
       );

@@ -22,7 +22,7 @@ import java.util.List;
 public class PickMatchCoefficient extends BaseEntity {
 
     /**
-     * 计件系数
+     * 计件单价
      */
     private Float piece;
 

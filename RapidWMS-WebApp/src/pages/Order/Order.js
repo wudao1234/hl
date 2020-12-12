@@ -1139,13 +1139,13 @@ class Order extends PureComponent {
         title: '打印标题',
         dataIndex: 'printTitle',
         key: 'printTitle',
-        width: '10%',
+        width: '8%',
       },
       {
         title: '订单客户',
         dataIndex: 'clientName',
         key: 'clientName',
-        width: '10%',
+        width: '8%',
         sorter: true,
         sortOrder: sortClientName,
         render: (text, record) => {
@@ -1183,7 +1183,7 @@ class Order extends PureComponent {
         title: '客户订单号',
         dataIndex: 'clientOrderSn',
         key: 'clientOrderSn',
-        width: '10%',
+        width: '15%',
         sorter: true,
         sortOrder: sortClientOrderSn,
         render: text => {
@@ -1204,7 +1204,7 @@ class Order extends PureComponent {
         title: '客户单据号',
         dataIndex: 'clientOrderSn2',
         key: 'clientOrderSn2',
-        width: '10%',
+        width: '15%',
         sorter: true,
         sortOrder: sortClientOrderSn2,
         render: text => {
@@ -1225,7 +1225,7 @@ class Order extends PureComponent {
         title: '说明',
         dataIndex: 'description',
         key: 'description',
-        width: '10%',
+        width: '15%',
         render: text => {
           if (text) {
             return (
@@ -1256,7 +1256,7 @@ class Order extends PureComponent {
         title: '提交时间',
         dataIndex: 'createTime',
         key: 'createTime',
-        width: '1%',
+        width: '5%',
         sorter: true,
         sortOrder: sortCreateTime,
         render: text => {
@@ -1267,7 +1267,7 @@ class Order extends PureComponent {
         title: '自编号',
         dataIndex: 'autoIncreaseSn',
         key: 'autoIncreaseSn',
-        width: '1%',
+        width: '18%',
         sorter: true,
         sortOrder: sortAutoIncreaseSn,
         render: text => {
@@ -1285,13 +1285,13 @@ class Order extends PureComponent {
         title: '制单',
         dataIndex: 'userCreator.username',
         key: 'userCreator.username',
-        width: '6%',
+        width: '5%',
       },
       {
         title: '接收',
         dataIndex: 'receiveType',
         key: 'receiveType',
-        width: '6%',
+        width: '5%',
         align: 'center',
         filters: this.handleReceiveTypeFilters(),
         filteredValue: receiveTypeFilter,
@@ -1321,7 +1321,7 @@ class Order extends PureComponent {
       },
       {
         title: '操作',
-        width: '1%',
+        width: '5%',
         align: 'right',
         render: (text, row) => {
           return (
