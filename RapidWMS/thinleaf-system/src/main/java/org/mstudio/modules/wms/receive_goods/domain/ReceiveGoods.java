@@ -4,6 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
@@ -25,6 +26,14 @@ public class ReceiveGoods extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
+    private User unloadUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private User receiveUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     private Customer customer;
 
     @JSONField(serialize = false)
@@ -42,6 +51,8 @@ public class ReceiveGoods extends BaseEntity {
     private ReceiveGoodsType receiveGoodsType;
 
     private Boolean isAudited;
+
+    private Boolean isUnload;
 
     private Timestamp auditTime;
 

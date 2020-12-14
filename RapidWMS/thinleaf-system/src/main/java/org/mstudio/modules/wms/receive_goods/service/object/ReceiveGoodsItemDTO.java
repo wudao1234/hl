@@ -22,6 +22,10 @@ public class ReceiveGoodsItemDTO extends BaseObject {
 
     private Long quantityInitial;
 
+    private Long packagesInitial;
+
+    private Long packages;
+
     private Long quantity;
 
     private Long quantityCancelFetch;

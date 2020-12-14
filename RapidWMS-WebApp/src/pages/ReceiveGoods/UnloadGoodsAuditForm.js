@@ -68,6 +68,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
       loading,
       customerList,
       wareZoneTree,
+      queryParams,
     } = this.props;
 
     const {
@@ -212,7 +213,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
         },
       },
       {
-        title: '提审数量',
+        title: '数量',
         dataIndex: 'quantityInitial',
         key: 'quantityInitial',
         width: '5%',
@@ -231,7 +232,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
         },
       },
       {
-        title: '确认数量',
+        title: '数量',
         dataIndex: 'quantity',
         key: 'quantity',
         width: '5%',
@@ -249,52 +250,14 @@ class ReceiveGoodsAuditForm extends PureComponent {
           return text;
         },
       },
-      {
-        title: '提审件数',
-        dataIndex: 'packagesInitial',
-        key: 'packagesInitial',
-        width: '5%',
-        render: (text, record) => {
-          if (record) {
-            return (
-              <FormItem hasFeedback>
-                {getFieldDecorator(`receiveGoodsItems.${record.id}.packagesInitial`, {
-                  rules: [{ required: true, message: '请输入件数' }],
-                  initialValue: text,
-                })(<InputNumber min={1} max={99999999} disabled />)}
-              </FormItem>
-            );
-          }
-          return text;
-        },
-      },
-      {
-        title: '确认件数',
-        dataIndex: 'packages',
-        key: 'packages',
-        width: '5%',
-        render: (text, record) => {
-          if (record) {
-            return (
-              <FormItem hasFeedback>
-                {getFieldDecorator(`receiveGoodsItems.${record.id}.packages`, {
-                  rules: [{ required: true, message: '请输入件数' }],
-                  initialValue: record.packagesInitial,
-                })(<InputNumber min={0} max={99999999} />)}
-              </FormItem>
-            );
-          }
-          return text;
-        },
-      },
     ];
 
     const handleGoBackToList = () => {
       router.push({
         pathname: '/aog/receiveGoods',
-        // query: {
-        //   queryParams,
-        // },
+        query: {
+          queryParams,
+        },
       });
     };
 
@@ -374,7 +337,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
       <div className={styles.standardList}>
         <Card
           bordered
-          title="审核入库信息"
+          title="添加入库信息"
           style={{ marginTop: 24 }}
           bodyStyle={{ padding: '0 32px 40px 32px' }}
         >

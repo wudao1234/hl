@@ -10,6 +10,7 @@ import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
+import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoods;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -28,6 +29,16 @@ import java.util.Set;
 @Data
 @Table(name = "user")
 public class User implements Serializable {
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "unloadUser", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<ReceiveGoods> unloadGoods;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "receiveUser", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<ReceiveGoods> receiveGoods;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

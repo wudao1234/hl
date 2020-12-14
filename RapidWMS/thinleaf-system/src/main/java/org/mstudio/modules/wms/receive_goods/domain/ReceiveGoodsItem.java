@@ -40,6 +40,14 @@ public class ReceiveGoodsItem extends BaseEntity {
     @Min(value = 0)
     private Long quantityInitial;
 
+    /**
+     * 件数
+     */
+    @Min(value = 0)
+    private Long packages;
+
+    private Long packagesInitial;
+
     @Min(value = 0)
     private Long quantity;
 

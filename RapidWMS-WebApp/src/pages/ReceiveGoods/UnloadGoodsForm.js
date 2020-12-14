@@ -107,16 +107,16 @@ class ReceiveGoodsForm extends PureComponent {
       }
     }
 
-    const { receiveGoods, loading } = nextProps;
-    if (receiveGoods !== null && receiveGoods !== undefined && loading) {
+    const { unloadGoods, loading } = nextProps;
+    if (unloadGoods !== null && unloadGoods !== undefined && loading) {
       this.setState({
-        receiveGoodsId: receiveGoods.id,
-        receiveGoodsItems: receiveGoods.receiveGoodsItems.sort((a, b) => {
+        receiveGoodsId: unloadGoods.id,
+        receiveGoodsItems: unloadGoods.receiveGoodsItems.sort((a, b) => {
           return a.createTime - b.createTime;
         }),
-        customerFilter: receiveGoods.customer.id,
-        receiveGoodsType: receiveGoods.receiveGoodsType,
-        receiveGoodsDescription: receiveGoods.description,
+        customerFilter: unloadGoods.customer.id,
+        receiveGoodsType: unloadGoods.receiveGoodsType,
+        receiveGoodsDescription: unloadGoods.description,
       });
     }
   }
@@ -804,7 +804,7 @@ class ReceiveGoodsForm extends PureComponent {
           return;
         }
         dispatch({
-          type: 'receiveGoods/submit',
+          type: 'unloadGoods/submit',
           payload: { ...fieldsValue, isEdit },
           callback: response => {
             if (response.status === 400) {
@@ -865,7 +865,7 @@ class ReceiveGoodsForm extends PureComponent {
       <div className={styles.standardList}>
         <Card
           bordered
-          title={isEdit ? '编辑入库信息' : '新增入库'}
+          title={isEdit ? '编辑收货信息' : '新增收货'}
           style={{ marginTop: 24 }}
           bodyStyle={{ padding: '0 32px 40px 32px' }}
         >

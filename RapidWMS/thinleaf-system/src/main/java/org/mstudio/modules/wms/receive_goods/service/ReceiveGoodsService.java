@@ -21,6 +21,8 @@ public interface ReceiveGoodsService {
 
     ReceiveGoodsDTO create(ReceiveGoods resource);
 
+    ReceiveGoodsDTO unload(ReceiveGoods resource);
+
     ReceiveGoodsDTO update(Long id, ReceiveGoods resource);
 
     ReceiveGoodsVO audit(ReceiveGoods resource);
@@ -33,4 +35,5 @@ public interface ReceiveGoodsService {
 
     byte[] exportExcelData(List<ReceiveGoodsVO> receiveGoods);
 
+    ReceiveGoodsDTO putInStorage(Long id);
 }

@@ -77,6 +77,12 @@ public class ReceiveGoodsController {
         return new ResponseEntity<>(receiveGoodsService.create(resource), HttpStatus.CREATED);
     }
 
+    @PostMapping("/unload")
+    @PreAuthorize("hasAnyRole('ADMIN', 'W_RECEIVE_CRUD')")
+    public ResponseEntity unload(@Validated @RequestBody ReceiveGoods resource) {
+        return new ResponseEntity<>(receiveGoodsService.unload(resource), HttpStatus.CREATED);
+    }
+
     @PutMapping("")
     @PreAuthorize("hasAnyRole('ADMIN', 'W_RECEIVE_CRUD')")
     public ResponseEntity update(@Validated @RequestBody ReceiveGoods resource) {
@@ -84,6 +90,12 @@ public class ReceiveGoodsController {
             throw new BadRequestException("ID不能为空");
         }
         return new ResponseEntity<>(receiveGoodsService.update(resource.getId(), resource), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/put_in_storage/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'W_RECEIVE_LIST')")
+    public ResponseEntity putInStorage(@PathVariable Long id) {
+        return new ResponseEntity<>(receiveGoodsService.putInStorage(id), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

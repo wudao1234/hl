@@ -7,6 +7,8 @@ import cn.hutool.poi.excel.ExcelWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.security.security.JwtUser;
+import org.mstudio.modules.system.domain.User;
+import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.customer.repository.CustomerRepository;
@@ -84,9 +86,12 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String customerFilter, String receiveGoodsTypeFilter, Boolean isAuditedFilter, String startDate, String endDate, String search, Pageable pageable) {
         Specification<ReceiveGoods> spec = new Specification<ReceiveGoods>() {
             @Override
@@ -165,10 +170,34 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
         if (resource.getReceiveGoodsItems().isEmpty()) {
             throw new BadRequestException("无效参数，至少指定1项入库商品");
         }
-        JwtUser user = (JwtUser)getUserDetails();
+        JwtUser jwtUser = (JwtUser)getUserDetails();
         resource.setFlowSn(RECEIVE_GOODS_SN_PREFIX + WmsUtil.generateSnowFlakeId());
         resource.setIsAudited(false);
-        resource.setCreator(user.getUsername());
+        resource.setCreator(jwtUser.getUsername());
+        ReceiveGoods receiveGoods = receiveGoodsRepository.save(resource);
+        List<ReceiveGoodsItem> items = resource.getReceiveGoodsItems().stream().
+                peek(item -> item.setReceiveGoods(receiveGoods)).collect(Collectors.toList());
+        receiveGoodsItemRepository.saveAll(items);
+        Optional<Customer> optionalCustomer = customerRepository.findById(receiveGoods.getCustomer().getId());
+        if (optionalCustomer.isPresent()) {
+            receiveGoods.setCustomer(optionalCustomer.get());
+        }
+        return receiveGoodsMapper.toDto(receiveGoods);
+    }
+
+    @Override
+    @CacheEvict(value = CACHE_NAME, allEntries = true)
+    public ReceiveGoodsDTO unload(ReceiveGoods resource) {
+        if (resource.getReceiveGoodsItems().isEmpty()) {
+            throw new BadRequestException("无效参数，至少指定1项入库商品");
+        }
+        User user = userRepository.findByUsername(getUserDetails().getUsername());
+        JwtUser jwtUser = (JwtUser)getUserDetails();
+        resource.setFlowSn(RECEIVE_GOODS_SN_PREFIX + WmsUtil.generateSnowFlakeId());
+        resource.setIsAudited(false);
+        resource.setIsUnload(false);
+        resource.setUnloadUser(user);
+        resource.setCreator(jwtUser.getUsername());
         ReceiveGoods receiveGoods = receiveGoodsRepository.save(resource);
         List<ReceiveGoodsItem> items = resource.getReceiveGoodsItems().stream().
                 peek(item -> item.setReceiveGoods(receiveGoods)).collect(Collectors.toList());
@@ -306,7 +335,7 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
-    @Cacheable(value = CACHE_NAME, key = "#p0")
+//    @Cacheable(value = CACHE_NAME, key = "#p0")
     public ReceiveGoodsDTO findById(Long id) {
         Optional<ReceiveGoods> optionalReceiveGoods = receiveGoodsRepository.findById(id);
         if (!optionalReceiveGoods.isPresent()) {
@@ -356,6 +385,19 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
         writer.flush(outByteStream);
         writer.close();
         return outByteStream.toByteArray();
+    }
+
+    @Override
+    public ReceiveGoodsDTO putInStorage(Long id) {
+        Optional<ReceiveGoods> optionalReceiveGoods = receiveGoodsRepository.findById(id);
+        if (!optionalReceiveGoods.isPresent()) {
+            throw new BadRequestException(" 入库项目不存在 ID=" + id);
+        }
+        User user = userRepository.findByUsername(getUserDetails().getUsername());
+        ReceiveGoods receiveGoods = optionalReceiveGoods.get();
+        receiveGoods.setReceiveUser(user);
+        receiveGoods.setIsUnload(true);
+        return receiveGoodsMapper.toDto(receiveGoods);
     }
 
 }

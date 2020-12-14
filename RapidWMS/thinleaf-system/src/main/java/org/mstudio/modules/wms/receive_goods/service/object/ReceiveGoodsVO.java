@@ -23,6 +23,8 @@ public class ReceiveGoodsVO extends BaseObject {
 
     private Boolean isAudited;
 
+    private Boolean isUnload;
+
     private Timestamp auditTime;
 
     private String description;

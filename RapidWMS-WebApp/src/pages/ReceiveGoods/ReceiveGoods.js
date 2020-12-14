@@ -488,9 +488,18 @@ class ReceiveGoods extends PureComponent {
     });
   };
 
+  handleAddUnloadGoods = () => {
+    router.push({
+      pathname: '/aog/unloadReceiveGoods',
+      query: {
+        queryParams: this.getQueryParams(),
+      },
+    });
+  };
+
   editReceiveGoods = item => {
     router.push({
-      pathname: `/warehouse/editReceiveGoods/${item.id}`,
+      pathname: `/aog/editReceiveGoods/${item.id}`,
       query: {
         queryParams: this.getQueryParams(),
       },
@@ -502,6 +511,25 @@ class ReceiveGoods extends PureComponent {
       pathname: `/warehouse/auditReceiveGoods/${item.id}`,
       query: {
         queryParams: this.getQueryParams(),
+      },
+    });
+  };
+
+  addUnloadReceiveGoods = item => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'unloadGoods/putInStorage',
+      payload: { id: item.id },
+      callback: response => {
+        if (response.status === 400) {
+          notification.error({
+            message: '操作发生错误',
+            description: response.message,
+          });
+        } else {
+          message.success('成功！');
+          this.handleSearch();
+        }
       },
     });
   };
@@ -833,6 +861,45 @@ class ReceiveGoods extends PureComponent {
         align: 'right',
         render: (text, row) => {
           if (!row.isAudited) {
+            if (!row.isUnload) {
+              return (
+                <span>
+                  <Button
+                    style={{ marginRight: 5 }}
+                    htmlType="button"
+                    type="primary"
+                    size="small"
+                    onClick={e => {
+                      e.preventDefault();
+                      this.addUnloadReceiveGoods(row);
+                    }}
+                  >
+                    入库
+                  </Button>
+                  <Button
+                    style={{ marginRight: 5 }}
+                    htmlType="button"
+                    size="small"
+                    onClick={e => {
+                      e.preventDefault();
+                      this.editReceiveGoods(row);
+                    }}
+                  >
+                    编辑
+                  </Button>
+                  <Popconfirm
+                    title="确定删除吗？"
+                    onConfirm={() => this.confirmDelete(row)}
+                    okText="删除"
+                    cancelText="取消"
+                  >
+                    <Button htmlType="button" href="#" type="danger" size="small">
+                      删除
+                    </Button>
+                  </Popconfirm>
+                </span>
+              );
+            }
             return (
               <span>
                 <Button
@@ -916,9 +983,9 @@ class ReceiveGoods extends PureComponent {
                   icon="plus"
                   htmlType="button"
                   type="primary"
-                  onClick={this.handleAddReceiveGoods}
+                  onClick={this.handleAddUnloadGoods}
                 >
-                  新增入库
+                  新增收货
                 </Button>
                 <Button icon="search" htmlType="button" onClick={this.handleResetSearch}>
                   重置查询参数

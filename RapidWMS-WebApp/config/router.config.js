@@ -177,15 +177,15 @@ export default [
             component: './WareZone/WareZone',
           },
           {
-            path: '/warehouse/editReceiveGoods/:id',
-            name: 'editReceiveGoods',
-            component: './ReceiveGoods/EditReceiveGoods',
-            hideInMenu: true,
-          },
-          {
             path: '/warehouse/auditReceiveGoods/:id',
             name: 'auditReceiveGoods',
             component: './ReceiveGoods/AuditReceiveGoods',
+            hideInMenu: true,
+          },
+          {
+            path: '/warehouse/auditUnloadReceiveGoods/:id',
+            name: 'auditUnloadReceiveGoods',
+            component: './ReceiveGoods/AuditUnloadReceiveGoods',
             hideInMenu: true,
           },
           {
@@ -360,6 +360,17 @@ export default [
             path: '/aog/addReceiveGoods',
             name: 'addReceiveGoods',
             component: './ReceiveGoods/AddReceiveGoods',
+          },
+          {
+            path: '/aog/unloadReceiveGoods',
+            name: 'unloadReceiveGoods',
+            component: './ReceiveGoods/unloadReceiveGoods',
+          },
+          {
+            path: '/aog/editReceiveGoods/:id',
+            name: 'editReceiveGoods',
+            component: './ReceiveGoods/EditReceiveGoods',
+            hideInMenu: true,
           },
         ],
       },
