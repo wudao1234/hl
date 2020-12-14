@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Card, Form, Input, message, Modal, notification, Table } from 'antd';
+import { Card, Form, Input, message, Modal, notification, Table, DatePicker } from 'antd';
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
@@ -8,6 +8,7 @@ import styles from './DispatchStatistics.less';
 
 const FormItem = Form.Item;
 const { Search } = Input;
+const { RangePicker } = DatePicker;
 
 @connect(({ dispatchStatistics, loading }) => ({
   list: dispatchStatistics.list.content,
@@ -23,6 +24,8 @@ class DispatchStatistics extends PureComponent {
     search: null,
     visible: false,
     done: false,
+    startDate: null,
+    endDate: null,
   };
 
   formLayout = {
@@ -44,41 +47,53 @@ class DispatchStatistics extends PureComponent {
       width: '15%',
     },
     {
-      title: '拣配',
-      dataIndex: 'pickMatchScore',
-      key: 'pickMatchScore',
-      width: '10%',
-    },
-    {
-      title: '复检',
-      dataIndex: 'reviewScore',
-      key: 'reviewScore',
+      title: '配送',
+      dataIndex: 'finishScore',
+      key: 'finishScore',
       width: '10%',
     },
   ];
 
   componentDidMount() {
     const { dispatch } = this.props;
-    const { search, pageSize, currentPage, orderBy } = this.state;
-    this.handleQuery(dispatch, search, pageSize, currentPage, orderBy);
+    const { search, pageSize, currentPage, orderBy, startDate, endDate } = this.state;
+    this.handleQuery(dispatch, search, startDate, endDate, pageSize, currentPage, orderBy);
   }
 
   handleSearchByName = value => {
     this.setState({ search: value });
     const search = value === '' ? '' : value;
     const { dispatch } = this.props;
-    const { pageSize } = this.state;
+    const { pageSize, startDate, endDate } = this.state;
     this.setState({
       currentPage: 1,
       orderBy: null,
     });
-    this.handleQuery(dispatch, search, pageSize, 1, null);
+    this.handleQuery(dispatch, search, startDate, endDate, pageSize, 1, null);
   };
 
-  handleQuery = (dispatch, search, pageSize, currentPage, orderBy) => {
+  handleQuery = (dispatch, search, startDate, endDate, pageSize, currentPage, orderBy) => {
+    let startDateString = null;
+    let endDateString = null;
+    if (
+      startDate !== null &&
+      endDate !== null &&
+      startDate !== undefined &&
+      endDate !== undefined
+    ) {
+      startDateString = startDate.format('YYYY-MM-DD');
+      endDateString = endDate.format('YYYY-MM-DD');
+    }
     dispatch({
       type: 'dispatchStatistics/fetch',
-      payload: { search, pageSize, currentPage, orderBy },
+      payload: {
+        search,
+        startDate: startDateString,
+        endDate: endDateString,
+        pageSize,
+        currentPage,
+        orderBy,
+      },
     });
   };
 
@@ -124,8 +139,8 @@ class DispatchStatistics extends PureComponent {
             });
           } else {
             message.success(id === '' ? '创建成功！' : '修改成功！');
-            const { search, pageSize, currentPage, orderBy } = this.state;
-            this.handleQuery(dispatch, search, pageSize, currentPage, orderBy);
+            const { search, pageSize, currentPage, orderBy, startDate, endDate } = this.state;
+            this.handleQuery(dispatch, search, startDate, endDate, pageSize, currentPage, orderBy);
           }
         },
       });
@@ -138,7 +153,7 @@ class DispatchStatistics extends PureComponent {
 
   handleTableChange = (pagination, filters, sorter) => {
     const { dispatch } = this.props;
-    const { search } = this.state;
+    const { search, startDate, endDate } = this.state;
     const { current: currentPage, pageSize } = pagination;
     const { field, order } = sorter;
     const orderBy = field !== undefined ? `${field},${order}` : null;
@@ -147,7 +162,23 @@ class DispatchStatistics extends PureComponent {
       pageSize,
       orderBy,
     });
-    this.handleQuery(dispatch, search, pageSize, currentPage, orderBy);
+    this.handleQuery(dispatch, search, startDate, endDate, pageSize, currentPage, orderBy);
+  };
+
+  handleDateRangeChange = date => {
+    const startDate = date[0];
+    const endDate = date[1];
+    this.setState({
+      startDate,
+      endDate,
+    });
+    const { dispatch } = this.props;
+    const { pageSize, search } = this.state;
+    this.setState({
+      currentPage: 1,
+      orderBy: null,
+    });
+    this.handleQuery(dispatch, search, startDate, endDate, pageSize, 1, null);
   };
 
   render() {
@@ -155,7 +186,7 @@ class DispatchStatistics extends PureComponent {
     const {
       form: { getFieldDecorator },
     } = this.props;
-    const { visible, done, currentItem = {} } = this.state;
+    const { visible, done, currentItem = {}, startDate, endDate } = this.state;
     const { pageSize, currentPage } = this.state;
 
     const modalFooter = done
@@ -178,6 +209,11 @@ class DispatchStatistics extends PureComponent {
           className={styles.extraContentSearch}
           placeholder="请输入姓名进行搜索"
           onSearch={this.handleSearchByName}
+        />
+        <RangePicker
+          style={{ marginLeft: 10, marginRight: 10 }}
+          onChange={this.handleDateRangeChange}
+          value={[startDate, endDate]}
         />
       </div>
     );
@@ -222,7 +258,7 @@ class DispatchStatistics extends PureComponent {
         <div className={styles.standardList}>
           <Card
             bordered={false}
-            title="拣配复核统计"
+            title="配送计件统计"
             style={{ marginTop: 24 }}
             bodyStyle={{ padding: '0 32px 40px 32px' }}
             extra={searchContent}

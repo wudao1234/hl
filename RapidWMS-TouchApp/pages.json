@@ -184,12 +184,19 @@
 						}
         }
         ,{
-            "path" : "pages/profile/my-packages/my-packages",
+            "path" : "pages/profile/my-packages/back-car",
             "style" : {
-				"navigationBarTitleText":"我的派送",
+				"navigationBarTitleText":"收车",
 				"enablePullDownRefresh":true
 			}
         }
+		,{
+		    "path" : "pages/profile/my-packages/my-packages",
+		    "style" : {
+				"navigationBarTitleText":"我的派送",
+				"enablePullDownRefresh":true
+			}
+		}
         ,{
             "path" : "pages/transit/pack-list-user/pack-list-user",
             "style" : {

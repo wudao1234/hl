@@ -51,14 +51,17 @@ public class DispatchController {
 
     @GetMapping("finish")
     @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
-    public ResponseEntity finish(@RequestParam(value = "mileage", required = false) Float mileage, DispatchSys dispatchSys) {
+    public ResponseEntity finish(
+            @RequestParam(value = "mileage", required = true) Float mileage,
+            @RequestParam(value = "dispatchSys", required = true)  Long dispatchSys) {
         return new ResponseEntity<>(dispatchService.finish(mileage, dispatchSys), HttpStatus.CREATED);
     }
 
     @Log("配送计件统计")
-    @GetMapping(value = "/dispatchStatistics")
+    @GetMapping(value = "/statistics")
     @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
-    public ResponseEntity dispatchStatistics(
+    @ResponseBody
+    public ResponseEntity statistics(
             @RequestParam(value = "startDate", required = false) String startDate,
             @RequestParam(value = "endDate", required = false) String endDate,
             @RequestParam(value = "search", required = false) String search,

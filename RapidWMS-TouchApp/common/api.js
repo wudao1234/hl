@@ -1,7 +1,7 @@
 import md5 from '../plugin/md5/build/md5.min.js'
 
 // const defaultBaseUrl = 'http://127.0.0.1:8016';
-const defaultBaseUrl = process.env.NODE_ENV === 'development'?'http://127.0.0.1:8016':'http://8.131.84.103';
+const defaultBaseUrl = process.env.NODE_ENV === 'development'?'http://192.168.1.106:8016':'http://8.131.84.103';
 let _baseUrl = defaultBaseUrl;
 
 const getBaseUrl = () => {

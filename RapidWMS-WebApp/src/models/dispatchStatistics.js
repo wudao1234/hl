@@ -1,4 +1,4 @@
-import { queryPickMatch } from '@/services/dispatchStatistics';
+import queryPickMatch from '@/services/dispatchStatistics';
 
 export default {
   namespace: 'dispatchStatistics',

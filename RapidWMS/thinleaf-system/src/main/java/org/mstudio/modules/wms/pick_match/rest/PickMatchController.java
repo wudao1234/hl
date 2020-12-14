@@ -50,6 +50,7 @@ public class PickMatchController {
     @Log("统计")
     @GetMapping(value = "/statistics")
     @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
+    @ResponseBody
     public ResponseEntity statistics(
             @RequestParam(value = "startDate", required = false) String startDate,
             @RequestParam(value = "endDate", required = false) String endDate,

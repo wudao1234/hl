@@ -1,5 +1,7 @@
 package org.mstudio.modules.wms.dispatch.service.impl;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
@@ -16,6 +18,8 @@ import org.mstudio.modules.wms.dispatch.service.DispatchService;
 import org.mstudio.modules.wms.dispatch.service.object.StatisticsDTO;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
+import org.mstudio.modules.wms.pick_match.domain.PickMatch;
+import org.mstudio.modules.wms.pick_match.domain.PickMatchTypeEnum;
 import org.mstudio.utils.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -121,25 +125,54 @@ public class DispatchServiceImpl implements DispatchService {
 
 
     @Override
-    @Cacheable(value = CACHE_NAME, key = "#p1")
+//    @Cacheable(value = CACHE_NAME, key = "#p1")
     public Map statistics(String startDate, String endDate, String search, Pageable pageable) {
-        Specification<User> spec = (Specification<User>) (root, criteriaQuery, cb) -> {
-            List<Predicate> list = new ArrayList<Predicate>();
-//            if (!ObjectUtils.isEmpty(name)) {
-//                list.add(cb.like(root.get("username").as(String.class), "%" + name + "%"));
-//            }
-            Predicate[] p = new Predicate[list.size()];
-            return cb.and(list.toArray(p));
+        Specification<User> spec = (Specification<User>) (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<Predicate>();
+            if (!ObjectUtils.isEmpty(search)) {
+                predicates.add(criteriaBuilder.like(root.get("username").as(String.class), "%" + search + "%"));
+            }
+            Predicate[] p = new Predicate[predicates.size()];
+            return criteriaBuilder.and(predicates.toArray(p));
         };
-        Page<User> page = userRepo.findAll(spec, pageable);
+        Sort sort = pageable.getSort().and(new Sort(Sort.Direction.DESC, "id"));
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<User> page = userRepo.findAll(spec, newPageable);
+
+        Date start = null;
+        Date end = null;
+        if (startDate != null && endDate != null) {
+            start = DateUtil.parse(startDate);
+            end = DateUtil.parse(endDate);
+            // 必须在结束日期基础上加上一天，第二天凌晨0点作为结束时间点
+            Calendar c = Calendar.getInstance();
+            c.setTime(end);
+            c.add(Calendar.DAY_OF_MONTH, 1);
+            end = c.getTime();
+        }
+        Date finalStart = start;
+        Date finalEnd = end;
+
         return PageUtil.toPage(page.map(user -> {
             Map m = new HashMap();
             m.put("id", user.getId());
             m.put("username", user.getUsername());
-            Float pickMatchScore = 0f;
-            Float reviewScore = 0f;
-            m.put("pickMatchScore", pickMatchScore);
-            m.put("reviewScore", reviewScore);
+            Float unFinishScore = 0f;
+            Float finishScore = 0f;
+            for (DispatchPiece dispatchPiece : user.getDispatchPieces()) {
+                if (startDate != null && endDate != null) {
+                    if (dispatchPiece.getCreateTime().before(finalStart) || dispatchPiece.getCreateTime().after(finalEnd)) {
+                        continue;
+                    }
+                }
+                if (DispatchStatusEnum.FINISH.equals(dispatchPiece.getStatus())) {
+                    finishScore += dispatchPiece.getScore();
+                } else {
+                    unFinishScore += dispatchPiece.getScore();
+                }
+            }
+            m.put("unFinishScore", unFinishScore);
+            m.put("finishScore", finishScore);
             return m;
         }));
     }
@@ -205,7 +238,17 @@ public class DispatchServiceImpl implements DispatchService {
     }
 
     @Override
-    public DispatchPiece finish(Float mileage, DispatchSys dispatchSys) {
+    public DispatchPiece finish(Float mileage, Long dispatchSysId) {
+        if (ObjectUtil.isNull(mileage) || mileage.compareTo(0f) <= 0) {
+            throw new BadRequestException("里数错误");
+        }
+        if (ObjectUtil.isNull(dispatchSysId)) {
+            throw new BadRequestException("系统系数错误");
+        }
+        DispatchSys dispatchSys = dispatchSysRepository.getOne(dispatchSysId);
+        if (ObjectUtil.isNull(dispatchSys)) {
+            throw new BadRequestException("系统系数错误");
+        }
         // 获取用户
         User user = userRepository.findByUsername(getUserDetails().getUsername());
         // 获取待完成配送计件信息
@@ -221,6 +264,7 @@ public class DispatchServiceImpl implements DispatchService {
         };
         DispatchPiece dispatchPiece = (DispatchPiece) dispatchPieceRepository.findOne(dispatchPieceSpec).get();
         dispatchPiece.setMileage(mileage);
+        dispatchPiece.setDispatchSys(dispatchSys);
         dispatchPiece.setScore(
                 (dispatchPiece.getStoreNum() * dispatchPiece.getStorePrice() +
                         dispatchPiece.getDispatchSum() * dispatchPiece.getDispatchPrice() +
@@ -231,27 +275,4 @@ public class DispatchServiceImpl implements DispatchService {
         return dispatchPieceRepository.save(dispatchPiece);
     }
 
-//    @Override
-//    @Cacheable(value = CACHE_NAME, key = "#p3")
-//    public Map statistics(StatisticsDTO search, Pageable pageable) {
-//        Specification<DispatchPiece> spec = (Specification<DispatchPiece>) (root, criteriaQuery, cb) -> {
-//            List<Predicate> list = new ArrayList<Predicate>();
-////            if (!ObjectUtils.isEmpty(name)) {
-////                list.add(cb.like(root.get("username").as(String.class), "%" + name + "%"));
-////            }
-//            Predicate[] p = new Predicate[list.size()];
-//            return cb.and(list.toArray(p));
-//        };
-//        Page<User> page = userRepo.findAll(spec, pageable);
-//        return PageUtil.toPage(page.map(user -> {
-//            Map m = new HashMap();
-//            m.put("id", user.getId());
-//            m.put("username", user.getUsername());
-//            Float pickMatchScore = 0f;
-//            Float reviewScore = 0f;
-//            m.put("pickMatchScore", pickMatchScore);
-//            m.put("reviewScore", reviewScore);
-//            return m;
-//        }));
-//    }
 }

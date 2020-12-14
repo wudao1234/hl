@@ -28,6 +28,6 @@ public interface DispatchService {
 
     Long save();
 
-    DispatchPiece finish(Float mileage, DispatchSys dispatchSys);
+    DispatchPiece finish(Float mileage, Long dispatchSys);
 
 }
