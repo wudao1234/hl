@@ -24,6 +24,14 @@ import java.util.List;
 @NamedEntityGraph(name = "receiveGoods.all", attributeNodes = @NamedAttributeNode(value = "customer"))
 public class ReceiveGoods extends BaseEntity {
 
+    /**
+     * 计件信息
+     */
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "receiveGoodses", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<ReceiveGoodsPiece> receiveGoodsPieces;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private User unloadUser;

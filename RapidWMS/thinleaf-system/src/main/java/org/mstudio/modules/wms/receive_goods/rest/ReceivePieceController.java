@@ -41,20 +41,6 @@ public class ReceivePieceController {
         return new ResponseEntity<>(receivePieceService.update(resource.getId(), resource), HttpStatus.CREATED);
     }
 
-    @PostMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
-    public ResponseEntity save() {
-        return new ResponseEntity<>(receivePieceService.save(), HttpStatus.CREATED);
-    }
-
-    @GetMapping("finish")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
-    public ResponseEntity finish(
-            @RequestParam(value = "mileage", required = true) Float mileage,
-            @RequestParam(value = "dispatchSys", required = true)  Long dispatchSys) {
-        return new ResponseEntity<>(receivePieceService.finish(mileage, dispatchSys), HttpStatus.CREATED);
-    }
-
     @Log("配送计件统计")
     @GetMapping(value = "/statistics")
     @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")

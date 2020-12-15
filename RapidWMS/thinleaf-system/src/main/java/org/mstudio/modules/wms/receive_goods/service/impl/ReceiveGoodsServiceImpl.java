@@ -19,6 +19,7 @@ import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsItem;
 import org.mstudio.modules.wms.receive_goods.repository.ReceiveGoodsItemRepository;
 import org.mstudio.modules.wms.receive_goods.repository.ReceiveGoodsRepository;
 import org.mstudio.modules.wms.receive_goods.service.ReceiveGoodsService;
+import org.mstudio.modules.wms.receive_goods.service.ReceivePieceService;
 import org.mstudio.modules.wms.receive_goods.service.mapper.ReceiveGoodsMapper;
 import org.mstudio.modules.wms.receive_goods.service.object.ReceiveGoodsDTO;
 import org.mstudio.modules.wms.receive_goods.service.object.ReceiveGoodsExcelObj;
@@ -29,7 +30,6 @@ import org.mstudio.utils.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -88,6 +88,9 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    ReceivePieceService receivePieceService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
@@ -281,6 +284,8 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
         receiveGoods.setReceiveGoodsItems(items);
         ReceiveGoods result = receiveGoodsRepository.save(receiveGoods);
         stockService.receiveGoods(receiveGoods);
+        // 入库计件
+        receivePieceService.save(receiveGoods);
         return receiveGoodsMapper.toVO(result);
     }
 
@@ -308,6 +313,9 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
             throw new BadRequestException("请录入入库商品信息！");
         }
 
+        // 入库计件-取消
+        receivePieceService.cancel(receiveGoods);
+
         if (stockService.cancelReceiveGoods(receiveGoods)) {
             stockFlowRepository.deleteAllByReceiveGoodsId(receiveGoods.getId());
             receiveGoods.setAuditor(null);
@@ -331,6 +339,8 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
         }
         receiveGoodsItemRepository.deleteAll(receiveGoods.getReceiveGoodsItems());
         receiveGoodsRepository.delete(receiveGoods);
+        // 入库计件-取消
+        receivePieceService.cancel(receiveGoods);
     }
 
     @Override

@@ -1,22 +1,12 @@
 package org.mstudio.modules.wms.receive_goods.service.impl;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
-import org.mstudio.modules.wms.address.repository.AddressRepository;
-import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
-import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
-import org.mstudio.modules.wms.dispatch.domain.DispatchStatusEnum;
-import org.mstudio.modules.wms.dispatch.domain.DispatchSys;
-import org.mstudio.modules.wms.dispatch.repository.DispatchCoefficientRepository;
-import org.mstudio.modules.wms.dispatch.repository.DispatchPieceRepository;
-import org.mstudio.modules.wms.dispatch.repository.DispatchSysRepository;
-import org.mstudio.modules.wms.pack.domain.Pack;
-import org.mstudio.modules.wms.pack.repository.PackRepository;
-import org.mstudio.modules.wms.receive_goods.domain.RcceiveCoefficient;
+import org.mstudio.modules.wms.receive_goods.domain.*;
 import org.mstudio.modules.wms.receive_goods.repository.RcceiveCoefficientRepository;
+import org.mstudio.modules.wms.receive_goods.repository.ReceiveGoodsPieceRepository;
 import org.mstudio.modules.wms.receive_goods.service.ReceivePieceService;
 import org.mstudio.utils.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +22,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mstudio.utils.SecurityContextHolder.getUserDetails;
 
@@ -52,31 +38,16 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
     private static final String CACHE_NAME = "ReceivePiece";
 
     @Autowired
-    private DispatchCoefficientRepository dispatchCoefficientRepository;
-
-    @Autowired
-    private AddressRepository addressRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepo;
-
-    @Autowired
-    private DispatchSysRepository dispatchSysRepository;
-
-    @Autowired
-    private PackRepository packRepository;
-
-    @Autowired
-    private DispatchPieceRepository dispatchPieceRepository;
-    
-    @Autowired
     private RcceiveCoefficientRepository rcceiveCoefficientRepository;
 
+    @Autowired
+    private ReceiveGoodsPieceRepository receiveGoodsPieceRepository;
+
     @Override
-    //@Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
     public Map queryAll(Pageable pageable) {
         Specification<RcceiveCoefficient> spec = (Specification<RcceiveCoefficient>) (root, criteriaQuery, criteriaBuilder) -> null;
@@ -103,18 +74,6 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
-    public Map querySysAll(Pageable pageable) {
-        Specification<DispatchSys> spec = (Specification<DispatchSys>) (root, criteriaQuery, criteriaBuilder) -> null;
-        // 默认按照创建的时间顺序排列
-        Sort sort = pageable.getSort().and(new Sort(Sort.Direction.DESC, "id"));
-        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        Page<DispatchSys> page = dispatchSysRepository.findAll(spec, newPageable);
-        return PageUtil.toPage(page);
-    }
-
-    @Override
     @Cacheable(value = CACHE_NAME, key = "#p0")
     public RcceiveCoefficient findById(Long id) {
         Optional<RcceiveCoefficient> optionalAddress = rcceiveCoefficientRepository.findById(id);
@@ -126,7 +85,6 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
 
 
     @Override
-//    @Cacheable(value = CACHE_NAME, key = "#p1")
     public Map statistics(String startDate, String endDate, String search, Pageable pageable) {
         Specification<User> spec = (Specification<User>) (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<Predicate>();
@@ -138,7 +96,7 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
         };
         Sort sort = pageable.getSort().and(new Sort(Sort.Direction.DESC, "id"));
         Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        Page<User> page = userRepo.findAll(spec, newPageable);
+        Page<User> page = userRepository.findAll(spec, newPageable);
 
         Date start = null;
         Date end = null;
@@ -158,122 +116,54 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
             Map m = new HashMap();
             m.put("id", user.getId());
             m.put("username", user.getUsername());
-            Float unFinishScore = 0f;
-            Float finishScore = 0f;
-            for (DispatchPiece dispatchPiece : user.getDispatchPieces()) {
+            Float unloadScore = 0f;
+            Float putInScore = 0f;
+            for (ReceiveGoodsPiece receiveGoodsPiece : user.getReceiveGoodsPieces()) {
                 if (startDate != null && endDate != null) {
-                    if (dispatchPiece.getCreateTime().before(finalStart) || dispatchPiece.getCreateTime().after(finalEnd)) {
+                    if (receiveGoodsPiece.getCreateTime().before(finalStart) || receiveGoodsPiece.getCreateTime().after(finalEnd)) {
                         continue;
                     }
                 }
-                if (DispatchStatusEnum.FINISH.equals(dispatchPiece.getStatus())) {
-                    finishScore += dispatchPiece.getScore();
+                if (ReceiveGoodsPieceTypeEnum.UNLOAD == receiveGoodsPiece.getType()) {
+                    unloadScore += receiveGoodsPiece.getScore();
                 } else {
-                    unFinishScore += dispatchPiece.getScore();
+                    putInScore += receiveGoodsPiece.getScore();
                 }
             }
-            m.put("unFinishScore", unFinishScore);
-            m.put("finishScore", finishScore);
+            m.put("unloadScore", unloadScore);
+            m.put("putInScore", putInScore);
             return m;
         }));
     }
 
     @Override
-    public Long save() {
+    public void save(ReceiveGoods params) {
         // 获取用户
         User user = userRepository.findByUsername(getUserDetails().getUsername());
-
-        // 获取所有待派送打包
-        Specification<Pack> spec = new Specification<Pack>() {
-            @Override
-            public Predicate toPredicate(Root<Pack> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                List<Predicate> predicates = new ArrayList<>();
-                predicates.add(criteriaBuilder.equal(root.get("user").get("username"), user.getUsername()));
-                predicates.add(criteriaBuilder.equal(root.get("packStatus"), OrderStatus.SENDING));
-
-                if (predicates.size() != 0) {
-                    Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
-                } else {
-                    return null;
-                }
-            }
-        };
-        List<Pack> packs = packRepository.findAll(spec);
-
         // 获取基础系数
         RcceiveCoefficient dispatchCoefficient = rcceiveCoefficientRepository.findAll().get(0);
 
-        // 获取待完成配送计件信息
-        Specification<DispatchPiece> dispatchPieceSpec = new Specification<DispatchPiece>() {
-            @Override
-            public Predicate toPredicate(Root<DispatchPiece> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                List<Predicate> predicates = new ArrayList<>();
-                predicates.add(criteriaBuilder.equal(root.get("user").get("username"), user.getUsername()));
-                predicates.add(criteriaBuilder.equal(root.get("status"), DispatchStatusEnum.UN_FINISH));
-                Predicate[] p = new Predicate[predicates.size()];
-                return criteriaBuilder.and(predicates.toArray(p));
-            }
-        };
-        Optional<DispatchPiece> optionalDispatchPiece = dispatchPieceRepository.findOne(dispatchPieceSpec);
-        DispatchPiece dispatchPiece = optionalDispatchPiece.isPresent() ? optionalDispatchPiece.get() : new DispatchPiece();
-        //dispatchPiece.setStorePrice(dispatchCoefficient.getStore());
-        AtomicReference<Integer> storeNum = new AtomicReference<>(0);
-        AtomicReference<Integer> dispatchSum = new AtomicReference<>(0);
-        Map tmp = new HashMap();
-        packs.forEach(item -> {
-            dispatchSum.updateAndGet(v -> v + item.getPackages());
-            if (!tmp.containsKey(item.getAddress().getId())) {
-                storeNum.getAndSet(storeNum.get() + 1);
-                tmp.put(item.getAddress().getId(), null);
-            }
-        });
-        dispatchPiece.setStoreNum(storeNum.get());
-        //dispatchPiece.setDispatchPrice(dispatchCoefficient.getDispatch());
-        dispatchPiece.setDispatchSum(dispatchSum.get());
-        //dispatchPiece.setMileagePrice(dispatchCoefficient.getMileage());
-        dispatchPiece.setStatus(DispatchStatusEnum.UN_FINISH);
-        dispatchPiece.setUser(user);
-        dispatchPiece.setPacks(packs);
-        return dispatchPieceRepository.save(dispatchPiece).getId();
+        ReceiveGoodsPieceTypeEnum[] receiveGoodsPieceTypeEnums = ReceiveGoodsPieceTypeEnum.values();
+        for (ReceiveGoodsPieceTypeEnum receiveGoodsPieceTypeEnum : receiveGoodsPieceTypeEnums) {
+            // init receiveGoodsPiece
+            ReceiveGoodsPiece receiveGoodsPiece = new ReceiveGoodsPiece();
+            receiveGoodsPiece.setUser(user);
+            receiveGoodsPiece.setReceiveGoodses(params);
+            receiveGoodsPiece.setStaffPrice(user.getCoefficient());
+            receiveGoodsPiece.setType(receiveGoodsPieceTypeEnum);
+            receiveGoodsPiece.setPackages(params.getReceiveGoodsItems().stream().mapToLong(ReceiveGoodsItem::getPackages).sum());
+            receiveGoodsPiece.setPrice(ReceiveGoodsPieceTypeEnum.UNLOAD == receiveGoodsPieceTypeEnum ? dispatchCoefficient.getUnloadPrice() : dispatchCoefficient.getPutInPrice());
+            receiveGoodsPiece.setScore(receiveGoodsPiece.getPackages() * receiveGoodsPiece.getPrice() * receiveGoodsPiece.getStaffPrice());
+            receiveGoodsPieceRepository.save(receiveGoodsPiece);
+        }
     }
 
     @Override
-    public DispatchPiece finish(Float mileage, Long dispatchSysId) {
-        if (ObjectUtil.isNull(mileage) || mileage.compareTo(0f) <= 0) {
-            throw new BadRequestException("里数错误");
-        }
-        if (ObjectUtil.isNull(dispatchSysId)) {
-            throw new BadRequestException("系统系数错误");
-        }
-        DispatchSys dispatchSys = dispatchSysRepository.getOne(dispatchSysId);
-        if (ObjectUtil.isNull(dispatchSys)) {
-            throw new BadRequestException("系统系数错误");
-        }
-        // 获取用户
-        User user = userRepository.findByUsername(getUserDetails().getUsername());
-        // 获取待完成配送计件信息
-        Specification<DispatchPiece> dispatchPieceSpec = new Specification<DispatchPiece>() {
-            @Override
-            public Predicate toPredicate(Root<DispatchPiece> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                List<Predicate> predicates = new ArrayList<>();
-                predicates.add(criteriaBuilder.equal(root.get("user").get("username"), getUserDetails().getUsername()));
-                predicates.add(criteriaBuilder.equal(root.get("status"), DispatchStatusEnum.UN_FINISH));
-                Predicate[] p = new Predicate[predicates.size()];
-                return criteriaBuilder.and(predicates.toArray(p));
-            }
-        };
-        DispatchPiece dispatchPiece = (DispatchPiece) dispatchPieceRepository.findOne(dispatchPieceSpec).get();
-        dispatchPiece.setMileage(mileage);
-        dispatchPiece.setDispatchSys(dispatchSys);
-        dispatchPiece.setScore(
-                (dispatchPiece.getStoreNum() * dispatchPiece.getStorePrice() +
-                        dispatchPiece.getDispatchSum() * dispatchPiece.getDispatchPrice() +
-                        dispatchPiece.getMileage() * dispatchPiece.getMileagePrice()
-                ) * user.getCoefficient() * dispatchSys.getValue()
-        );
-        dispatchPiece.setStatus(DispatchStatusEnum.FINISH);
-        return dispatchPieceRepository.save(dispatchPiece);
+    public void cancel(ReceiveGoods params) {
+        List<ReceiveGoodsPiece> receiveGoodsPieceList = params.getReceiveGoodsPieces();
+        receiveGoodsPieceList.forEach(item ->{
+            receiveGoodsPieceRepository.delete(item);
+        });
     }
 
 }

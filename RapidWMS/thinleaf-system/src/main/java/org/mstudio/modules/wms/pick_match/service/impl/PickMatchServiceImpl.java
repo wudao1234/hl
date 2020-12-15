@@ -7,7 +7,6 @@ import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.address.repository.AddressRepository;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
-import org.mstudio.modules.wms.dispatch.service.object.StatisticsDTO;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
@@ -30,8 +29,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
 
@@ -123,7 +120,7 @@ public class PickMatchServiceImpl implements PickMatchService {
             pickMatch.setType(PickMatchTypeEnum.PICK_MATCH);
             pickMatch.setUser(pack.getOrders().get(0).getUserGathering());
             // get 拣配复核系数
-            Float diffCoe = pickMatchTypeEnum.equals(PickMatchTypeEnum.PICK_MATCH) ? pickMatch.getPickMatch() : pickMatch.getReview();
+            Float diffCoe = pickMatchTypeEnum==PickMatchTypeEnum.PICK_MATCH ? pickMatch.getPickMatch() : pickMatch.getReview();
             CustomerOrder customerOrder = pack.getOrders().get(0);
             Float customerCoefficient = pickMatchTypeEnum.equals(PickMatchTypeEnum.PICK_MATCH) ?
                     customerOrder.getUserGathering().getCoefficient() :

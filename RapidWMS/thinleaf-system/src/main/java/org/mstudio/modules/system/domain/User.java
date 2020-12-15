@@ -11,6 +11,7 @@ import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoods;
+import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsPiece;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -131,4 +132,9 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<DispatchPiece> dispatchPieces;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<ReceiveGoodsPiece> receiveGoodsPieces;
 }
