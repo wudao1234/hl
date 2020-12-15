@@ -26,6 +26,8 @@ public class ReceiveGoodsDTO extends BaseObject {
 
     private Boolean isAudited;
 
+    private Boolean isUnload;
+
     private Timestamp auditTime;
 
     private String description;

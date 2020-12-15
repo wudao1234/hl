@@ -51,6 +51,7 @@ public class ReceiveGoodsController {
             @RequestParam(value = "customerFilter", required = false) String customerFilter,
             @RequestParam(value = "receiveGoodsTypeFilter", required = false) String receiveGoodsTypeFilter,
             @RequestParam(value = "isAuditedFilter", required = false) Boolean isAuditedFilter,
+            @RequestParam(value = "isUnloadFilter", required = false) Boolean isUnloadFilter,
             @RequestParam(value = "startDate", required = false) String startDate,
             @RequestParam(value = "endDate", required = false) String endDate,
             @RequestParam(value = "search", required = false) String search,
@@ -63,11 +64,11 @@ public class ReceiveGoodsController {
             return new ResponseEntity<>(PageUtil.toPage(receiveGoodsMapper.toDto(emptyReceiveGoods), 0), HttpStatus.OK);
         }
         if (exportExcel != null && exportExcel) {
-            Map result = receiveGoodsService.queryAll(customers, true, customerFilter, receiveGoodsTypeFilter, isAuditedFilter, startDate, endDate, search, pageable);
+            Map result = receiveGoodsService.queryAll(customers, true, customerFilter, receiveGoodsTypeFilter, isAuditedFilter,isUnloadFilter, startDate, endDate, search, pageable);
             List<ReceiveGoodsVO> receiveGoods = (List)result.get("content");
             return new ResponseEntity<>(receiveGoodsService.exportExcelData(receiveGoods), WmsUtil.getExportExcelHeaders(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(receiveGoodsService.queryAll(customers, false, customerFilter, receiveGoodsTypeFilter, isAuditedFilter, startDate, endDate, search, pageable), HttpStatus.OK);
+            return new ResponseEntity<>(receiveGoodsService.queryAll(customers, false, customerFilter, receiveGoodsTypeFilter, isAuditedFilter, isUnloadFilter,startDate, endDate, search, pageable), HttpStatus.OK);
         }
     }
 

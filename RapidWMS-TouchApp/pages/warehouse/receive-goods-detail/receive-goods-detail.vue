@@ -23,7 +23,8 @@
 				:show-badge="true" :badge-text="formatAuditNumber(item.quantity)" />
 		</uni-list>
 		<view class="padding flex flex-direction" v-if="canAudit">
-			<button class="cu-btn bg-blue lg" :loading="loading"  @click="auditReceiveGoods">审核入库</button>
+			<button class="cu-btn bg-blue lg" :loading="loading" v-if="canUnload" @click="auditReceiveGoods">入库</button>
+			<button class="cu-btn bg-blue margin-tb-sm lg" :loading="loading" v-if="!canUnload" @click="auditReceiveGoods">审核入库</button>
 			<button class="cu-btn bg-green margin-tb-sm lg" :loading="loading" @click="editReceiveGoods">修改该入库单</button>
 			<button class="cu-btn bg-red lg" :loading="loading" @click="deleteReceiveGoods">删除该入库单</button>
 		</view>
@@ -80,6 +81,9 @@
 			},
 			canAudit() {
 				return this.receiveGoods.auditTime == null;
+			},
+			canUnload() {
+				return !this.receiveGoods.isUnload;
 			},
 			receiveGoodsTypeText() {
 				switch (this.receiveGoods.receiveGoodsType){

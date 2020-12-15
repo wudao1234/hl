@@ -48,7 +48,14 @@
 						<!-- <button class="cu-btn bg-green round" @click="searchReceiveGoods">搜索</button> -->
 					</view>
 				</view>
-				<uni-segmented-control class='segment' :current="currentReceiveGoodsStatus" :values="receiveGoodsStatusItems" @clickItem="onClickReceiveGoodsStatusItem" style-type="text" active-color="#1296db"></uni-segmented-control>
+				<uni-segmented-control 
+				class='segment' 
+				:current="currentReceiveGoodsStatus" 
+				:values="receiveGoodsStatusItems" 
+				@clickItem="onClickReceiveGoodsStatusItem" 
+				style-type="text" 
+				active-color="#1296db">
+				</uni-segmented-control>
 				<uni-list>
 					<uni-list-item v-for="item in receiveGoods" 
 						:key="item.id" 
@@ -163,7 +170,7 @@
 				loading2: false,
 				searchValue2: '',
 				receiveGoods: [],
-				receiveGoodsStatusItems: ['未审核', '已审核', '全部'],
+				receiveGoodsStatusItems: ['待入库','未审核', '已审核', '全部'],
 				currentReceiveGoodsStatus: 0,
 				// 流水
 				totalCount3: 0,
@@ -450,10 +457,12 @@
 			getFilterQueryString() {
 				switch (this.currentReceiveGoodsStatus) {
 					case 0:
-						return '&isAuditedFilter=false';
+						return '&isUnloadFilter=false&isAuditedFilter=false';
 					case 1:
-						return '&isAuditedFilter=true'
+						return '&isUnloadFilter=true&isAuditedFilter=false';
 					case 2:
+						return '&isAuditedFilter=true'
+					case 3:
 						return ''
 					default:
 						return '';

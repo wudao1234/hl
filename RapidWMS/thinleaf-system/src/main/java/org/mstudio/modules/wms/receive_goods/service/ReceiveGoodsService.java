@@ -17,7 +17,8 @@ import java.util.Set;
 
 public interface ReceiveGoodsService {
 
-    Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String customerFilter, String receiveGoodsTypeFilter, Boolean isAuditedFilter, String startDate, String endDate, String search, Pageable pageable);
+    Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String customerFilter, String receiveGoodsTypeFilter,
+                 Boolean isAuditedFilter,Boolean isUnloadFilter, String startDate, String endDate, String search, Pageable pageable);
 
     ReceiveGoodsDTO create(ReceiveGoods resource);
 

@@ -20,6 +20,10 @@
 				<input class="picker text-right" type="number" v-model="count" @input="changeCount" />
 			</view>
 			<view class="cu-form-group">
+				<view class="title">入库件数</view>
+				<input class="picker text-right" type="number" v-model="packages" @input="changeCount" />
+			</view>
+			<view class="cu-form-group">
 				<view class="title">价格</view>
 				<input class="text-right" type="number" v-model="price" @input="changePrice" />
 			</view>
@@ -37,7 +41,7 @@
 			</view>
 			<view class="padding flex flex-direction">
 				<button class="cu-btn bg-blue lg" @click="scanWarePosition">扫码确认库位</button>
-				<button class="cu-btn bg-red margin-tb-sm lg" :loading="loading" @click="confirm">确认放入</button>
+				<button class="cu-btn bg-red margin-tb-sm lg" :loading="loading" @click="confirm">确认收货</button>
 			</view>
 		</form>
 	</view>
@@ -76,6 +80,7 @@
 				endDate: getDate('end'),
 				tree: [],
 				count: '',
+				packages:'',
 				minCount: 1,
 				maxCount: 999999999,
 				minPrice: 0,
@@ -222,6 +227,13 @@
 					});
 					return;
 				}
+				if (this.packages < this.minCount || this.count > this.packages) {
+					uni.showToast({
+						title: '件数有误',
+						icon: 'none',
+					});
+					return;
+				}
 				if (this.price < this.minPrice || this.price > this.maxPrice) {
 					uni.showToast({
 						title: '数量有误',
@@ -240,6 +252,7 @@
 								goods: { id: this.goodsId, name: this.goods.name, sn: this.goods.sn },
 								price: this.price,
 								quantityInitial: this.count,
+								packagesInitial: this.packages,
 								expireDate: this.expireDate,
 								warePosition: { id: this.targetWarePositionId, name: this.targetWarePositionName }
 							});

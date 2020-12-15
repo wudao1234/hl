@@ -95,7 +95,8 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
-    public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String customerFilter, String receiveGoodsTypeFilter, Boolean isAuditedFilter, String startDate, String endDate, String search, Pageable pageable) {
+    public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String customerFilter, String receiveGoodsTypeFilter,
+                        Boolean isAuditedFilter,Boolean isUnloadFilter, String startDate, String endDate, String search, Pageable pageable) {
         Specification<ReceiveGoods> spec = new Specification<ReceiveGoods>() {
             @Override
             public Predicate toPredicate(Root<ReceiveGoods> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -117,6 +118,10 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
 
                 if (isAuditedFilter != null) {
                     predicates.add(criteriaBuilder.equal(root.get("isAudited").as(Boolean.class), isAuditedFilter));
+                }
+
+                if (isUnloadFilter != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("isUnload").as(Boolean.class), isUnloadFilter));
                 }
 
                 if (startDate != null && endDate != null) {
