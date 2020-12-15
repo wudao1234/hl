@@ -419,6 +419,11 @@ export default [
             name: 'dispatchSys',
             component: './Dispatch/DispatchSys',
           },
+          {
+            path: '/piece/receiveGoodsPiece',
+            name: 'receiveGoodsPiece',
+            component: './ReceiveGoodsPiece/ReceiveGoodsPiece',
+          },
         ],
       },
       {
