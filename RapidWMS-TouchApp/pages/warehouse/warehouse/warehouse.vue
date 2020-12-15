@@ -61,7 +61,7 @@
 						:key="item.id" 
 						:show-extra-icon="true" 
 						clickable
-						:extra-icon="formatIcon2(item.auditTime)"
+						:extra-icon="formatIcon2(item.isAudited,item.isUnload)"
 						:show-badge="true" 
 						:badge-text="formatType2(item.receiveGoodsType)" 
 						:badge-type="getBadgeType2(item.receiveGoodsType)"
@@ -211,21 +211,25 @@
 				}
 			},
 			formatIcon2() {
-				return (auditTime) => {
-					switch (auditTime) {
-						case null:
-							return {
-								color: 'green',
-								size: '22',
-								type: 'circle'
-							};
-							break;
-						default:
-							return {
-								color: 'green',
-								size: '22',
-								type: 'checkbox-filled'
-							};
+				return (isAudited,isUnload) => {
+					if(!isUnload){
+						return {
+							color: 'green',
+							size: '22',
+							type: 'circle'
+						};  
+					}else if(!isAudited){
+						return {
+							color: 'green',
+							size: '22',
+							type: 'circle-filled'
+						};
+					}else{
+						return {
+							color: 'green',
+							size: '22',
+							type: 'checkbox-filled'
+						};
 					}
 				}
 			},
@@ -457,11 +461,11 @@
 			getFilterQueryString() {
 				switch (this.currentReceiveGoodsStatus) {
 					case 0:
-						return '&isUnloadFilter=false&isAuditedFilter=false';
+						return '&isUnloadFilter=false';
 					case 1:
 						return '&isUnloadFilter=true&isAuditedFilter=false';
 					case 2:
-						return '&isAuditedFilter=true'
+						return '&isUnloadFilter=true&isAuditedFilter=true'
 					case 3:
 						return ''
 					default:

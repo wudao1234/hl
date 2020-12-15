@@ -20,7 +20,7 @@
 export default {
 	data() {
 		return {
-			array: [{name:'请选择',value:0}],
+			array: [{ name: '请选择', value: 0 }],
 			index: 0,
 			backCar: { dispatchSys: 0, mileage: 5 }
 		};
@@ -33,6 +33,7 @@ export default {
 			this.api.get('/api/dispatch_sys').then(res => {
 				if (res.statusCode == 200) {
 					this.array = res.data.content;
+					this.backCar.dispatchSys = this.array[0].id;
 				}
 			});
 		},
@@ -49,8 +50,7 @@ export default {
 				});
 				return;
 			}
-			this.api.get(`/api/dispatch/finish?dispatchSys=${this.backCar.dispatchSys}&mileage=${this.backCar.mileage}`)
-			.then(res => {
+			this.api.get(`/api/dispatch/finish?dispatchSys=${this.backCar.dispatchSys}&mileage=${this.backCar.mileage}`).then(res => {
 				if (res.statusCode == 201) {
 					uni.showToast({
 						title: '收车成功',

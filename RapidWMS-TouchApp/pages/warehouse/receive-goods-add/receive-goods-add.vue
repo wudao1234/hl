@@ -179,7 +179,7 @@
 						this.loading = false;
 					});
 				} else {
-					this.api.post("/api/receive_goods", {
+					this.api.post("/api/receive_goods/unload", {
 						customer: {id: this.customerArray[this.customerIndex].id},
 						description: this.description,
 						isEdit: false,
