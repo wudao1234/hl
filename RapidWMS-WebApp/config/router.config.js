@@ -432,6 +432,17 @@ export default [
         ],
       },
       {
+        name: 'fixedEstate',
+        path: '/fixedEstate',
+        routes: [
+          {
+            path: '/fixedEstate/fixedEstate',
+            name: 'fixedEstate',
+            component: './FixedEstate/FixedEstate',
+          },
+        ],
+      },
+      {
         component: '404',
       },
     ],

@@ -1,10 +1,7 @@
 package org.mstudio.modules.wms.dispatch.rest;
 
 import org.mstudio.exception.BadRequestException;
-import org.mstudio.modules.wms.address_type.domain.AddressType;
-import org.mstudio.modules.wms.dispatch.domain.DispatchCoefficient;
 import org.mstudio.modules.wms.dispatch.domain.DispatchSys;
-import org.mstudio.modules.wms.dispatch.service.DispatchService;
 import org.mstudio.modules.wms.dispatch.service.DispatchSysService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -42,13 +39,13 @@ public class DispatchSysController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'IECE_ALL')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity get(@PathVariable Long id) {
         return new ResponseEntity<>(dispatchSysService.findById(id), HttpStatus.OK);
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN', 'IECE_ALL')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity create(@Validated @RequestBody DispatchSys resources) {
         if (resources.getId() != null) {
             throw new BadRequestException("A new " + ENTITY_NAME + " cannot already have an ID");
@@ -57,7 +54,7 @@ public class DispatchSysController {
     }
 
     @PutMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN', 'IECE_ALL')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity update(@Validated @RequestBody DispatchSys resources) {
         if (resources.getId() == null) {
             throw new BadRequestException(ENTITY_NAME + " ID Can not be empty");
@@ -66,7 +63,7 @@ public class DispatchSysController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'IECE_ALL')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
     public ResponseEntity delete(@PathVariable Long id) {
         dispatchSysService.delete(id);
         return new ResponseEntity(HttpStatus.NO_CONTENT);

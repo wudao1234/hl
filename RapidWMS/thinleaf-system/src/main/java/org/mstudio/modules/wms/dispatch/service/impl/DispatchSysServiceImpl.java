@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
-* @author Macrow
-* @date 2019-07-09
-*/
+ * @author Macrow
+ * @date 2019-07-09
+ */
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -52,7 +52,7 @@ public class DispatchSysServiceImpl implements DispatchSysService {
         if (name == null || name.isEmpty()) {
             page = dispatchSysRepository.findAll(pageable);
         } else {
-            page = dispatchSysRepository.findAllByNameLike(name, pageable);
+            page = dispatchSysRepository.findAllByNameLike('%' + name + '%', pageable);
         }
         return PageUtil.toPage(page.map(dispatchSysMapper::toDto));
     }
@@ -75,7 +75,7 @@ public class DispatchSysServiceImpl implements DispatchSysService {
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     public DispatchSys create(DispatchSys resources) {
         DispatchSys dispatchSys = dispatchSysRepository.findByName(resources.getName());
-        Assert.isNull(dispatchSys,"名称不能重复");
+        Assert.isNull(dispatchSys, "名称不能重复");
         return dispatchSysRepository.save(resources);
     }
 

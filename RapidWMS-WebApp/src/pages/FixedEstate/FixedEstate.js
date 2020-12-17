@@ -4,20 +4,20 @@ import { connect } from 'dva';
 import { Button, Card, Form, Input, message, Modal, notification, Popconfirm, Table } from 'antd';
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-
 import Highlighter from 'react-highlight-words';
-import styles from './Dispatch.less';
+import styles from '@/pages/Common/Common.less';
 
 const FormItem = Form.Item;
 const { Search } = Input;
+const basePath = 'fixedEstate';
 
-@connect(({ dispatchSys, loading }) => ({
-  list: dispatchSys.list.content,
-  total: dispatchSys.list.totalElements,
-  loading: loading.models.dispatchSys,
+@connect(({ fixedEstate, loading }) => ({
+  list: fixedEstate.list.content,
+  total: fixedEstate.list.totalElements,
+  loading: loading.models.fixedEstate,
 }))
 @Form.create()
-class DispatchSys extends PureComponent {
+class FixedEstate extends PureComponent {
   state = {
     currentPage: 1,
     pageSize: 10,
@@ -58,7 +58,7 @@ class DispatchSys extends PureComponent {
 
   handleQuery = (dispatch, search, pageSize, currentPage, orderBy) => {
     dispatch({
-      type: 'dispatchSys/fetch',
+      type: `${basePath}/fetch`,
       payload: { search, pageSize, currentPage, orderBy },
     });
   };
@@ -104,8 +104,9 @@ class DispatchSys extends PureComponent {
         return;
       }
       this.handleDone();
+      console.log(fieldsValue);
       dispatch({
-        type: 'dispatchSys/submit',
+        type: `${basePath}/submit`,
         payload: { id, ...fieldsValue },
         callback: response => {
           if (response.status === 400) {
@@ -131,7 +132,7 @@ class DispatchSys extends PureComponent {
       visible: false,
     });
     dispatch({
-      type: 'dispatchSys/submit',
+      type: `${basePath}/submit`,
       payload: { id },
       callback: response => {
         if (response.status === 400) {
@@ -208,17 +209,29 @@ class DispatchSys extends PureComponent {
       }
       return (
         <Form onSubmit={this.handleSubmit}>
-          <FormItem label="名称" {...this.formLayout} hasFeedback>
-            {getFieldDecorator('name', {
-              rules: [{ required: true, message: '请输入名称' }],
-              initialValue: currentItem.name,
-            })(<Input placeholder="请输入名称" />)}
+          <FormItem label="固定资产名称" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('assetsName', {
+              rules: [{ required: true, message: '请输入固定资产名称' }],
+              initialValue: currentItem.assetsName,
+            })(<Input placeholder="请输入固定资产名称" />)}
           </FormItem>
-          <FormItem label="值" {...this.formLayout} hasFeedback>
-            {getFieldDecorator('value', {
-              rules: [{ required: true, message: '请输入值' }],
-              initialValue: currentItem.value,
-            })(<Input placeholder="请输入值" />)}
+          <FormItem label="录入人姓名" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('assetsInputOperator', {
+              rules: [{ required: true, message: '请输入录入人姓名' }],
+              initialValue: currentItem.assetsInputOperator,
+            })(<Input placeholder="请输入录入人姓名" />)}
+          </FormItem>
+          <FormItem label="固定资产类别" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('assetsType', {
+              rules: [{ required: true, message: '请输入固定资产类别' }],
+              initialValue: currentItem.assetsType,
+            })(<Input placeholder="请输入固定资产类别" />)}
+          </FormItem>
+          <FormItem label="备注" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('assetsDescription', {
+              rules: [{ required: true, message: '请输入备注' }],
+              initialValue: currentItem.assetsDescription,
+            })(<Input placeholder="请输入备注" />)}
           </FormItem>
         </Form>
       );
@@ -233,8 +246,8 @@ class DispatchSys extends PureComponent {
       },
       {
         title: '名称',
-        dataIndex: 'name',
-        key: 'name',
+        dataIndex: 'assetsName',
+        key: 'assetsName',
         width: '15%',
         sorter: true,
         render: text => {
@@ -252,9 +265,21 @@ class DispatchSys extends PureComponent {
         },
       },
       {
-        title: '值',
-        dataIndex: 'value',
-        key: 'value',
+        title: '录入人姓名',
+        dataIndex: 'assetsInputOperator',
+        key: 'assetsInputOperator',
+        width: '10%',
+      },
+      {
+        title: '固定资产类别',
+        dataIndex: 'assetsType',
+        key: 'assetsType',
+        width: '10%',
+      },
+      {
+        title: '备注',
+        dataIndex: 'assetsDescription',
+        key: 'assetsDescription',
         width: '10%',
       },
       {
@@ -290,7 +315,7 @@ class DispatchSys extends PureComponent {
         <div className={styles.standardList}>
           <Card
             bordered={false}
-            title="系统系数管理"
+            title="固定资产管理"
             style={{ marginTop: 24 }}
             bodyStyle={{ padding: '0 32px 40px 32px' }}
             extra={searchContent}
@@ -306,7 +331,7 @@ class DispatchSys extends PureComponent {
                 /* eslint-enable */
               }}
             >
-              创建新系数
+              创建
             </Button>
             <Table
               columns={columns}
@@ -336,4 +361,4 @@ class DispatchSys extends PureComponent {
   }
 }
 
-export default DispatchSys;
+export default FixedEstate;
