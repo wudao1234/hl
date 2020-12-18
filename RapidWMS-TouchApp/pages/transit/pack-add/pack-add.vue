@@ -36,14 +36,19 @@
 			</view>
 			<view class="title_area">打包订单详情</view>
 			<uni-list>
-				<block v-for="order in orders" :key="order.id">
-					<uni-swipe-action :options="options" @click="bindClickOrder(order.id)">
-						<uni-list-item :show-arrow="false" clickable
-							:title="formatTitle(order.owner.shortNameCn, order.clientName)"
-							:note="formatNote(order.autoIncreaseSn, order.createTime)"
-							:show-badge="true" badge-type="error" :badge-text="formatPrice(order.totalPrice)" />
+					<uni-swipe-action>
+						<uni-swipe-action-item 
+						v-for="(order,index) in orders" 
+						:key="index"
+						:right-options="options"
+						@click="bindClickOrder(order.id)" >
+						       <uni-list-item :show-arrow="false"
+						       	:title="formatTitle(order.owner.shortNameCn, order.clientName)"
+						       	:note="formatNote(order.autoIncreaseSn, order.createTime)"
+						       	:show-badge="true" badge-type="error" 
+								:badge-text="formatPrice(order.totalPrice)" />
+						</uni-swipe-action-item>
 					</uni-swipe-action>
-				</block>
 			</uni-list>
 			<view class="price_total">
 				订单总金额：<uni-tag class="price_tag" :circle="true" :text="formatPrice(totalPrice)" type="primary" size="small" />
@@ -56,10 +61,12 @@
 </template>
 
 <script>
-	import {uniList, uniListItem, uniTag, uniSwipeAction, uniNumberBox} from '@dcloudio/uni-ui'
+	import {uniList, uniListItem, uniTag, uniNumberBox} from '@dcloudio/uni-ui'
+	import {uniSwipeAction} from '@/components/uni-swipe-action/uni-swipe-action.vue'
+	import {uniSwipeActionItem} from '@/components/uni-swipe-action-item/uni-swipe-action-item.vue'
 
 	export default {
-		components: {uniList, uniListItem, uniTag, uniSwipeAction, uniNumberBox},
+		components: {uniList, uniListItem, uniTag, uniNumberBox},
 		data() {
 			return {
 				options: [
@@ -74,12 +81,13 @@
 				packTypes: ['市区派送', '外发物流', '自行提取'],
 				packages: 1,
 				orders: [],
+				middleOrders:[],
 				selectedAddressId: '',
 				selectedAddressText: '',
 				trackingNumber: '',
 				description: '',
 				totalPrice: 0,
-				loading: false,
+				loading: false
 			}
 		},
 		computed: {
@@ -198,8 +206,8 @@
 		onLoad() {
 			this.initData();
 			uni.$on('addOrderForPackList', (order) => {
-				if (this.orders.every(item => item.id != order.id)) {
-					this.orders = this.orders.concat(order);
+				if (this.middleOrders.every(item => item.id != order.id)) {
+					this.middleOrders = this.middleOrders.concat(order);
 					this.totalPrice += order.totalPrice;
 				}
 			});
@@ -211,6 +219,9 @@
 		onUnload() {
 			uni.$off('addOrderForPackList');
 			uni.$off('addAddressForPackList');
+		},
+		onShow(){
+			this.orders = [...this.middleOrders]
 		}
 	}
 </script>

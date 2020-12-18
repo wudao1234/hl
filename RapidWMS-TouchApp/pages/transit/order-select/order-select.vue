@@ -13,7 +13,8 @@
 			<uni-list-item v-for="order in orders" clickable
 				:key="order.id" :show-extra-icon="true" 
 				:extra-icon="formatIcon" 
-				:show-badge="true" :badge-text="formatPrice(order.totalPrice)"  :badge-type="order.totalPrice > 0 ? 'error' : 'success'"
+				:show-badge="true" :badge-text="formatPrice(order.totalPrice)"  
+				:badge-type="order.totalPrice > 0 ? 'error' : 'success'"
 				:title="formatTitle(order.owner.shortNameCn, order.clientName)" 
 				:note="formatNote(order.createTime, order.description)"
 				@click="addOrder(order)" />
