@@ -23,6 +23,7 @@
 		<uni-list>
 			<uni-list-item v-for="order in orders" :key="order.id" :show-arrow="true" 
 				:title="formatTitle(order.clientName)" 
+				clickable
 				:note="formatNote(order.flowSn, order.clientStore)"
 				:show-badge="true" :badge-text="formatPrice(order.totalPrice)"
 				@click="viewOrderDetail(order)" />	

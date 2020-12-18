@@ -62,8 +62,6 @@
 
 <script>
 	import {uniList, uniListItem, uniTag, uniNumberBox} from '@dcloudio/uni-ui'
-	import {uniSwipeAction} from '@/components/uni-swipe-action/uni-swipe-action.vue'
-	import {uniSwipeActionItem} from '@/components/uni-swipe-action-item/uni-swipe-action-item.vue'
 
 	export default {
 		components: {uniList, uniListItem, uniTag, uniNumberBox},
@@ -207,7 +205,7 @@
 			this.initData();
 			uni.$on('addOrderForPackList', (order) => {
 				if (this.middleOrders.every(item => item.id != order.id)) {
-					this.middleOrders = this.middleOrders.concat(order);
+					this.middleOrders = [...this.orders].concat(order);
 					this.totalPrice += order.totalPrice;
 				}
 			});
