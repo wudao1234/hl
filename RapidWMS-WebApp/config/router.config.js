@@ -443,6 +443,22 @@ export default [
         ],
       },
       {
+        name: 'carBasic',
+        path: '/carBasic',
+        routes: [
+          {
+            path: '/carBasic/carBasic',
+            name: 'carBasic',
+            component: './Car/CarBasic',
+          },
+          {
+            path: '/carBasic/carCost',
+            name: 'carCost',
+            component: './Car/CarCost',
+          },
+        ],
+      },
+      {
         component: '404',
       },
     ],
