@@ -2,13 +2,21 @@ package org.mstudio.modules.wms.receive_goods.domain;
 
 public enum ReceiveGoodsType {
     /**
-     * 新增
+     * 采购入库
      */
-    NEW("新增", 0),
+    NEW("采购入库", 0),
     /**
-     * 退货
+     * 退货入库
      */
-    REJECTED("退货", 1);
+    REJECTED("退货入库", 1),
+    /**
+     * 政策入库
+     */
+    POLICY("政策入库", 2),
+    /**
+     * 其它入库
+     */
+    OTHER("其它入库", 3);
 
     private String name;
     private int index;

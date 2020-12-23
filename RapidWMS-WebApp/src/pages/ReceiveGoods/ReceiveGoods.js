@@ -232,8 +232,10 @@ class ReceiveGoods extends PureComponent {
 
   handleReceiveGoodsTypeFilter = () => {
     const receiveGoodsTypeFilter = [];
-    receiveGoodsTypeFilter.push({ text: '新增', value: '0' });
-    receiveGoodsTypeFilter.push({ text: '退货', value: '1' });
+    receiveGoodsTypeFilter.push({ text: '采购入库', value: '0' });
+    receiveGoodsTypeFilter.push({ text: '退货入库', value: '1' });
+    receiveGoodsTypeFilter.push({ text: '政策入库', value: '2' });
+    receiveGoodsTypeFilter.push({ text: '其它入库', value: '3' });
     return receiveGoodsTypeFilter;
   };
 
@@ -757,12 +759,20 @@ class ReceiveGoods extends PureComponent {
           let color;
           switch (text) {
             case 'NEW':
-              result = '新增';
+              result = '采购入库';
               color = '#DB7093';
               break;
             case 'REJECTED':
-              result = '退货';
+              result = '退货入库';
               color = '#FF8C00';
+              break;
+            case 'POLICY':
+              result = '政策入库';
+              color = '#DB7093';
+              break;
+            case 'OTHER':
+              result = '其它入库';
+              color = '#DB7093';
               break;
             default:
               result = '未知';

@@ -354,8 +354,10 @@ class ReceiveGoodsAuditForm extends PureComponent {
 
     const getReceiveGoodsTypeOptions = () => {
       const receiveGoodsTypeArray = [
-        { id: 0, name: '新增到货' },
-        { id: 1, name: '退货' },
+        { id: 0, name: '采购入库' },
+        { id: 1, name: '退货入库' },
+        { id: 2, name: '政策入库' },
+        { id: 3, name: '其它入库' },
       ];
       const children = [];
       if (Array.isArray(receiveGoodsTypeArray)) {

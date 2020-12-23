@@ -36,7 +36,7 @@ public class WmsUtil {
     private static final Snowflake SNOWFLAKE = IdUtil.createSnowflake(1, 1);
 
     public static ResultMessage getSuccessMessage() {
-        return new ResultMessage("操作成功", 0 , 0);
+        return new ResultMessage("操作成功", 0, 0);
     }
 
     public static ResultMessage getResultMessage(int countSucceed, int countFailed) {
@@ -161,7 +161,8 @@ public class WmsUtil {
             Matcher m = p.matcher(oldSn);
             oldSn = m.replaceAll("").trim();
             if (!oldSn.isEmpty()) {
-                int newNumber = Integer.parseInt(oldSn) + 1;
+                //int newNumber = Integer.parseInt(oldSn) + 1;
+                Long newNumber = Long.parseLong(oldSn) + 1;
                 newSn = String.format(prefix + "%05d", newNumber);
             }
             return newSn;

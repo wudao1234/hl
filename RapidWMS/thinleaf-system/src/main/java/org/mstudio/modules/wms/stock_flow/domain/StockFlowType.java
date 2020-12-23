@@ -26,6 +26,14 @@ public enum StockFlowType {
      */
     MOVE("移库-仓库管理", 5),
     /**
+     * 政策入库
+     */
+    IN_POLICY("入库-政策入库", 6),
+    /**
+     * 其它入库
+     */
+    IN_OTHER("入库-其它入库", 7),
+    /**
      * 其他
      */
     OTHER("其他", 99);

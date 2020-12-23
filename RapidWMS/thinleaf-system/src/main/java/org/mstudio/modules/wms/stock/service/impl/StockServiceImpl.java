@@ -408,6 +408,12 @@ public class StockServiceImpl implements StockService {
             case REJECTED:
                 stockFlowType = StockFlowType.IN_CUSTOMER_REJECTED;
                 break;
+            case POLICY:
+                stockFlowType = StockFlowType.IN_POLICY;
+                break;
+            case OTHER:
+                stockFlowType = StockFlowType.IN_OTHER;
+                break;
             default:
                 throw new BadRequestException("参数错误，无法入库");
         }
