@@ -5,8 +5,8 @@ import org.mstudio.aop.log.Log;
 import org.mstudio.modules.security.security.AuthenticationInfo;
 import org.mstudio.modules.security.security.AuthorizationUser;
 import org.mstudio.modules.security.security.JwtUser;
-import org.mstudio.utils.EncryptUtils;
 import org.mstudio.modules.security.utils.JwtTokenUtil;
+import org.mstudio.utils.EncryptUtils;
 import org.mstudio.utils.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,6 +30,9 @@ public class AuthenticationController {
 
     @Value("${jwt.header}")
     private String tokenHeader;
+
+    @Value("${jwt.licence}")
+    private Long licence;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -55,6 +58,10 @@ public class AuthenticationController {
 
         if(!jwtUser.isEnabled()){
             throw new AccountExpiredException("账号已停用，请联系管理员");
+        }
+
+        if(System.currentTimeMillis()>licence){
+            throw new AccountExpiredException("系统试用已到期，请联系管理员");
         }
 
         // 生成令牌
