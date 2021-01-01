@@ -7,7 +7,6 @@ import cn.hutool.poi.excel.ExcelWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.security.security.JwtUser;
-import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer.domain.Customer;
@@ -199,12 +198,10 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
         if (resource.getReceiveGoodsItems().isEmpty()) {
             throw new BadRequestException("无效参数，至少指定1项入库商品");
         }
-        User user = userRepository.findByUsername(getUserDetails().getUsername());
         JwtUser jwtUser = (JwtUser)getUserDetails();
         resource.setFlowSn(RECEIVE_GOODS_SN_PREFIX + WmsUtil.generateSnowFlakeId());
         resource.setIsAudited(false);
-        resource.setIsUnload(false);
-        resource.setUnloadUser(user);
+        resource.setIsUnload(true);
         resource.setCreator(jwtUser.getUsername());
         ReceiveGoods receiveGoods = receiveGoodsRepository.save(resource);
         List<ReceiveGoodsItem> items = resource.getReceiveGoodsItems().stream().
@@ -402,16 +399,18 @@ public class ReceiveGoodsServiceImpl implements ReceiveGoodsService {
         return outByteStream.toByteArray();
     }
 
+    /**
+     * 入库
+     * @param id
+     * @return
+     */
     @Override
     public ReceiveGoodsDTO putInStorage(Long id) {
         Optional<ReceiveGoods> optionalReceiveGoods = receiveGoodsRepository.findById(id);
         if (!optionalReceiveGoods.isPresent()) {
             throw new BadRequestException(" 入库项目不存在 ID=" + id);
         }
-        User user = userRepository.findByUsername(getUserDetails().getUsername());
         ReceiveGoods receiveGoods = optionalReceiveGoods.get();
-        receiveGoods.setReceiveUser(user);
-        receiveGoods.setIsUnload(true);
         return receiveGoodsMapper.toDto(receiveGoods);
     }
 

@@ -418,20 +418,23 @@ public class StockServiceImpl implements StockService {
                 throw new BadRequestException("参数错误，无法入库");
         }
         receiveGoods.getReceiveGoodsItems().forEach(item -> {
-            Stock stock = new Stock();
-            stock.setWarePosition(item.getWarePosition());
-            if (item.getQuantityCancelFetch() != null) {
-                stock.setQuantity(item.getQuantityCancelFetch());
-            } else {
-                stock.setQuantity(item.getQuantity());
-            }
-            stock.setExpireDate(item.getExpireDate());
             Long goodsId = item.getGoods().getId();
             Optional<Goods> optionalGoods = goodsRepository.findById(goodsId);
             if (!optionalGoods.isPresent()) {
                 throw new BadRequestException("参数错误，指定的商品不存在");
             }
             Goods goods = optionalGoods.get();
+
+            Stock stock = new Stock();
+            stock.setWarePosition(item.getWarePosition());
+            if (item.getQuantityCancelFetch() != null) {
+                stock.setQuantity(item.getQuantityCancelFetch());
+            } else {
+                // todo
+                stock.setQuantity(item.getQuantity() + item.getPackages() * goods.getPackCount());
+            }
+            stock.setExpireDate(item.getExpireDate());
+
             stock.setGoods(goods);
             stock.setIsActive(true);
             if (item.getQuantityCancelFetch() == null) {
@@ -889,11 +892,18 @@ public class StockServiceImpl implements StockService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean reduceForReceiveGoods(ReceiveGoodsItem receiveGoodsItem) {
         checkStock(receiveGoodsItem);
+        Long goodsId = receiveGoodsItem.getGoods().getId();
+        Optional<Goods> optionalGoods = goodsRepository.findById(goodsId);
+        if (!optionalGoods.isPresent()) {
+            throw new BadRequestException("参数错误，指定的商品不存在");
+        }
+        Goods goods = optionalGoods.get();
         Stock stock = new Stock();
         stock.setGoods(receiveGoodsItem.getGoods());
         stock.setWarePosition(receiveGoodsItem.getWarePosition());
         stock.setExpireDate(receiveGoodsItem.getExpireDate());
-        stock.setQuantity(receiveGoodsItem.getQuantity());
+        // todo
+        stock.setQuantity(receiveGoodsItem.getQuantity() + receiveGoodsItem.getPackages() * goods.getPackCount());
         return reduce(new ReduceDTO(stock, null, true, null, null, null, null, receiveGoodsItem, receiveGoodsItem.getDescription()));
     }
 

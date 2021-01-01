@@ -4,7 +4,12 @@ import cn.hutool.core.date.DateUtil;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
-import org.mstudio.modules.wms.receive_goods.domain.*;
+import org.mstudio.modules.wms.goods.domain.Goods;
+import org.mstudio.modules.wms.goods.repository.GoodsRepository;
+import org.mstudio.modules.wms.receive_goods.domain.RcceiveCoefficient;
+import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoods;
+import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsPiece;
+import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsPieceTypeEnum;
 import org.mstudio.modules.wms.receive_goods.repository.RcceiveCoefficientRepository;
 import org.mstudio.modules.wms.receive_goods.repository.ReceiveGoodsPieceRepository;
 import org.mstudio.modules.wms.receive_goods.service.ReceivePieceService;
@@ -25,8 +30,6 @@ import org.springframework.util.ObjectUtils;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
 
-import static org.mstudio.utils.SecurityContextHolder.getUserDetails;
-
 /**
  * @author lfj
  */
@@ -45,6 +48,9 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
 
     @Autowired
     private ReceiveGoodsPieceRepository receiveGoodsPieceRepository;
+
+    @Autowired
+    private GoodsRepository goodsRepository;
 
     @Override
     @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
@@ -82,7 +88,6 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
         }
         return optionalAddress.get();
     }
-
 
     @Override
     public Map statistics(String startDate, String endDate, String search, Pageable pageable) {
@@ -138,30 +143,48 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
 
     @Override
     public void save(ReceiveGoods params) {
-        // 获取用户
-        User user = userRepository.findByUsername(getUserDetails().getUsername());
         // 获取基础系数
         RcceiveCoefficient dispatchCoefficient = rcceiveCoefficientRepository.findAll().get(0);
 
-        ReceiveGoodsPieceTypeEnum[] receiveGoodsPieceTypeEnums = ReceiveGoodsPieceTypeEnum.values();
-        for (ReceiveGoodsPieceTypeEnum receiveGoodsPieceTypeEnum : receiveGoodsPieceTypeEnums) {
-            // init receiveGoodsPiece
-            ReceiveGoodsPiece receiveGoodsPiece = new ReceiveGoodsPiece();
-            receiveGoodsPiece.setUser(user);
-            receiveGoodsPiece.setReceiveGoodses(params);
-            receiveGoodsPiece.setStaffPrice(user.getCoefficient());
-            receiveGoodsPiece.setType(receiveGoodsPieceTypeEnum);
-            receiveGoodsPiece.setPackages(params.getReceiveGoodsItems().stream().mapToLong(ReceiveGoodsItem::getPackages).sum());
-            receiveGoodsPiece.setPrice(ReceiveGoodsPieceTypeEnum.UNLOAD == receiveGoodsPieceTypeEnum ? dispatchCoefficient.getUnloadPrice() : dispatchCoefficient.getPutInPrice());
-            receiveGoodsPiece.setScore(receiveGoodsPiece.getPackages() * receiveGoodsPiece.getPrice() * receiveGoodsPiece.getStaffPrice());
-            receiveGoodsPieceRepository.save(receiveGoodsPiece);
-        }
+        params.getReceiveGoodsItems().forEach(g -> {
+            // 获取用户
+            User unloadUser = userRepository.findById(g.getUnloadUser().getId()).get();
+            User receiveUser = userRepository.findById(g.getReceiveUser().getId()).get();
+
+            Long goodsId = g.getGoods().getId();
+            Optional<Goods> optionalGoods = goodsRepository.findById(goodsId);
+            if (!optionalGoods.isPresent()) {
+                throw new BadRequestException("参数错误，指定的商品不存在");
+            }
+            Goods goods = optionalGoods.get();
+
+            ReceiveGoodsPieceTypeEnum[] receiveGoodsPieceTypeEnums = ReceiveGoodsPieceTypeEnum.values();
+            for (ReceiveGoodsPieceTypeEnum receiveGoodsPieceTypeEnum : receiveGoodsPieceTypeEnums) {
+                User user = ReceiveGoodsPieceTypeEnum.UNLOAD == receiveGoodsPieceTypeEnum ? unloadUser : receiveUser;
+                // init receiveGoodsPiece
+                ReceiveGoodsPiece receiveGoodsPiece = new ReceiveGoodsPiece();
+                receiveGoodsPiece.setUser(user);
+                receiveGoodsPiece.setReceiveGoodses(params);
+                receiveGoodsPiece.setStaffPrice(user.getCoefficient());
+                receiveGoodsPiece.setType(receiveGoodsPieceTypeEnum);
+                receiveGoodsPiece.setPackages(g.getPackages());
+                receiveGoodsPiece.setPrice(ReceiveGoodsPieceTypeEnum.UNLOAD == receiveGoodsPieceTypeEnum ? dispatchCoefficient.getUnloadPrice() : dispatchCoefficient.getPutInPrice());
+                Float packages;
+                if (g.getQuantity() > 0) {
+                    packages = receiveGoodsPiece.getPackages() + g.getQuantity() * 1.000f / goods.getPackCount();
+                } else {
+                    packages = receiveGoodsPiece.getPackages() * 1.000f;
+                }
+                receiveGoodsPiece.setScore(packages * receiveGoodsPiece.getPrice() * receiveGoodsPiece.getStaffPrice());
+                receiveGoodsPieceRepository.save(receiveGoodsPiece);
+            }
+        });
     }
 
     @Override
     public void cancel(ReceiveGoods params) {
         List<ReceiveGoodsPiece> receiveGoodsPieceList = params.getReceiveGoodsPieces();
-        receiveGoodsPieceList.forEach(item ->{
+        receiveGoodsPieceList.forEach(item -> {
             receiveGoodsPieceRepository.delete(item);
         });
     }

@@ -700,7 +700,7 @@ class ReceiveGoods extends PureComponent {
         filterMultiple: false,
         render: text => {
           if (!text) {
-            return '';
+            return <Tag color="#FF8C00">待审核</Tag>;
           }
           return <Tag color="blue">已审核</Tag>;
         },

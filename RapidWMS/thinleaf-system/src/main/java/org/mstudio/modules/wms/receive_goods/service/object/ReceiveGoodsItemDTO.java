@@ -1,6 +1,7 @@
 package org.mstudio.modules.wms.receive_goods.service.object;
 
 import lombok.Data;
+import org.mstudio.modules.system.service.dto.UserDTO;
 import org.mstudio.modules.wms.common.BaseObject;
 import org.mstudio.modules.wms.goods.service.object.GoodsVO;
 import org.mstudio.modules.wms.ware_position.service.object.WarePositionDTO;
@@ -17,6 +18,10 @@ import java.util.Date;
 public class ReceiveGoodsItemDTO extends BaseObject {
 
     private GoodsVO goods;
+
+    private UserDTO unloadUser;
+
+    private UserDTO receiveUser;
 
     private WarePositionDTO warePosition;
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.goods.domain.Goods;
 import org.mstudio.modules.wms.ware_position.domain.WarePosition;
@@ -23,6 +24,22 @@ import java.util.Date;
 @Entity
 @Table(name = "wms_receive_goods_item")
 public class ReceiveGoodsItem extends BaseEntity {
+
+    /**
+     * 收货人
+     */
+    @JSONField(serialize = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private User unloadUser;
+
+    /**
+     * 入库人
+     */
+    @JSONField(serialize = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private User receiveUser;
 
     @JSONField(serialize = false)
     @JsonIgnore

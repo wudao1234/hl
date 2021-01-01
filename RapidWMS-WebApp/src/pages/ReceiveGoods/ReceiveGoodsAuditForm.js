@@ -19,12 +19,15 @@ import moment from 'moment';
 import { connect } from 'dva';
 import styles from './ReceiveGoods.less';
 
+const PinyinMatch = require('pinyin-match');
+
 const FormItem = Form.Item;
 const { Option } = Select;
 
-@connect(({ customer, wareZone }) => ({
+@connect(({ customer, wareZone, user }) => ({
   customerList: customer.allList,
   wareZoneTree: wareZone.tree,
+  userList: user.list,
 }))
 @Form.create()
 class ReceiveGoodsAuditForm extends PureComponent {
@@ -42,6 +45,9 @@ class ReceiveGoodsAuditForm extends PureComponent {
     });
     dispatch({
       type: 'wareZone/fetchTree',
+    });
+    dispatch({
+      type: 'user/fetch',
     });
   }
 
@@ -68,6 +74,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
       loading,
       customerList,
       wareZoneTree,
+      userList,
     } = this.props;
 
     const {
@@ -104,6 +111,20 @@ class ReceiveGoodsAuditForm extends PureComponent {
         return options;
       }
       return [];
+    };
+
+    const getUserOptions = () => {
+      const children = [];
+      if (Array.isArray(userList)) {
+        userList.forEach(userItem => {
+          children.push(
+            <Option key={userItem.id} value={userItem.id}>
+              {userItem.username}
+            </Option>
+          );
+        });
+      }
+      return children;
     };
 
     const receiveGoodsColumns = [
@@ -287,6 +308,64 @@ class ReceiveGoodsAuditForm extends PureComponent {
           return text;
         },
       },
+      {
+        title: '收货人',
+        dataIndex: 'unloadUser',
+        key: 'unloadUser',
+        width: '10%',
+        render: (text, record) => {
+          if (record) {
+            return (
+              <FormItem hasFeedback>
+                {getFieldDecorator(`receiveGoodsItems.${record.id}.unloadUser.id`, {
+                  rules: [{ required: true, message: '请选择收货人' }],
+                  initialValue: record.unloadUser ? record.unloadUser.id : null,
+                })(
+                  <Select
+                    showSearch
+                    allowClear
+                    filterOption={(input, option) =>
+                      PinyinMatch.match(option.props.children.toString(), input)
+                    }
+                  >
+                    {getUserOptions()}
+                  </Select>
+                )}
+              </FormItem>
+            );
+          }
+          return text;
+        },
+      },
+      {
+        title: '入库人',
+        dataIndex: 'receiveUser',
+        key: 'receiveUser',
+        width: '10%',
+        render: (text, record) => {
+          if (record) {
+            return (
+              <FormItem hasFeedback>
+                {getFieldDecorator(`receiveGoodsItems.${record.id}.receiveUser.id`, {
+                  rules: [{ required: true, message: '请选择入库人' }],
+                  initialValue: record.receiveUser ? record.receiveUser.id : null,
+                })(
+                  <Select
+                    showSearch
+                    allowClear
+                    filterOption={(input, option) =>
+                      PinyinMatch.match(option.props.children.toString(), input)
+                    }
+                  >
+                    {getUserOptions()}
+                  </Select>
+                )}
+              </FormItem>
+            );
+          }
+          return text;
+        },
+      },
     ];
 
     const handleGoBackToList = () => {
@@ -330,6 +409,12 @@ class ReceiveGoodsAuditForm extends PureComponent {
           break;
         case 'REJECTED':
           result = 1;
+          break;
+        case 'POLICY':
+          result = 2;
+          break;
+        case '其它入库':
+          result = 3;
           break;
         default:
           result = null;

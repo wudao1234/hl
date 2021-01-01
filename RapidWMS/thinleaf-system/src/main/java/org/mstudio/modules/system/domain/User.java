@@ -10,7 +10,7 @@ import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
-import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoods;
+import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsItem;
 import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsPiece;
 
 import javax.persistence.*;
@@ -34,12 +34,12 @@ public class User implements Serializable {
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "unloadUser", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private List<ReceiveGoods> unloadGoods;
+    private List<ReceiveGoodsItem> unloadGoods;
 
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "receiveUser", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private List<ReceiveGoods> receiveGoods;
+    private List<ReceiveGoodsItem> receiveGoods;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

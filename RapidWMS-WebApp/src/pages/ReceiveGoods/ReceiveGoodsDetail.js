@@ -141,6 +141,36 @@ class ReceiveGoodsDetail extends PureComponent {
         },
       },
       {
+        title: '提审件数',
+        dataIndex: 'packagesInitial',
+        key: 'packagesInitial',
+        width: '5%',
+      },
+      {
+        title: '确认件数',
+        dataIndex: 'packages',
+        key: 'packages',
+        width: '5%',
+        render: (text, record) => {
+          if (record) {
+            if (record.packagesInitial !== record.packages) {
+              return <span style={{ color: 'red' }}>{text}</span>;
+            }
+          }
+          return text;
+        },
+      },
+      {
+        title: '收货人',
+        dataIndex: 'unloadUser.username',
+        width: '5%',
+      },
+      {
+        title: '入库人',
+        dataIndex: 'receiveUser.username',
+        width: '5%',
+      },
+      {
         title: '说明',
         dataIndex: 'description',
         key: 'description',
@@ -189,6 +219,14 @@ class ReceiveGoodsDetail extends PureComponent {
             case 'MOVE':
               result = '移库-仓库管理';
               color = '#2E8B57';
+              break;
+            case 'IN_POLICY':
+              result = '入库-政策入库';
+              color = '#DC145F';
+              break;
+            case 'IN_OTHER':
+              result = '入库-其它入库';
+              color = '#DC148F';
               break;
             default:
               result = '未知';

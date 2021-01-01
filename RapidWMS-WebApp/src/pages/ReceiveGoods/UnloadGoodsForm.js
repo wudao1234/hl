@@ -728,7 +728,7 @@ class ReceiveGoodsForm extends PureComponent {
           if (record) {
             return (
               <FormItem hasFeedback>
-                {getFieldDecorator(`receiveGoodsItems.${record.id}.unloadUser`, {
+                {getFieldDecorator(`receiveGoodsItems.${record.id}.unloadUser.id`, {
                   rules: [{ required: true, message: '请选择收货人' }],
                   initialValue: record.unloadUser ? record.unloadUser.id : null,
                 })(
@@ -757,7 +757,7 @@ class ReceiveGoodsForm extends PureComponent {
           if (record) {
             return (
               <FormItem hasFeedback>
-                {getFieldDecorator(`receiveGoodsItems.${record.id}.receiveUser`, {
+                {getFieldDecorator(`receiveGoodsItems.${record.id}.receiveUser.id`, {
                   rules: [{ required: true, message: '请选择入库人' }],
                   initialValue: record.receiveUser ? record.receiveUser.id : null,
                 })(
@@ -883,6 +883,7 @@ class ReceiveGoodsForm extends PureComponent {
         if (err) {
           return;
         }
+        console.log(fieldsValue);
         dispatch({
           type: 'unloadGoods/submit',
           payload: { ...fieldsValue, isEdit },
