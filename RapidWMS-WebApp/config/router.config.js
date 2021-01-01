@@ -429,6 +429,11 @@ export default [
             name: 'receiveGoodsPieceStatistics',
             component: './ReceiveGoodsPieceStatistics/ReceiveGoodsPieceStatistics',
           },
+          {
+            path: '/piece/viewReceiveGoodsPieceSta',
+            name: 'viewReceiveGoodsPieceSta',
+            component: './ReceiveGoodsPieceStatistics/ViewReceiveGoodsPieceSta',
+          },
         ],
       },
       {

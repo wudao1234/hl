@@ -13,6 +13,7 @@ import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsPieceTypeEnum;
 import org.mstudio.modules.wms.receive_goods.repository.RcceiveCoefficientRepository;
 import org.mstudio.modules.wms.receive_goods.repository.ReceiveGoodsPieceRepository;
 import org.mstudio.modules.wms.receive_goods.service.ReceivePieceService;
+import org.mstudio.modules.wms.receive_goods.service.mapper.ReceiveGoodsPieceMapper;
 import org.mstudio.utils.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -48,6 +49,9 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
 
     @Autowired
     private ReceiveGoodsPieceRepository receiveGoodsPieceRepository;
+
+    @Autowired
+    private ReceiveGoodsPieceMapper receiveGoodsPieceMapper;
 
     @Autowired
     private GoodsRepository goodsRepository;
@@ -137,6 +141,7 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
             }
             m.put("unloadScore", unloadScore);
             m.put("putInScore", putInScore);
+            m.put("receiveGoodsPieces", receiveGoodsPieceMapper.toDto(user.getReceiveGoodsPieces()));
             return m;
         }));
     }

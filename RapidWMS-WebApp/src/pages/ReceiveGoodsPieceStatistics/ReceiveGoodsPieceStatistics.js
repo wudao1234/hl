@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Card, Form, Input, Table, DatePicker } from 'antd';
+import router from 'umi/router';
+import { Button, Card, Form, Input, Table, DatePicker } from 'antd';
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
@@ -55,6 +56,28 @@ class ReceiveGoodsPieceStatistics extends PureComponent {
       key: 'putInScore',
       width: '10%',
     },
+    {
+      title: '操作',
+      width: '15%',
+      align: 'right',
+      render: (text, row) => {
+        return (
+          <span className={styles.buttons}>
+            <Button
+              htmlType="button"
+              type="primary"
+              size="small"
+              onClick={e => {
+                e.preventDefault();
+                this.viewReceiveGoodsPieceSta(row);
+              }}
+            >
+              查看
+            </Button>
+          </span>
+        );
+      },
+    },
   ];
 
   componentDidMount() {
@@ -62,6 +85,16 @@ class ReceiveGoodsPieceStatistics extends PureComponent {
     const { search, pageSize, currentPage, orderBy, startDate, endDate } = this.state;
     this.handleQuery(dispatch, search, startDate, endDate, pageSize, currentPage, orderBy);
   }
+
+  viewReceiveGoodsPieceSta = item => {
+    const { receiveGoodsPieces } = item;
+    router.push({
+      pathname: `/piece/viewReceiveGoodsPieceSta`,
+      query: {
+        receiveGoodsPieces,
+      },
+    });
+  };
 
   handleSearchByName = value => {
     this.setState({ search: value });

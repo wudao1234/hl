@@ -2,11 +2,7 @@ package org.mstudio.modules.wms.receive_goods.service.object;
 
 import lombok.Data;
 import org.mstudio.modules.wms.common.BaseObject;
-import org.mstudio.modules.wms.customer.service.object.CustomerVO;
-import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsType;
-
-import java.sql.Timestamp;
-import java.util.List;
+import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsPieceTypeEnum;
 
 /**
 * @author Macrow
@@ -14,26 +10,31 @@ import java.util.List;
 */
 
 @Data
-public class ReceiveGoodsDTO extends BaseObject {
+public class ReceiveGoodsPieceDTO extends BaseObject {
 
-    private CustomerVO customer;
+    /**
+     * 计件单价
+     */
+    private Float price;
 
-    private List<ReceiveGoodsItemDTO> receiveGoodsItems;
+    /**
+     * 件数
+     */
+    private Long packages;
 
-    private String flowSn;
-    
-    private ReceiveGoodsType receiveGoodsType;
+    /**
+     * 员工系数
+     */
+    private Float staffPrice;
 
-    private Boolean isAudited;
+    /**
+     * 总分数
+     */
+    private Float score;
 
-    private Boolean isUnload;
-
-    private Timestamp auditTime;
-
-    private String description;
-
-    private String creator;
-
-    private String auditor;
+    /**
+     * 类型
+     */
+    private ReceiveGoodsPieceTypeEnum type;
 
 }
