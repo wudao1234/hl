@@ -37,7 +37,7 @@ const FlakeId = require('flake-idgen');
 const flakeIdGen1 = new FlakeId();
 const PinyinMatch = require('pinyin-match');
 
-@connect(({ goods, stock, customer, wareZone, store, loading }) => ({
+@connect(({ goods, stock, customer, wareZone, store, loading, address }) => ({
   goodsList: goods.list.content,
   goodsTotal: goods.list.totalElements,
   stockList: stock.list.content,
@@ -48,6 +48,7 @@ const PinyinMatch = require('pinyin-match');
   storeList: store.allList,
   loadingGoods: loading.models.goods,
   loadingStock: loading.models.stock,
+  addressList: address.allList,
 }))
 @Form.create()
 class OrderForm extends PureComponent {
@@ -64,7 +65,6 @@ class OrderForm extends PureComponent {
     printTitle: null,
     clientName: null,
     clientStore: null,
-    clientAddress: null,
     clientOrderSn: null,
     clientOrderSn2: null,
     clientOperator: null,
@@ -77,6 +77,7 @@ class OrderForm extends PureComponent {
     fetchStocks: true,
     orderStatus: null,
     allItems: [],
+    qualityAssuranceExponent: null,
   };
 
   componentDidMount() {
@@ -99,6 +100,9 @@ class OrderForm extends PureComponent {
     dispatch({
       type: 'stock/fetchNone',
     });
+    dispatch({
+      type: 'address/fetchAll',
+    });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -110,35 +114,6 @@ class OrderForm extends PureComponent {
         });
       }
     }
-    // const { goodsList } = this.props;
-    // if (goodsList !== undefined && goodsList !== null) {
-    //   if (goodsList.length === 1) {
-    //     const goodId = goodsList[0].id;
-    //     const goodSn = goodsList[0].sn;
-    //     const { allItems } = this.state;
-    //     if (!allItems.some(item => item.goods.id === goodId || item.goods.sn === goodSn)) {
-    //       const item = {
-    //         id: intformat(flakeIdGen1.next(), 'dec'),
-    //         goods: {
-    //           id: goodsList[0].id,
-    //           sn: goodsList[0].sn,
-    //           name: goodsList[0].name,
-    //           packCount: goodsList[0].packCount,
-    //         },
-    //         warePosition: null,
-    //         price: goodsList[0].price,
-    //         expireDate: goodsList[0].expireDate,
-    //         quantityLeft: goodsList[0].stockCount,
-    //         quantityInitial: goodsList[0].quantityInitial,
-    //       };
-    //       this.setState({
-    //         allItems: [...allItems, item],
-    //       });
-    //       message.success(`添加${goodsList[0].name}成功`);
-    //     }
-    //   }
-    // }
-
     const { loading, order } = nextProps;
     if (order !== null && order !== undefined && loading) {
       const orderItems = order.customerOrderItems;
@@ -157,6 +132,7 @@ class OrderForm extends PureComponent {
             name: item.name,
             sn: item.sn,
             packCount: item.packCount,
+            monthsOfWarranty: item.monthsOfWarranty,
           },
           quantityInitial: item.quantityInitial,
           quantity: item.quantity,
@@ -166,7 +142,6 @@ class OrderForm extends PureComponent {
           warePosition: null,
         });
       });
-
       allItems = allItems.sort((a, b) => {
         return a.sortOrder - b.sortOrder;
       });
@@ -180,7 +155,6 @@ class OrderForm extends PureComponent {
         printTitle: order.printTitle,
         clientName: order.clientName,
         clientStore: order.clientStore,
-        clientAddress: order.clientAddress,
         clientOrderSn: order.clientOrderSn,
         clientOrderSn2: order.clientOrderSn2,
         clientOperator: order.clientOperator,
@@ -189,6 +163,7 @@ class OrderForm extends PureComponent {
         orderExpireDateMin: order.expireDateMin,
         orderExpireDateMax: order.expireDateMax,
         targetWareZones: order.targetWareZones === null ? [] : order.targetWareZones.split(','),
+        qualityAssuranceExponent: order.qualityAssuranceExponent,
       });
     }
   }
@@ -211,6 +186,7 @@ class OrderForm extends PureComponent {
       isEdit,
       loading,
       queryParams,
+      addressList,
     } = this.props;
 
     const { goodsPageSize, goodsCurrentPage, stockPageSize, stockCurrentPage, search } = this.state;
@@ -223,7 +199,6 @@ class OrderForm extends PureComponent {
       printTitle,
       clientName,
       clientStore,
-      clientAddress,
       clientOrderSn,
       clientOrderSn2,
       clientOperator,
@@ -236,6 +211,7 @@ class OrderForm extends PureComponent {
       orderStatus,
       allItems,
       targetWareZones,
+      qualityAssuranceExponent,
     } = this.state;
 
     const handleSelectCustomer = value => {
@@ -305,12 +281,13 @@ class OrderForm extends PureComponent {
       quantityLeft,
       quantityInitial,
       warePositionId,
-      wareZoneId
+      wareZoneId,
+      monthsOfWarranty
     ) => {
       const item = {
         sortOrder: allItems.length + 1,
         id: intformat(flakeIdGen1.next(), 'dec'),
-        goods: { id, sn, name, packCount },
+        goods: { id, sn, name, packCount, monthsOfWarranty },
         warePosition: warePositionId ? { id: warePositionId, wareZone: { id: wareZoneId } } : null,
         price,
         expireDate,
@@ -470,7 +447,8 @@ class OrderForm extends PureComponent {
                   row.stockCount,
                   null,
                   null,
-                  null
+                  null,
+                  row.monthsOfWarranty
                 )
               }
             >
@@ -593,6 +571,16 @@ class OrderForm extends PureComponent {
         },
       },
       {
+        title: '规格',
+        dataIndex: 'goods.packCount',
+        key: 'goods.packCount',
+        width: '5%',
+        align: 'right',
+        render: text => {
+          return <Tag color="#2db7f5">{text}</Tag>;
+        },
+      },
+      {
         title: '质保',
         dataIndex: 'goods.monthsOfWarranty',
         key: 'goods.monthsOfWarranty',
@@ -610,16 +598,6 @@ class OrderForm extends PureComponent {
             );
           }
           return <Tag color="orange">{text}月</Tag>;
-        },
-      },
-      {
-        title: '规格',
-        dataIndex: 'goods.packCount',
-        key: 'goods.packCount',
-        width: '5%',
-        align: 'right',
-        render: text => {
-          return <Tag color="#2db7f5">{text}</Tag>;
         },
       },
       {
@@ -643,7 +621,8 @@ class OrderForm extends PureComponent {
                   row.quantity,
                   null,
                   row.warePosition.id,
-                  row.warePosition.wareZone.id
+                  row.warePosition.wareZone.id,
+                  row.goods.monthsOfWarranty
                 )
               }
             >
@@ -734,6 +713,25 @@ class OrderForm extends PureComponent {
             );
           }
           return text;
+        },
+      },
+      {
+        title: '质保',
+        dataIndex: 'goods.monthsOfWarranty',
+        key: 'goods.monthsOfWarranty',
+        width: '5%',
+        align: 'right',
+        render: (text, record) => {
+          return (
+            <span>
+              <Tag color="orange">{text}月</Tag>
+              <FormItem>
+                {getFieldDecorator(`allItems.${record.id}.monthsOfWarranty`, {
+                  initialValue: record.goods.monthsOfWarranty,
+                })(<Input hidden />)}
+              </FormItem>
+            </span>
+          );
         },
       },
       {
@@ -1088,6 +1086,20 @@ class OrderForm extends PureComponent {
       }
     };
 
+    const getAddressOptions = () => {
+      const children = [];
+      if (Array.isArray(addressList)) {
+        addressList.forEach(addressItem => {
+          children.push(
+            <Option key={addressItem.id} value={`${addressItem.clientStore},${addressItem.name}`}>
+              {addressItem.clientStore} /{addressItem.name}
+            </Option>
+          );
+        });
+      }
+      return children;
+    };
+
     return (
       <div className={styles.standardList}>
         <Card
@@ -1221,19 +1233,22 @@ class OrderForm extends PureComponent {
                     rules: [{ required: true, message: '请输入订单客户门店' }],
                     initialValue: clientStore,
                   })(
-                    <AutoComplete
-                      dataSource={getAllStores(storeList)}
+                    <Select
+                      showSearch
+                      allowClear
                       filterOption={(input, option) =>
                         PinyinMatch.match(option.props.children.toString(), input)
                       }
-                    />
+                    >
+                      {getAddressOptions(addressList)}
+                    </Select>
                   )}
                 </FormItem>
               </Col>
               <Col span={3}>
-                <FormItem label="订单客户地址" {...this.formLayout} hasFeedback>
-                  {getFieldDecorator('clientAddress', {
-                    initialValue: clientAddress,
+                <FormItem label="质保指数" {...this.formLayout} hasFeedback>
+                  {getFieldDecorator('qualityAssuranceExponent', {
+                    initialValue: qualityAssuranceExponent,
                   })(<Input />)}
                 </FormItem>
               </Col>

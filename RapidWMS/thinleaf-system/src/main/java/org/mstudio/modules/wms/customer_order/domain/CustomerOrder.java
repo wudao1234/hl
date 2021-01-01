@@ -9,7 +9,6 @@ import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.operate_snapshot.domain.OperateSnapshot;
 import org.mstudio.modules.wms.pack.domain.Pack;
-import org.mstudio.modules.wms.pick_match.domain.PickMatch;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 
 import javax.persistence.*;
@@ -42,6 +41,11 @@ public class CustomerOrder extends BaseEntity {
      * printTitle 订单打印标题
      */
     private String printTitle;
+
+    /**
+     * qualityAssuranceExponent 质保指数
+     */
+    private Float qualityAssuranceExponent;
 
     /**
      * description 订单说明

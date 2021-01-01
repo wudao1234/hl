@@ -31,4 +31,6 @@ public class CustomerOrderItemVO extends BaseObject {
 
     private Long quantityLeft;
 
+    private Integer monthsOfWarranty;
+
 }

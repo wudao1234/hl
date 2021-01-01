@@ -430,7 +430,6 @@ public class StockServiceImpl implements StockService {
             if (item.getQuantityCancelFetch() != null) {
                 stock.setQuantity(item.getQuantityCancelFetch());
             } else {
-                // todo
                 stock.setQuantity(item.getQuantity() + item.getPackages() * goods.getPackCount());
             }
             stock.setExpireDate(item.getExpireDate());
@@ -644,7 +643,9 @@ public class StockServiceImpl implements StockService {
         return (Boolean) synchronizedOperate(StockOperate.REDUCE, reduceDTO);
     }
 
-    private Boolean reduceStub(Stock resources, StockFlowType stockFlowType, Boolean fetchAll, BigDecimal price, CustomerOrder order, JwtUser user, CustomerOrderStock orderStock, ReceiveGoodsItem receiveGoodsItem, String stockFlowDescription) {
+    private Boolean reduceStub(Stock resources, StockFlowType stockFlowType, Boolean fetchAll, BigDecimal price, CustomerOrder order,
+                               JwtUser user, CustomerOrderStock orderStock, ReceiveGoodsItem receiveGoodsItem,
+                               String stockFlowDescription) {
         checkStock(resources);
         Boolean result;
         Boolean generateStockFlow;
@@ -747,7 +748,7 @@ public class StockServiceImpl implements StockService {
     }
 
     private Boolean reduceStub(CustomerOrderItem orderItem, Date expireDateMin, Date expireDateMax, String targetWareZones, Boolean fetchAll, JwtUser user, Long customerId, Boolean usePackCount, String stockFlowDescription) {
-
+        // TODO REDUCE_FOR_ORDER_ITEM-出库-reduceStub
         Specification<Stock> spec = new Specification<Stock>() {
             @Override
             public Predicate toPredicate(Root<Stock> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -902,7 +903,6 @@ public class StockServiceImpl implements StockService {
         stock.setGoods(receiveGoodsItem.getGoods());
         stock.setWarePosition(receiveGoodsItem.getWarePosition());
         stock.setExpireDate(receiveGoodsItem.getExpireDate());
-        // todo
         stock.setQuantity(receiveGoodsItem.getQuantity() + receiveGoodsItem.getPackages() * goods.getPackCount());
         return reduce(new ReduceDTO(stock, null, true, null, null, null, null, receiveGoodsItem, receiveGoodsItem.getDescription()));
     }
@@ -929,8 +929,13 @@ public class StockServiceImpl implements StockService {
                 result = this.reduceStub(reduceDTO.getResources(), reduceDTO.getStockFlowType(), reduceDTO.getFetchAll(), reduceDTO.getPrice(), reduceDTO.getOrder(), reduceDTO.getUser(), reduceDTO.getOrderStock(), reduceDTO.getReceiveGoodsItem(), reduceDTO.getStockFlowDescription());
                 break;
             case REDUCE_FOR_ORDER_ITEM:
+                // TODO REDUCE_FOR_ORDER_ITEM-出库
                 ReduceForOrderItemDTO reduceForOrderItemDTO = (ReduceForOrderItemDTO) param;
-                result = this.reduceStub(reduceForOrderItemDTO.getOrderItem(), reduceForOrderItemDTO.getExpireDateMin(), reduceForOrderItemDTO.getExpireDateMax(), reduceForOrderItemDTO.getTargetWareZones(), reduceForOrderItemDTO.getFetchAll(), reduceForOrderItemDTO.getUser(), reduceForOrderItemDTO.getCustomerId(), reduceForOrderItemDTO.getUsePackCount(), reduceForOrderItemDTO.getStockFlowDescription());
+                result = this.reduceStub(
+                        reduceForOrderItemDTO.getOrderItem(), reduceForOrderItemDTO.getExpireDateMin(), reduceForOrderItemDTO.getExpireDateMax(),
+                        reduceForOrderItemDTO.getTargetWareZones(), reduceForOrderItemDTO.getFetchAll(), reduceForOrderItemDTO.getUser(),
+                        reduceForOrderItemDTO.getCustomerId(), reduceForOrderItemDTO.getUsePackCount(), reduceForOrderItemDTO.getStockFlowDescription()
+                );
                 break;
             case UPDATE_EXPIRE_DATE:
                 UpdateExpireDateDTO updateExpireDateDTO = (UpdateExpireDateDTO) param;

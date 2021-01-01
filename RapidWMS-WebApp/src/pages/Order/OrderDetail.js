@@ -54,6 +54,7 @@ class OrderDetail extends PureComponent {
     totalPrice: 0,
     completePrice: 0,
     completeDescription: '',
+    qualityAssuranceExponent: null,
   };
 
   componentDidMount() {
@@ -91,6 +92,7 @@ class OrderDetail extends PureComponent {
             name: item.name,
             sn: item.sn,
             packCount: item.packCount,
+            monthsOfWarranty: item.monthsOfWarranty,
           },
           quantityInitial: item.quantityInitial,
           quantity: item.quantity,
@@ -128,6 +130,7 @@ class OrderDetail extends PureComponent {
         totalPrice: order.totalPrice,
         completePrice: order.completePrice,
         completeDescription: order.completeDescription,
+        qualityAssuranceExponent: order.qualityAssuranceExponent,
         tableFooter: () => {
           return (
             <span style={{ textAlign: 'center', display: 'block' }}>
@@ -165,6 +168,7 @@ class OrderDetail extends PureComponent {
       tableFooter,
       wareZones,
       cancelDescription,
+      qualityAssuranceExponent,
     } = this.state;
 
     const orderColumns = [
@@ -196,6 +200,16 @@ class OrderDetail extends PureComponent {
         align: 'right',
         render: text => {
           return <Tag color="#2db7f5">{text}</Tag>;
+        },
+      },
+      {
+        title: '质保',
+        dataIndex: 'goods.monthsOfWarranty',
+        key: 'goods.monthsOfWarranty',
+        width: '1%',
+        align: 'right',
+        render: text => {
+          return <Tag color="orange">{text}月</Tag>;
         },
       },
       {
@@ -553,19 +567,19 @@ class OrderDetail extends PureComponent {
             <Col>{getOrderSteps()}</Col>
           </Row>
           <Row gutter={16}>
-            <Col span={5}>
+            <Col span={3}>
               <span style={{ fontWeight: 'bold' }}>入库客户：</span>
               {customerFilter}
             </Col>
-            <Col span={5}>
+            <Col span={4}>
               <span style={{ fontWeight: 'bold' }}>打印标题：</span>
               {printTitle}
             </Col>
-            <Col span={5}>
+            <Col span={4}>
               <span style={{ fontWeight: 'bold' }}>订单说明：</span>
               {orderDescription}
             </Col>
-            <Col span={5}>
+            <Col span={4}>
               <span style={{ fontWeight: 'bold' }}>订单流水号：</span>
               {flowSn}
             </Col>
@@ -576,7 +590,7 @@ class OrderDetail extends PureComponent {
           </Row>
           <Divider />
           <Row gutter={16}>
-            <Col span={5}>
+            <Col span={3}>
               <span style={{ fontWeight: 'bold' }}>订单客户名称：</span>
               {clientName}
             </Col>
@@ -607,27 +621,31 @@ class OrderDetail extends PureComponent {
               <span style={{ fontWeight: 'bold' }}>必须全部匹配：</span>
               {fetchAll !== undefined && fetchAll ? '是' : '否'}
             </Col>
-            <Col span={3}>
+            <Col span={4}>
               <span style={{ fontWeight: 'bold' }}>强制匹配商品规格：</span>
               {usePackCount !== undefined && usePackCount ? '是' : '否'}
             </Col>
-            <Col span={3}>
+            <Col span={4}>
               <span style={{ fontWeight: 'bold' }}>指定的匹配库区：</span>
               {wareZones !== undefined && wareZones
                 ? wareZones.map(item => item.name).join(' / ')
                 : '未指定'}
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <span style={{ fontWeight: 'bold' }}>最低保质期：</span>
               {orderExpireDateMin !== undefined && orderExpireDateMin !== null
                 ? moment(orderExpireDateMin).format('YYYY-MM-DD')
                 : '未指定'}
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <span style={{ fontWeight: 'bold' }}>最高保质期：</span>
               {orderExpireDateMax !== undefined && orderExpireDateMax !== null
                 ? moment(orderExpireDateMax).format('YYYY-MM-DD')
                 : '未指定'}
+            </Col>
+            <Col span={4}>
+              <span style={{ fontWeight: 'bold' }}>质保指数：</span>
+              {qualityAssuranceExponent}
             </Col>
           </Row>
           <Divider />

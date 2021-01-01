@@ -44,4 +44,9 @@ public class CustomerOrderItem extends BaseEntity {
     private Long quantity;
 
     private String description;
+
+    /**
+     * 质保
+     */
+    private Integer monthsOfWarranty;
 }

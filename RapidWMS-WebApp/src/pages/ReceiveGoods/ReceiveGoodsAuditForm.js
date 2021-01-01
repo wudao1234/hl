@@ -413,7 +413,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
         case 'POLICY':
           result = 2;
           break;
-        case '其它入库':
+        case 'OTHER':
           result = 3;
           break;
         default:

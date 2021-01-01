@@ -283,7 +283,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = CACHE_NAME, key = "#p0")
+//    @Cacheable(value = CACHE_NAME, key = "#p0")
     public CustomerOrderDTO findById(Long id) {
         CustomerOrder order = getCustomerOrder(id);
         CustomerOrderDTO orderDTO = customerOrderMapper.toDto(order);
@@ -296,7 +296,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = CACHE_NAME, key = "#p0 + '_withQuantityLeft'")
+//    @Cacheable(value = CACHE_NAME, key = "#p0 + '_withQuantityLeft'")
     public CustomerOrderDTO findByIdAndQueryQuantityLeft(Long id) {
         CustomerOrderDTO orderDTO = findById(id);
         Long customerId = Long.valueOf(orderDTO.getOwner().getId());
@@ -439,6 +439,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         order.setClientOrderSn(resource.getClientOrderSn());
         order.setClientOrderSn2(resource.getClientOrderSn2());
         order.setClientOperator(resource.getClientOperator());
+        order.setQualityAssuranceExponent(resource.getQualityAssuranceExponent());
         if (StrUtil.isEmptyOrUndefined(resource.getAutoIncreaseSn())) {
             CustomerDTO customer = customerService.findById(resource.getOwner().getId());
             String sn = WmsUtil.getNewSn(customer.getShortNameEn(), getLastAutoIncreaseSn(Long.valueOf(customer.getId())), useNewAutoIncreaseSn);
@@ -493,6 +494,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     })
     @Transactional(rollbackFor = Exception.class)
     synchronized public void fetchStocks(CustomerOrder order) {
+        // todo 匹配出库
         if (order.getOrderStatus() != OrderStatus.INIT) {
             throw new BadRequestException("订单已经匹配出货，请勿重复匹配!");
         }
@@ -506,8 +508,24 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         Boolean isOrderStocksSatisfied = true;
         JwtUser user = (JwtUser) getUserDetails();
         for (CustomerOrderItem orderItem : orderItems) {
+            Date expireDateMin = order.getExpireDateMin();
+            // 如果提供质保指数，则重新计算最低过期时间
+            if (Objects.nonNull(order.getQualityAssuranceExponent())) {
+                Date qualityExpireDateMin = DateUtil.offsetDay(DateUtil.date(),
+                        Math.round(orderItem.getMonthsOfWarranty() / 12 * 365 * (1 - order.getQualityAssuranceExponent())));
+                if (Objects.nonNull(expireDateMin)) {
+                    expireDateMin = qualityExpireDateMin.after(expireDateMin) ? qualityExpireDateMin : expireDateMin;
+                } else {
+                    expireDateMin = qualityExpireDateMin;
+                }
+            }
             // 因基础数据不一致，目前暂时不计算规格匹配，否则无法匹配出库
-            isOrderItemsSatisfied = stockService.reduceForOrderItem(new ReduceForOrderItemDTO(orderItem, order.getExpireDateMin(), order.getExpireDateMax(), order.getTargetWareZones(), order.getFetchAll(), user, order.getOwner().getId(), order.getUsePackCount(), order.getDescription())) && isOrderItemsSatisfied;
+            isOrderItemsSatisfied = stockService
+                    .reduceForOrderItem(new ReduceForOrderItemDTO(
+                            orderItem, expireDateMin, order.getExpireDateMax(),
+                            order.getTargetWareZones(), order.getFetchAll(), user, order.getOwner().getId(),
+                            order.getUsePackCount(), order.getDescription())
+                    ) && isOrderItemsSatisfied;
         }
         for (CustomerOrderStock stockItem : orderStocks) {
             isOrderStocksSatisfied = stockService.reduceForOrderStock(new ReduceForOrderStockDTO(stockItem, order.getFetchAll(), user, order.getDescription())) && isOrderStocksSatisfied;

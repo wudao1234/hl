@@ -161,6 +161,9 @@ public class CustomerOrderController {
         if (resource.getId() != null) {
             throw new BadRequestException("A new " + ENTITY_NAME + " cannot already have an ID");
         }
+        String[] clientStoreInfo = resource.getClientStore().split(",");
+        resource.setClientStore(clientStoreInfo[0]);
+        resource.setClientAddress(clientStoreInfo[1]);
         checkPermission(resource.getOwner().getId());
         return new ResponseEntity<>(customerOrderService.create(resource, useNewAutoIncreaseSn, fetchStocks), HttpStatus.CREATED);
     }

@@ -575,8 +575,8 @@ class PackForm extends PureComponent {
         allAddress.forEach(addressItem => {
           children.push(
             <Option key={addressItem.id} value={addressItem.id}>
-              {addressItem.name} / {addressItem.addressType.name} / {addressItem.contact} /{' '}
-              {addressItem.phone}
+              {addressItem.clientStore} /{addressItem.name} / {addressItem.addressType.name} /{' '}
+              {addressItem.contact} / {addressItem.phone}
             </Option>
           );
         });
@@ -688,9 +688,9 @@ class PackForm extends PureComponent {
             </Row>
             <Row gutter={16}>
               <Col span={11}>
-                <FormItem label="选择送货地址" {...this.formLayout} hasFeedback>
+                <FormItem label="选择门店" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('address', {
-                    rules: [{ required: packType !== 2, message: '请选择送货地址' }],
+                    rules: [{ required: packType !== 2, message: '请选择门店' }],
                     initialValue: address !== undefined && address !== null ? address.id : null,
                   })(
                     <Select

@@ -91,4 +91,9 @@ public class CustomerOrderDTO extends BaseObject {
 
     private List<WareZoneVO> targetWareZoneList;
 
+    /**
+     * qualityAssuranceExponent 质保指数
+     */
+    private Float qualityAssuranceExponent;
+
 }
