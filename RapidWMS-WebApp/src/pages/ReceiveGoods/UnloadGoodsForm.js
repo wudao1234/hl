@@ -29,10 +29,11 @@ const { Option } = Select;
 const { Search } = Input;
 const intformat = require('biguint-format');
 const FlakeId = require('flake-idgen');
+const PinyinMatch = require('pinyin-match');
 
 const flakeIdGen1 = new FlakeId();
 
-@connect(({ goods, stock, customer, wareZone, loading }) => ({
+@connect(({ goods, stock, customer, wareZone, loading, user }) => ({
   goodsList: goods.list.content,
   goodsTotal: goods.list.totalElements,
   stockList: stock.list.content,
@@ -41,6 +42,7 @@ const flakeIdGen1 = new FlakeId();
   wareZoneTree: wareZone.tree,
   loadingGoods: loading.models.goods,
   loadingStock: loading.models.stock,
+  userList: user.list,
 }))
 @Form.create()
 class ReceiveGoodsForm extends PureComponent {
@@ -70,6 +72,9 @@ class ReceiveGoodsForm extends PureComponent {
     });
     dispatch({
       type: 'stock/fetchNone',
+    });
+    dispatch({
+      type: 'user/fetch',
     });
   }
 
@@ -137,6 +142,7 @@ class ReceiveGoodsForm extends PureComponent {
       isEdit,
       loading,
       queryParams,
+      userList,
     } = this.props;
 
     const { goodsPageSize, goodsCurrentPage, stockPageSize, stockCurrentPage, search } = this.state;
@@ -556,6 +562,20 @@ class ReceiveGoodsForm extends PureComponent {
       },
     ];
 
+    const getUserOptions = allUserList => {
+      const children = [];
+      if (Array.isArray(allUserList)) {
+        allUserList.forEach(userItem => {
+          children.push(
+            <Option key={userItem.id} value={userItem.id}>
+              {userItem.username}
+            </Option>
+          );
+        });
+      }
+      return children;
+    };
+
     const receiveGoodsColumns = [
       {
         title: '#',
@@ -615,7 +635,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '过期日',
         dataIndex: 'expireDate',
         key: 'expireDate',
-        width: '10%',
+        width: '15%',
         render: (text, record) => {
           if (record) {
             return (
@@ -693,6 +713,64 @@ class ReceiveGoodsForm extends PureComponent {
                   rules: [{ required: true, message: '请输入件数' }],
                   initialValue: text,
                 })(<InputNumber min={1} max={99999999} precision={0} />)}
+              </FormItem>
+            );
+          }
+          return text;
+        },
+      },
+      {
+        title: '收货人',
+        dataIndex: 'unloadUser',
+        key: 'unloadUser',
+        width: '10%',
+        render: (text, record) => {
+          if (record) {
+            return (
+              <FormItem hasFeedback>
+                {getFieldDecorator(`receiveGoodsItems.${record.id}.unloadUser`, {
+                  rules: [{ required: true, message: '请选择收货人' }],
+                  initialValue: record.unloadUser ? record.unloadUser.id : null,
+                })(
+                  <Select
+                    showSearch
+                    allowClear
+                    filterOption={(input, option) =>
+                      PinyinMatch.match(option.props.children.toString(), input)
+                    }
+                  >
+                    {getUserOptions(userList)}
+                  </Select>
+                )}
+              </FormItem>
+            );
+          }
+          return text;
+        },
+      },
+      {
+        title: '入库人',
+        dataIndex: 'receiveUser',
+        key: 'receiveUser',
+        width: '10%',
+        render: (text, record) => {
+          if (record) {
+            return (
+              <FormItem hasFeedback>
+                {getFieldDecorator(`receiveGoodsItems.${record.id}.receiveUser`, {
+                  rules: [{ required: true, message: '请选择入库人' }],
+                  initialValue: record.receiveUser ? record.receiveUser.id : null,
+                })(
+                  <Select
+                    showSearch
+                    allowClear
+                    filterOption={(input, option) =>
+                      PinyinMatch.match(option.props.children.toString(), input)
+                    }
+                  >
+                    {getUserOptions(userList)}
+                  </Select>
+                )}
               </FormItem>
             );
           }

@@ -32,10 +32,16 @@ public class ReceiveGoods extends BaseEntity {
     @Fetch(FetchMode.SUBSELECT)
     private List<ReceiveGoodsPiece> receiveGoodsPieces;
 
+    /**
+     * 收货人
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private User unloadUser;
 
+    /**
+     * 入库人
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private User receiveUser;
