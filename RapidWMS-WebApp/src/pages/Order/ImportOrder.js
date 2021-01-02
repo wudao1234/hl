@@ -12,6 +12,7 @@ import {
   notification,
   message,
   Divider,
+  Input,
 } from 'antd';
 import { FormattedMessage } from 'umi/locale';
 
@@ -328,6 +329,9 @@ class ImportOrder extends PureComponent {
           <FormItem label="最高保质期" {...this.formLayout} hasFeedback>
             {getFieldDecorator('orderExpireDateMax')(<DatePicker />)}
           </FormItem>
+          <FormItem label="质保指数" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('qualityAssuranceExponent')(<Input />)}
+          </FormItem>
           <FormItem label="必须全部匹配" {...this.formLayout}>
             {getFieldDecorator('fetchAll', {
               initialValue: fetchAll !== undefined && fetchAll,
@@ -418,6 +422,9 @@ class ImportOrder extends PureComponent {
           </FormItem>
           <FormItem label="最高保质期" {...this.formLayout} hasFeedback>
             {getFieldDecorator('orderExpireDateMax')(<DatePicker />)}
+          </FormItem>
+          <FormItem label="质保指数" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('qualityAssuranceExponent')(<Input />)}
           </FormItem>
           <FormItem label="必须全部匹配" {...this.formLayout}>
             {getFieldDecorator('fetchAll', {
@@ -510,6 +517,9 @@ class ImportOrder extends PureComponent {
           <FormItem label="最高保质期" {...this.formLayout} hasFeedback>
             {getFieldDecorator('orderExpireDateMax')(<DatePicker />)}
           </FormItem>
+          <FormItem label="质保指数" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('qualityAssuranceExponent')(<Input />)}
+          </FormItem>
           <FormItem label="必须全部匹配" {...this.formLayout}>
             {getFieldDecorator('fetchAll', {
               initialValue: fetchAll !== undefined && fetchAll,
@@ -557,7 +567,7 @@ class ImportOrder extends PureComponent {
             <h4>注意事项</h4>
             <ol>
               <li>1.导入订单必须指定客户，不同客户必须分开导入</li>
-              <li>{"2.下载的导入模板中，最后一排的\"结束\"必须有，否则出错"}</li>
+              <li>2.下载的导入模板中，最后一排的&quot;结束&quot;必须有，否则出错</li>
             </ol>
           </div>
           <Divider />
@@ -618,6 +628,9 @@ class ImportOrder extends PureComponent {
           </FormItem>
           <FormItem label="最高保质期" {...this.formLayout} hasFeedback>
             {getFieldDecorator('orderExpireDateMax')(<DatePicker />)}
+          </FormItem>
+          <FormItem label="质保指数" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('qualityAssuranceExponent')(<Input />)}
           </FormItem>
           <FormItem label="必须全部匹配" {...this.formLayout}>
             {getFieldDecorator('fetchAll', {
@@ -690,7 +703,6 @@ class ImportOrder extends PureComponent {
               <TabPane tab="导入三立HTML订单" key="4">
                 {getHtmlImportForm()}
               </TabPane>
-
             </Tabs>
           </Card>
         </div>

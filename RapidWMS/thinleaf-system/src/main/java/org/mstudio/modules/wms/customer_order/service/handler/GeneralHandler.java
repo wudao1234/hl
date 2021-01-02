@@ -1,5 +1,6 @@
 package org.mstudio.modules.wms.customer_order.service.handler;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.sax.handler.RowHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,7 @@ public class GeneralHandler implements RowHandler {
     private Boolean fetchAll;
     private Boolean fetchStocks;
     private int itemSortOrder = 1;
+    private Float qualityAssuranceExponent;
 
     private final static int ORDER_PRINT_TITLE = 0;
     private final static int ORDER_CLIENT_NAME = 1;
@@ -54,8 +56,11 @@ public class GeneralHandler implements RowHandler {
     private final static int GOODS_PRICE = 10;
     private final static int GOODS_QUANTITY = 11;
     private final static int GOODS_PACK_COUNT = 12;
+    private final static int MONTHS_OF_WARRANTY = 13;
 
-    public GeneralHandler(MultiOperateResult result, CustomerOrderService orderService, Customer customer, String targetWareZone, Boolean useNewAutoIncreaseSn, Date expireDateMin, Date expireDateMax, Boolean fetchAll, Boolean fetchStocks, String sn) {
+    public GeneralHandler(MultiOperateResult result, CustomerOrderService orderService, Customer customer, String targetWareZone,
+                          Boolean useNewAutoIncreaseSn, Date expireDateMin, Date expireDateMax, Boolean fetchAll, Boolean fetchStocks,
+                          String sn, Float qualityAssuranceExponent) {
         this.result = result;
         this.customer = customer;
         this.orderService = orderService;
@@ -67,6 +72,7 @@ public class GeneralHandler implements RowHandler {
         this.fetchAll = fetchAll;
         this.fetchStocks = fetchStocks;
         this.sn = sn;
+        this.qualityAssuranceExponent = qualityAssuranceExponent;
     }
 
     @Override
@@ -108,6 +114,7 @@ public class GeneralHandler implements RowHandler {
                 itemSortOrder = 1;
             }
             order = new CustomerOrder();
+            order.setQualityAssuranceExponent(qualityAssuranceExponent);
             orderItems = new ArrayList<>();
             order.setOwner(customer);
             order.setUsePackCount(false);
@@ -147,6 +154,9 @@ public class GeneralHandler implements RowHandler {
         CustomerOrderItem orderItem = new CustomerOrderItem();
         orderItem.setSortOrder(itemSortOrder++);
         orderItem.setName(list.get(GOODS_NAME).toString());
+        if (ObjectUtil.isNotNull(list.get(MONTHS_OF_WARRANTY))) {
+            orderItem.setMonthsOfWarranty(Integer.parseInt(StrUtil.removeAll(list.get(MONTHS_OF_WARRANTY).toString(), ".0")));
+        }
 
         Object goodsSN = list.get(GOODS_SN);
         if (goodsSN instanceof Double) {

@@ -1026,7 +1026,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     customerOrderImporterDTO.getFetchStocks(),
                     customerOrderImporterDTO.getOrderExpireDateMin(),
                     customerOrderImporterDTO.getOrderExpireDateMax(),
-                    customerOrderImporterDTO.getFetchAll());
+                    customerOrderImporterDTO.getFetchAll(),
+                    customerOrderImporterDTO.getQualityAssuranceExponent());
             result.addResult(innerResult);
         });
         return result;
@@ -1050,7 +1051,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     customerOrderImporterDTO.getFetchStocks(),
                     customerOrderImporterDTO.getOrderExpireDateMin(),
                     customerOrderImporterDTO.getOrderExpireDateMax(),
-                    customerOrderImporterDTO.getFetchAll());
+                    customerOrderImporterDTO.getFetchAll(),
+                    customerOrderImporterDTO.getQualityAssuranceExponent());
             result.addResult(innerResult);
         });
         return result;
@@ -1074,7 +1076,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     customerOrderImporterDTO.getFetchStocks(),
                     customerOrderImporterDTO.getOrderExpireDateMin(),
                     customerOrderImporterDTO.getOrderExpireDateMax(),
-                    customerOrderImporterDTO.getFetchAll());
+                    customerOrderImporterDTO.getFetchAll(),
+                    customerOrderImporterDTO.getQualityAssuranceExponent());
             result.addResult(innerResult);
         });
         return result;
@@ -1101,7 +1104,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     customerOrderImporterDTO.getFetchStocks(),
                     customerOrderImporterDTO.getOrderExpireDateMin(),
                     customerOrderImporterDTO.getOrderExpireDateMax(),
-                    customerOrderImporterDTO.getFetchAll());
+                    customerOrderImporterDTO.getFetchAll(),
+                    customerOrderImporterDTO.getQualityAssuranceExponent());
             result.addResult(innerResult);
         });
         return result;
@@ -1697,7 +1701,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         return PageUtil.toPage(page.map(customerOrderMapper::toVO));
     }
 
-    private MultiOperateResult importByFile(Long customerId, String fileName, OrderImportType orderImportType, String targetWareZone, Boolean useNewAutoIncreaseSn, Boolean fetchStocks, Date expireDateMin, Date expireDateMax, Boolean fetchAll) {
+    private MultiOperateResult importByFile(
+            Long customerId, String fileName, OrderImportType orderImportType, String targetWareZone, Boolean useNewAutoIncreaseSn,
+            Boolean fetchStocks, Date expireDateMin, Date expireDateMax, Boolean fetchAll,Float qualityAssuranceExponent) {
         MultiOperateResult result = new MultiOperateResult();
         switch (orderImportType) {
             case KINGDEE:
@@ -1721,7 +1727,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 break;
             case GENERAL:
                 RowHandler generalHandler;
-                generalHandler = new GeneralHandler(result, this, customerService.findCustomerById(customerId), targetWareZone, useNewAutoIncreaseSn, expireDateMin, expireDateMax, fetchAll, fetchStocks, getLastAutoIncreaseSn(customerId));
+                generalHandler = new GeneralHandler(result, this, customerService.findCustomerById(customerId), targetWareZone,
+                        useNewAutoIncreaseSn, expireDateMin, expireDateMax, fetchAll, fetchStocks, getLastAutoIncreaseSn(customerId),qualityAssuranceExponent);
                 WmsUtil.handleExcelFile(fileName, generalHandler);
                 break;
             default:

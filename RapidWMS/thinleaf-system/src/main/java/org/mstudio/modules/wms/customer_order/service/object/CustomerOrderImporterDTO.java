@@ -31,4 +31,6 @@ public class CustomerOrderImporterDTO implements Serializable {
 
     private String[] uploadFileList;
 
+    private Float qualityAssuranceExponent;
+
 }
