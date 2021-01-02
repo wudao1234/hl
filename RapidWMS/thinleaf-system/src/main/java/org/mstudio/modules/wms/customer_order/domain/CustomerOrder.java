@@ -183,16 +183,18 @@ public class CustomerOrder extends BaseEntity {
     /**
      * 订单分拣人
      */
-    @ManyToOne
-    @Fetch(FetchMode.JOIN)
-    private User userGathering;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "wms_join_table_customer_orders_userGatherings")
+    @Fetch(FetchMode.SUBSELECT)
+    private List<User> userGatherings;
 
     /**
      * 订单复核人
      */
-    @ManyToOne
-    @Fetch(FetchMode.JOIN)
-    private User userReviewer;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "wms_join_table_customer_orders_userReviewers")
+    @Fetch(FetchMode.SUBSELECT)
+    private List<User> userReviewers;
 
     /**
      * 订单派送人

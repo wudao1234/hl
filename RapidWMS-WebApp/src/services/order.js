@@ -316,12 +316,11 @@ export async function returnOrderStocksByIds(ids) {
   });
 }
 
-export async function gatherOrderByIds(ids) {
+// TODO: 拣配接口
+export async function gatherOrderByIds(body) {
   return request(`/api/customer_orders/batchGatherGoods`, {
     method: 'POST',
-    body: {
-      ids,
-    },
+    body,
   });
 }
 
@@ -352,12 +351,10 @@ export async function unCompleteGatherOrderByIds(ids) {
   });
 }
 
-export async function confirmOrderByIds(ids) {
+export async function confirmOrderByIds(body) {
   return request(`/api/customer_orders/batchConfirm`, {
     method: 'POST',
-    body: {
-      ids,
-    },
+    body,
   });
 }
 

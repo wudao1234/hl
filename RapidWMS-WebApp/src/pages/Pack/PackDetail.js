@@ -218,13 +218,13 @@ class PackDetail extends PureComponent {
         title: '所属客户',
         dataIndex: 'owner.name',
         key: 'owner.name',
-        width: '15%',
+        width: '10%',
       },
       {
         title: '订单客户',
         dataIndex: 'clientName',
         key: 'clientName',
-        width: '15%',
+        width: '10%',
         render: (text, record) => {
           const tooltip = (
             <div>
@@ -298,7 +298,7 @@ class PackDetail extends PureComponent {
         title: '说明',
         dataIndex: 'description',
         key: 'description',
-        width: '20%',
+        width: '10%',
         render: text => {
           if (text) {
             return (
@@ -336,7 +336,7 @@ class PackDetail extends PureComponent {
         title: '流水号',
         dataIndex: 'flowSn',
         key: 'flowSn',
-        width: '1%',
+        width: '15%',
         render: text => {
           return (
             <Highlighter
@@ -352,7 +352,7 @@ class PackDetail extends PureComponent {
         title: '自编号',
         dataIndex: 'autoIncreaseSn',
         key: 'autoIncreaseSn',
-        width: '1%',
+        width: '10%',
         render: text => {
           return (
             <Highlighter

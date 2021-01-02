@@ -113,13 +113,19 @@ public class User implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private List<CustomerOrder> ordersCreator;
 
+    /**
+     * 复核
+     */
     @JSONField(serialize = false)
-    @OneToMany(mappedBy = "userReviewer", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "userReviewers", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<CustomerOrder> ordersReviewer;
 
+    /**
+     * 拣配
+     */
     @JSONField(serialize = false)
-    @OneToMany(mappedBy = "userGathering", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "userGatherings", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<CustomerOrder> ordersGathering;
 

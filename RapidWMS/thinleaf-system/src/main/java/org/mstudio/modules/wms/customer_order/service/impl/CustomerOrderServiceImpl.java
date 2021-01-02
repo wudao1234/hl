@@ -37,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.security.security.JwtUser;
 import org.mstudio.modules.system.repository.UserRepository;
+import org.mstudio.modules.system.service.dto.UserVO;
 import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer.service.CustomerService;
@@ -176,7 +177,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     private PickMatchService pickMatchService;
 
     @Override
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     @Transactional(readOnly = true)
     public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, Boolean isPrintedFilter, String isSatisfiedFilter, String customerFilter, String orderStatusFilter, String receiveTypeFilter, Boolean isActiveFilter, String startDate, String endDate, String search, Pageable pageable) {
         return query(customers, exportExcel, isPrintedFilter, isSatisfiedFilter, customerFilter, orderStatusFilter, receiveTypeFilter, isActiveFilter, startDate, endDate, search, pageable);
@@ -566,7 +567,6 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     synchronized public void gatherGoods(CustomerOrder order) {
         if (order.getOrderStatus() == OrderStatus.FETCH_STOCK) {
             order.setOrderStatus(OrderStatus.GATHERING_GOODS);
-            order.setUserGathering(userRepository.findByUsername(getUserDetails().getUsername()));
             customerOrderRepository.save(order);
             operateSnapshotService.create(OrderStatus.GATHERING_GOODS.getName(), order);
         } else {
@@ -587,7 +587,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     synchronized public void unGatherGoods(CustomerOrder order) {
         if (order.getOrderStatus() == OrderStatus.GATHERING_GOODS) {
             order.setOrderStatus(OrderStatus.FETCH_STOCK);
-            order.setUserGathering(null);
+            order.setUserGatherings(null);
             customerOrderRepository.save(order);
             operateSnapshotService.create("取消分拣", order);
         } else {
@@ -609,16 +609,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         CustomerOrder order = getCustomerOrder(id);
         if (order.getOrderStatus() == OrderStatus.GATHERING_GOODS) {
             JwtUser user = (JwtUser) getUserDetails();
-            if (user.getId().equals(order.getUserGathering().getId())) {
-                order.setOrderStatus(OrderStatus.GATHER_GOODS);
-                customerOrderRepository.save(order);
-                operateSnapshotService.create(OrderStatus.GATHER_GOODS.getName(), order);
-
-                // 非拣配完成时添加 拣配计件
-                // pickMatchService.create(order, PickMatchType.PICK_MATCH);
-            } else {
-                throw new BadRequestException("确认分拣与开始分拣必须是同一人");
-            }
+            order.setOrderStatus(OrderStatus.GATHER_GOODS);
+            customerOrderRepository.save(order);
+            operateSnapshotService.create(OrderStatus.GATHER_GOODS.getName(), order);
         } else {
             throw new BadRequestException("订单状态错误");
         }
@@ -631,7 +624,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         // 此处直接跳过正在分拣，回到订单匹配的状态
         if (order.getOrderStatus() == OrderStatus.GATHER_GOODS) {
             order.setOrderStatus(OrderStatus.FETCH_STOCK);
-            order.setUserGathering(null);
+            order.setUserGatherings(null);
             customerOrderRepository.save(order);
             operateSnapshotService.create("取消分拣", order);
         } else {
@@ -651,14 +644,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Transactional(rollbackFor = Exception.class)
     synchronized public void confirm(CustomerOrder order) {
         if (order.getOrderStatus() == OrderStatus.GATHER_GOODS) {
-            // 添加复核人
-            order.setUserReviewer(userRepository.findByUsername(getUserDetails().getUsername()));
             order.setOrderStatus(OrderStatus.CONFIRM);
             customerOrderRepository.save(order);
             operateSnapshotService.create(OrderStatus.CONFIRM.getName(), order);
-
-            // 非拣配完成时添加 拣配计件
-            // pickMatchService.create(order, PickMatchType.REVIEW);
         } else {
             throw new BadRequestException("订单状态错误");
         }
@@ -970,7 +958,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             excelObj.setReceiveType(orders.get(i).getReceiveType() != null ? orders.get(i).getReceiveType().getName() : "未知");
             excelObj.setPackTypeName(orders.get(i).getPack() != null ? orders.get(i).getPack().getPackType().getName() : "未打包");
             excelObj.setUserCreatorName(orders.get(i).getUserCreator() != null ? orders.get(i).getUserCreator().getUsername() : "");
-            excelObj.setUserGatheringName(orders.get(i).getUserGathering() != null ? orders.get(i).getUserGathering().getUsername() : "");
+            excelObj.setUserGatheringName(orders.get(i).getUserGatherings() != null ? orders.get(i).getUserGatherings().stream().map(UserVO::getUsername).collect(Collectors.joining(",")) : "");
             excelObj.setUserSendingName(orders.get(i).getUserSending() != null ? orders.get(i).getUserSending().getUsername() : "");
             rows.add(excelObj);
         }
@@ -1175,7 +1163,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             Optional<CustomerOrder> optionalCustomerOrder = customerOrderRepository.findById(id);
             if (optionalCustomerOrder.isPresent()) {
                 try {
-                    customerOrderService.gatherGoods(optionalCustomerOrder.get());
+                    CustomerOrder customerOrder = optionalCustomerOrder.get();
+                    customerOrder.setUserGatherings(customerOrderMultipleOperateDTO.getUserGatherings());
+                    customerOrderService.gatherGoods(customerOrder);
                     result.addSucceed();
                 } catch (BadRequestException e) {
                     result.addFailed();
@@ -1250,7 +1240,10 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             Optional<CustomerOrder> optionalCustomerOrder = customerOrderRepository.findById(id);
             if (optionalCustomerOrder.isPresent()) {
                 try {
-                    customerOrderService.confirm(optionalCustomerOrder.get());
+                    // todo 复核分拣 serverI
+                    CustomerOrder customerOrder = optionalCustomerOrder.get();
+                    customerOrder.setUserReviewers(customerOrderMultipleOperateDTO.getUserReviewers());
+                    customerOrderService.confirm(customerOrder);
                     result.addSucceed();
                 } catch (BadRequestException e) {
                     result.addFailed();
@@ -1703,7 +1696,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     private MultiOperateResult importByFile(
             Long customerId, String fileName, OrderImportType orderImportType, String targetWareZone, Boolean useNewAutoIncreaseSn,
-            Boolean fetchStocks, Date expireDateMin, Date expireDateMax, Boolean fetchAll,Float qualityAssuranceExponent) {
+            Boolean fetchStocks, Date expireDateMin, Date expireDateMax, Boolean fetchAll, Float qualityAssuranceExponent) {
         MultiOperateResult result = new MultiOperateResult();
         switch (orderImportType) {
             case KINGDEE:
@@ -1728,7 +1721,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             case GENERAL:
                 RowHandler generalHandler;
                 generalHandler = new GeneralHandler(result, this, customerService.findCustomerById(customerId), targetWareZone,
-                        useNewAutoIncreaseSn, expireDateMin, expireDateMax, fetchAll, fetchStocks, getLastAutoIncreaseSn(customerId),qualityAssuranceExponent);
+                        useNewAutoIncreaseSn, expireDateMin, expireDateMax, fetchAll, fetchStocks, getLastAutoIncreaseSn(customerId), qualityAssuranceExponent);
                 WmsUtil.handleExcelFile(fileName, generalHandler);
                 break;
             default:

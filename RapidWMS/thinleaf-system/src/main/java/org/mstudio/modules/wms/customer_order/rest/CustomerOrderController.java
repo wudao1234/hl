@@ -95,6 +95,7 @@ public class CustomerOrderController {
             @RequestParam(value = "endDate", required = false) String endDate,
             @RequestParam(value = "search", required = false) String search,
             Pageable pageable) {
+        // todo app -待分拣 列表
         String orderStatusFilterOrigin = OrderStatus.FETCH_STOCK.getIndex() + "," + OrderStatus.GATHERING_GOODS.getIndex() + "," + OrderStatus.GATHER_GOODS.getIndex();
         String orderStatusFilterResult;
         if (orderStatusFilter != null) {
@@ -144,6 +145,7 @@ public class CustomerOrderController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'O_ORDER_LIST', 'T_ORDER_GATHER', 'T_ORDER_CONFIRM', 'O_ORDER_COMPLETE_LIST')")
     public ResponseEntity get(@PathVariable Long id, @RequestParam(value = "queryQuantityLeft", required = false) Boolean queryQuantifyLeft) {
+        // todo 订单详情 - app controller
         if (queryQuantifyLeft != null && queryQuantifyLeft) {
             return new ResponseEntity<>(customerOrderService.findByIdAndQueryQuantityLeft(id), HttpStatus.OK);
         } else {
@@ -236,6 +238,7 @@ public class CustomerOrderController {
     @PostMapping("/batchGatherGoods")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
     public ResponseEntity batchGatherGoods(@RequestBody CustomerOrderMultipleOperateDTO customerOrderMultipleOperateDTO) {
+        // todo 指定拣配 controller
         MultiOperateResult result = customerOrderService.batchGatherGoods(customerOrderMultipleOperateDTO);
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
@@ -292,6 +295,7 @@ public class CustomerOrderController {
     @PostMapping("/batchConfirm")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_CONFIRM')")
     public ResponseEntity batchConfirm(@RequestBody CustomerOrderMultipleOperateDTO customerOrderMultipleOperateDTO) {
+        // todo 复核分拣 controller
         MultiOperateResult result = customerOrderService.batchConfirm(customerOrderMultipleOperateDTO);
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
@@ -320,6 +324,7 @@ public class CustomerOrderController {
     @PostMapping("/batchCancel")
     @PreAuthorize("hasAnyRole('ADMIN', 'O_ORDER_EDIT')")
     public ResponseEntity batchCancel(@RequestBody CustomerOrderMultipleOperateDTO customerOrderMultipleOperateDTO) {
+         // todo 作废打包
         MultiOperateResult result = customerOrderService.batchCancel(customerOrderMultipleOperateDTO);
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }

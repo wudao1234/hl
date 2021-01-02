@@ -1,9 +1,11 @@
 package org.mstudio.modules.wms.customer_order.service.object;
 
 import lombok.Data;
+import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
 * @author Macrow
@@ -20,5 +22,9 @@ public class CustomerOrderMultipleOperateDTO implements Serializable {
     private String cancelDescription;
 
     private ReceiveType receiveType;
+
+    private List<User> userGatherings;
+
+    private List<User> userReviewers;
 
 }

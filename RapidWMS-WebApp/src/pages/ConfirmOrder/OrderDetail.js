@@ -171,7 +171,7 @@ class OrderDetail extends PureComponent {
         title: '条码',
         dataIndex: 'goods.sn',
         key: 'goods.sn',
-        width: '1%',
+        width: '10%',
       },
       {
         title: '规格',

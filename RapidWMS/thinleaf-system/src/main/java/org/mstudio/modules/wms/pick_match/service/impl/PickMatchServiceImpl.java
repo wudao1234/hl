@@ -6,7 +6,6 @@ import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.address.repository.AddressRepository;
-import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
@@ -100,6 +99,7 @@ public class PickMatchServiceImpl implements PickMatchService {
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     public void create(Pack pack) {
+         // todo 新增 拣配 复核信息
         // 获取门店信息
         Address address = addressRepository.getOne(pack.getAddress().getId());
         if (Objects.isNull(address.getCoefficient())) {
@@ -108,8 +108,41 @@ public class PickMatchServiceImpl implements PickMatchService {
         // 获取系数信息
         PickMatchCoefficient c = pickMatchCoefficientRepository.findAll().get(0);
 
+        // 获取 分拣 拣配人
+        List<User> userGatherings = new ArrayList<>();
+        List<User> userReviewers = new ArrayList<>();
+        pack.getOrders().forEach(customerOrder -> {
+            customerOrder.getUserGatherings().forEach(user -> {
+                boolean noMatch = userGatherings.stream().noneMatch(u -> u.getId().equals(user.getId()));
+                if (noMatch) {
+                    userGatherings.add(user);
+                }
+            });
+            customerOrder.getUserReviewers().forEach(user -> {
+                boolean noMatch = userReviewers.stream().noneMatch(u -> u.getId().equals(user.getId()));
+                if (noMatch) {
+                    userReviewers.add(user);
+                }
+            });
+        });
+
         PickMatchTypeEnum[] pickMatchTypeEnums = PickMatchTypeEnum.values();
         for (PickMatchTypeEnum pickMatchTypeEnum : pickMatchTypeEnums) {
+            switch (pickMatchTypeEnum) {
+                case PICK_MATCH:
+                    savePickMatch(userGatherings, c, pack, address, PickMatchTypeEnum.PICK_MATCH);
+                    break;
+                case REVIEW:
+                    savePickMatch(userReviewers, c, pack, address, PickMatchTypeEnum.REVIEW);
+                    break;
+                default:
+                    throw new BadRequestException("未知拣配计件规则");
+            }
+        }
+    }
+
+    private void savePickMatch(List<User> users, PickMatchCoefficient c, Pack pack, Address address, PickMatchTypeEnum pickMatchTypeEnum) {
+        users.forEach(user -> {
             // init PickMatch
             PickMatch pickMatch = new PickMatch();
             pickMatch.setPiece(c.getPiece());
@@ -117,20 +150,14 @@ public class PickMatchServiceImpl implements PickMatchService {
             pickMatch.setPickMatch(c.getPickMatch());
             pickMatch.setReview(c.getReview());
             pickMatch.setPack(pack);
-            pickMatch.setType(PickMatchTypeEnum.PICK_MATCH);
-            pickMatch.setUser(pack.getOrders().get(0).getUserGathering());
-            // get 拣配复核系数
-            Float diffCoe = pickMatchTypeEnum==PickMatchTypeEnum.PICK_MATCH ? pickMatch.getPickMatch() : pickMatch.getReview();
-            CustomerOrder customerOrder = pack.getOrders().get(0);
-            Float customerCoefficient = pickMatchTypeEnum.equals(PickMatchTypeEnum.PICK_MATCH) ?
-                    customerOrder.getUserGathering().getCoefficient() :
-                    customerOrder.getUserReviewer().getCoefficient();
-            Float score = ((pack.getPackages() * pickMatch.getPiece()) +
-                    (pack.getTotalPrice().floatValue() * pickMatch.getMoney())
-            ) * customerCoefficient * diffCoe * address.getCoefficient();
-            pickMatch.setScore(score);
+            pickMatch.setType(pickMatchTypeEnum);
+            pickMatch.setUser(user);
+            Float score = ((pack.getPackages() * pickMatch.getPiece()) + (pack.getTotalPrice().floatValue() * pickMatch.getMoney())) *
+                    user.getCoefficient() * address.getCoefficient() *
+                    (pickMatchTypeEnum == PickMatchTypeEnum.PICK_MATCH ? pickMatch.getPickMatch() : pickMatch.getReview());
+            pickMatch.setScore(score / users.size());
             pickMatchRepository.save(pickMatch);
-        }
+        });
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.mstudio.modules.wms.pack.service.object.PackInfoVO;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 /**
 * @author Macrow
@@ -76,11 +77,11 @@ public class CustomerOrderVO extends BaseObject {
 
     private UserVO userCreator;
 
-    private UserVO userGathering;
+    private List<UserVO> userGatherings;
 
     private UserVO userSending;
 
-    private UserVO userReviewer;
+    private List<UserVO> userReviewers;
 
     private PackInfoVO pack;
 

@@ -1,6 +1,7 @@
 package org.mstudio.modules.wms.customer_order.service.object;
 
 import lombok.Data;
+import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.service.dto.UserVO;
 import org.mstudio.modules.wms.common.BaseObject;
 import org.mstudio.modules.wms.customer.service.object.CustomerVO;
@@ -73,7 +74,9 @@ public class CustomerOrderDTO extends BaseObject {
 
     private UserVO userCreator;
 
-    private UserVO userGathering;
+    private List<UserVO> userGatherings;
+
+    private List<User> userReviewers;
 
     private UserVO userSending;
 

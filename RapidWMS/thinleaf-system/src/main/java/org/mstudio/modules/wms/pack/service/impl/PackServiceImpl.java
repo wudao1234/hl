@@ -257,6 +257,7 @@ public class PackServiceImpl implements PackService {
             @CacheEvict(value = CustomerOrderServiceImpl.CACHE_NAME, allEntries = true)
     })
     synchronized public PackDTO create(Pack resource) {
+        // todo 新增打包 server
         resource.setFlowSn(PACK_SN_PREFIX + WmsUtil.generateSnowFlakeId());
         resource.setPackStatus(OrderStatus.PACKAGE);
         resource.setIsPrinted(false);

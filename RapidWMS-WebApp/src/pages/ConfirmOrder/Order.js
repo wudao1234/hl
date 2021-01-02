@@ -22,13 +22,17 @@ import {
   Popover,
   Table,
   Tag,
+  Select,
 } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import styles from './Order.less';
 
+const PinyinMatch = require('pinyin-match');
+
 const { Search } = Input;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
+const { Option } = Select;
 
 const initialSortState = {
   sortClientName: null,
@@ -42,6 +46,8 @@ const initialSortState = {
 const initialModalState = {
   singleModalVisible: false,
   done: false,
+  sendingModalVisible: false,
+  reviewModalVisible: false,
 };
 
 const initialState = {
@@ -64,11 +70,12 @@ const initialState = {
   ...initialModalState,
 };
 
-@connect(({ order, customer, loading }) => ({
+@connect(({ order, customer, loading, user }) => ({
   list: order.list.content,
   total: order.list.totalElements,
   customerList: customer.allList,
   loading: loading.models.order && loading.models.customer,
+  sendingUser: user.list,
 }))
 @Form.create()
 class Order extends PureComponent {
@@ -120,6 +127,9 @@ class Order extends PureComponent {
     }
     dispatch({
       type: 'customer/fetchAll',
+    });
+    dispatch({
+      type: 'user/fetch',
     });
   }
 
@@ -505,6 +515,108 @@ class Order extends PureComponent {
     });
   };
 
+  handlePickMatchDone = () => {
+    this.setState({
+      done: false,
+      sendingModalVisible: false,
+    });
+  };
+
+  handlePickMatchCancel = () => {
+    this.setState({
+      sendingModalVisible: false,
+    });
+  };
+
+  handlePickMatchSubmit = e => {
+    e.preventDefault();
+    const { dispatch, form } = this.props;
+
+    form.validateFields(['ids', 'userGatheringIds'], (err, fieldsVal) => {
+      if (err) {
+        return;
+      }
+      // TODO: 指定拣配 dispatch
+      this.handlePickMatchDone();
+      const fieldsValue = Object.assign({}, fieldsVal);
+      fieldsValue.userGatherings = fieldsValue.userGatheringIds.map(id => {
+        return { id };
+      });
+      dispatch({
+        type: 'order/gatherByIds',
+        payload: fieldsValue,
+        callback: response => {
+          if (response.status === 400) {
+            notification.error({
+              message: '操作发生错误',
+              description: response.message,
+            });
+          } else {
+            const { countSucceed, countFailed } = response;
+            if (countSucceed !== 0) {
+              message.success(`成功完成${countSucceed}项内容操作`);
+            }
+            if (countFailed !== 0) {
+              message.error(`${countFailed}项内容操作失败`);
+            }
+            this.reloadPage();
+          }
+        },
+      });
+    });
+  };
+
+  handleReviewSubmit = e => {
+    e.preventDefault();
+    const { dispatch, form } = this.props;
+
+    form.validateFields(['ids', 'userGatheringIds'], (err, fieldsVal) => {
+      if (err) {
+        return;
+      }
+      // TODO: 复核 dispatch
+      this.handlePickMatchDone();
+
+      const fieldsValue = Object.assign({}, fieldsVal);
+      fieldsValue.userReviewers = fieldsValue.userGatheringIds.map(id => {
+        return { id };
+      });
+      dispatch({
+        type: 'order/confirmByIds',
+        payload: fieldsValue,
+        callback: response => {
+          if (response.status === 400) {
+            notification.error({
+              message: '操作发生错误',
+              description: response.message,
+            });
+          } else {
+            const { countSucceed, countFailed } = response;
+            if (countSucceed !== 0) {
+              message.success(`成功完成${countSucceed}项内容操作`);
+            }
+            if (countFailed !== 0) {
+              message.error(`${countFailed}项内容操作失败`);
+            }
+            this.reloadPage();
+          }
+        },
+      });
+    });
+  };
+
+  showPickMatchModal = () => {
+    this.setState({
+      sendingModalVisible: true,
+    });
+  };
+
+  showReviewModal = () => {
+    this.setState({
+      reviewModalVisible: true,
+    });
+  };
+
   viewOrder = item => {
     router.push({
       pathname: `/transit/viewOrder/${item.id}`,
@@ -680,6 +792,21 @@ class Order extends PureComponent {
     }
   };
 
+  getPickMatchOptions = () => {
+    const { sendingUser } = this.props;
+    const children = [];
+    if (Array.isArray(sendingUser)) {
+      sendingUser.forEach(user => {
+        children.push(
+          <Option key={user.id} value={user.id}>
+            {user.username}/{user.num}
+          </Option>
+        );
+      });
+    }
+    return children;
+  };
+
   render() {
     const { list, total, loading } = this.props;
     const { pageSize, currentPage } = this.state;
@@ -698,9 +825,10 @@ class Order extends PureComponent {
       sortClientOrderSn,
       sortTotalPrice,
       sortCreateTime,
-      sortFlowSn,
       sortAutoIncreaseSn,
     } = this.state;
+
+    const { singleModalVisible, sendingModalVisible, reviewModalVisible } = this.state;
 
     const paginationProps = {
       showSizeChanger: true,
@@ -962,7 +1090,7 @@ class Order extends PureComponent {
         title: '自编号',
         dataIndex: 'autoIncreaseSn',
         key: 'autoIncreaseSn',
-        width: '1%',
+        width: '15%',
         sorter: true,
         sortOrder: sortAutoIncreaseSn,
         render: text => {
@@ -1008,7 +1136,33 @@ class Order extends PureComponent {
       ? { footer: null, onCancel: this.handleSingleDone }
       : { okText: '作废订单', onOk: this.handleSingleSubmit, onCancel: this.handleSingleCancel };
 
-    const { singleModalVisible } = this.state;
+    const sendingModalFooter = done
+      ? { footer: null, onCancel: this.handlePickMatchDone }
+      : {
+          okText: '确认分拣',
+          onOk: this.handlePickMatchSubmit,
+          onCancel: this.handlePickMatchCancel,
+        };
+
+    const reviewModalFooter = done
+      ? {
+          footer: null,
+          onCancel: () => {
+            this.setState({
+              done: false,
+              reviewModalVisible: false,
+            });
+          },
+        }
+      : {
+          okText: '确认复核',
+          onOk: this.handleReviewSubmit,
+          onCancel: () => {
+            this.setState({
+              reviewModalVisible: false,
+            });
+          },
+        };
 
     const getSingleModalContent = () => {
       if (selectedRows === null || selectedRows.length < 1) {
@@ -1036,6 +1190,44 @@ class Order extends PureComponent {
       );
     };
 
+    // TODO: 指定拣配-form
+    const getPickMatchModalContent = () => {
+      if (selectedRows === null || selectedRows.length < 1) {
+        return null;
+      }
+      if (done) {
+        message.success('指定拣配人员成功');
+        this.handlePickMatchDone();
+      }
+
+      return (
+        <Form>
+          <FormItem {...this.formLayout}>
+            {getFieldDecorator('ids', {
+              initialValue: selectedRows.map(item => item.id),
+            })(<Input hidden />)}
+          </FormItem>
+          <FormItem label="指定拣配人员" {...this.formLayout}>
+            {getFieldDecorator('userGatheringIds', {
+              rules: [{ required: true, message: '必须指定拣配人员' }],
+            })(
+              <Select
+                showSearch
+                allowClear
+                mode="multiple"
+                filterOption={(input, option) =>
+                  PinyinMatch.match(option.props.children.toString(), input)
+                }
+                placeholder="请选择拣配人员"
+              >
+                {this.getPickMatchOptions()}
+              </Select>
+            )}
+          </FormItem>
+        </Form>
+      );
+    };
+
     return (
       <PageHeaderWrapper>
         <div className={styles.standardList}>
@@ -1053,11 +1245,16 @@ class Order extends PureComponent {
                 </Button>
                 {selectedRowKeys.length >= 1 &&
                   selectedRows.every(row => row.orderStatus === 'FETCH_STOCK') && (
-                    <Popconfirm title="是否开始分拣商品？" onConfirm={this.handleGather}>
-                      <Button icon="check" htmlType="button" type="primary" loading={loadingGather}>
-                        我来分拣
+                    <span>
+                      <Button
+                        icon="check"
+                        htmlType="button"
+                        type="primary"
+                        onClick={this.showPickMatchModal}
+                      >
+                        指定分拣
                       </Button>
-                    </Popconfirm>
+                    </span>
                   )}
                 {selectedRowKeys.length >= 1 &&
                   selectedRows.every(row => row.orderStatus === 'GATHERING_GOODS') && (
@@ -1093,18 +1290,29 @@ class Order extends PureComponent {
                       </Button>
                     </Popconfirm>
                   )}
+                {/* TODO 复核分拣 */}
                 {selectedRowKeys.length >= 1 &&
                   selectedRows.every(row => row.orderStatus === 'GATHER_GOODS') && (
-                    <Popconfirm title="是否确认复核分拣？" onConfirm={this.handleConfirm}>
+                    <span>
+                      <Popconfirm title="是否确认复核分拣？" onConfirm={this.handleConfirm}>
+                        <Button
+                          icon="check"
+                          htmlType="button"
+                          type="primary"
+                          loading={loadingConfirm}
+                        >
+                          复核分拣
+                        </Button>
+                      </Popconfirm>
                       <Button
                         icon="check"
                         htmlType="button"
                         type="primary"
-                        loading={loadingConfirm}
+                        onClick={this.showReviewModal}
                       >
-                        复核分拣
+                        指定复核分拣
                       </Button>
-                    </Popconfirm>
+                    </span>
                   )}
               </div>
               <div className={styles.tableAlert}>
@@ -1184,6 +1392,24 @@ class Order extends PureComponent {
           {...singleModalFooter}
         >
           {getSingleModalContent()}
+        </Modal>
+        <Modal
+          title="开始拣配"
+          width={640}
+          destroyOnClose
+          visible={sendingModalVisible}
+          {...sendingModalFooter}
+        >
+          {getPickMatchModalContent()}
+        </Modal>
+        <Modal
+          title="复核分拣"
+          width={640}
+          destroyOnClose
+          visible={reviewModalVisible}
+          {...reviewModalFooter}
+        >
+          {getPickMatchModalContent()}
         </Modal>
       </PageHeaderWrapper>
     );
