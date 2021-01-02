@@ -27,5 +27,9 @@ public class UserVO {
     private Boolean enabled;
 
     private Date createTime;
+    /**
+     * 编号
+     */
+    private String num;
 
 }

@@ -239,7 +239,8 @@ public class CustomerServiceImpl implements CustomerService {
                         user.getAvatar(),
                         user.getEmail(),
                         user.getEnabled(),
-                        user.getCreateTime()
+                        user.getCreateTime(),
+                        user.getNum()
                 )));
         return users;
     }

@@ -92,6 +92,7 @@ public class UserServiceImpl implements UserService {
         User user = getValidUser(resources, resources.getId());
         user.setUsername(resources.getUsername());
         user.setEmail(resources.getEmail());
+        user.setNum(resources.getNum());
         user.setCoefficient(resources.getCoefficient());
         user.setEnabled(resources.getEnabled());
         user.setRoles(resources.getRoles());

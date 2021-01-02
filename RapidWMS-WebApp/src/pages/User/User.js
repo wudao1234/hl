@@ -274,6 +274,12 @@ class UserList extends PureComponent {
               initialValue: current.coefficient,
             })(<Input placeholder="0.1" />)}
           </FormItem>
+          <FormItem label="编号" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('num', {
+              rules: [{ required: true, message: '请输入编号' }],
+              initialValue: current.num,
+            })(<Input placeholder="001" />)}
+          </FormItem>
           <FormItem label="电子邮箱" {...this.formLayout} hasFeedback>
             {getFieldDecorator('email', {
               rules: [

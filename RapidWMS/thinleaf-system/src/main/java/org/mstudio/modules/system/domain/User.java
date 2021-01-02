@@ -62,6 +62,11 @@ public class User implements Serializable {
 
     private String password;
 
+    /**
+     * 编号
+     */
+    private String num;
+
     @CreationTimestamp
     @Column(name = "create_time")
     private Timestamp createTime;

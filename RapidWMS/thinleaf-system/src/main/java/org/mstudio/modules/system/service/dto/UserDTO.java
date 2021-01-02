@@ -42,4 +42,9 @@ public class UserDTO implements Serializable {
 
     @ApiModelProperty(hidden = true)
     private Set<CustomerVO> customers;
+
+    /**
+     * 编号
+     */
+    private String num;
 }
