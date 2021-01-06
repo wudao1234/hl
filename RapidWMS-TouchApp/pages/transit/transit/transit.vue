@@ -3,6 +3,7 @@
 		<view class="segment_area">
 			<uni-segmented-control class="segment" :current="current" :values="items" @clickItem="onClickItem" style-type="button" active-color="#409eff"></uni-segmented-control>
 		</view>
+		<uni-list-item clickable :show-arrow="true" :title="userInfo.username" @click="changeUser" />
 		<view class="content">
 			<view v-show="current === 0">
 				<view class="cu-bar search bg-white segment_area">
@@ -158,6 +159,7 @@ export default {
 	components: { uniSegmentedControl, uniList, uniListItem },
 	data() {
 		return {
+			userInfo: { username: '请选择工作人员', num: undefined },
 			current: 0,
 			items: ['分拣订单', '打包管理', '地址管理', '派送统计'],
 			current2: 0,
@@ -244,7 +246,7 @@ export default {
 		},
 		formatNote2() {
 			return (user, packages, packType, description) => {
-				console.log(user)
+				console.log(user);
 				const userName = user ? user.username : '未指定';
 				let packTypeName;
 				switch (packType) {
@@ -344,6 +346,13 @@ export default {
 		}
 	},
 	methods: {
+		changeUser() {
+			console.log(1)
+			uni.navigateTo({
+				animationType: 'slide-in-right',
+				url: '../select-user'
+			});
+		},
 		onClickItem(index) {
 			index = index.currentIndex;
 			if (this.current !== index) {
@@ -537,7 +546,7 @@ export default {
 		},
 		viewOrderDetail(id) {
 			uni.navigateTo({
-				url: `../order-confirm/order-confirm?id=${id}`,
+				url: `../order-confirm/order-confirm?id=${id}&searchValue=${this.searchValue}`,
 				animationType: 'slide-in-right'
 			});
 		},
@@ -640,6 +649,10 @@ export default {
 	},
 	onLoad() {
 		this.loadOrders();
+		uni.$on('updateUserInfo', user => {
+			console.log(user)
+			this.userInfo = user;
+		});
 		uni.$on('updateConfirmOrderList', id => {
 			this.orders = this.orders.filter(order => order.id != id);
 		});
@@ -684,6 +697,7 @@ export default {
 		});
 	},
 	onUnload() {
+		uni.$off('updateUserInfo');
 		uni.$off('updateConfirmOrderList');
 		uni.$off('updatePackList');
 		uni.$off('addPackForPackList');
