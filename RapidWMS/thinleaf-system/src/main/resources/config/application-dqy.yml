@@ -79,5 +79,5 @@ jwt:
     # 获取用户信息
     account: /info
 rapidWMS:
-  logo_name: rapidWMS
+  logo_name: 展鹿商贸
   print_extra_info: true

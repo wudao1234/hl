@@ -243,10 +243,14 @@ public class CustomerOrderController {
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
 
-    @PostMapping("/gather_goods/{id}")
+    @PostMapping("/gather_goods/{id}/{pageFlowSn}/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
-    public ResponseEntity gatherGoods(@PathVariable Long id) {
-        customerOrderService.gatherGoods(id);
+    public ResponseEntity gatherGoods(
+            @PathVariable("id") Long id,
+            @PathVariable("pageFlowSn") String pageFlowSn,
+            @PathVariable("userId") Long userId) {
+        // todo app 开始分拣
+        customerOrderService.gatherGoods(id,pageFlowSn,userId);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
     }
 
@@ -353,6 +357,22 @@ public class CustomerOrderController {
         headers.set("Content-Type", "application/pdf");
         try {
             return new ResponseEntity<>(customerOrderService.batchPrint(orderIds, false), headers, HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new BadRequestException("IO发生错误");
+        }
+    }
+
+    @GetMapping("/batchPrintPageInfo")
+    @PreAuthorize("hasAnyRole('ADMIN', 'O_ORDER_LIST')")
+    public ResponseEntity batchPrintPageInfo(@RequestParam String orderIds) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccessControlExposeHeaders(Collections.singletonList("Content-Disposition"));
+        headers.set("Content-Disposition", "inline; filename=orders.pdf");
+        headers.setAccessControlExposeHeaders(Collections.singletonList("Content-Type"));
+        headers.set("Content-Type", "application/pdf");
+        try {
+            return new ResponseEntity<>(customerOrderService.batchPrintPageInfo(orderIds), headers, HttpStatus.OK);
         } catch (IOException e) {
             e.printStackTrace();
             throw new BadRequestException("IO发生错误");

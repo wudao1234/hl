@@ -31,7 +31,7 @@
 				:badge-text="formatBadgeText(item)"
 			/>
 		</uni-list>
-		<view class="title">页信息</view>
+		<view class="title" v-if="num">页码:{{ num + 1 }}</view>
 		<uni-list>
 			<uni-list-item
 				v-for="item in spageItems"
@@ -93,7 +93,9 @@ export default {
 			orderId: '',
 			stockFlowItems: [],
 			searchValue: '',
-			spageItems: []
+			spageItems: [],
+			num: undefined,
+			userId: undefined
 		};
 	},
 	computed: {
@@ -133,11 +135,11 @@ export default {
 				this.orderStatus = order.orderStatus;
 
 				this.api.get(`/api/stock_flows/findByOrderId/${id}`).then(res => {
-					this.stockFlowItems = res.data;
+					this.stockFlowItems = [...res.data].reverse();
 					if ('PAGE' === this.searchValue.substr(0, 4)) {
-						const num = order.customerOrderPages.find(e => e.flowSn === this.searchValue).num;
-						console.log(num)
-						this.spageItems = this.stockFlowItems.slice(num * PAGE_SIZE, num * PAGE_SIZE + PAGE_SIZE);
+						this.num = order.customerOrderPages.find(e => e.flowSn === this.searchValue).num;
+						console.log(this.stockFlowItems);
+						this.spageItems = this.stockFlowItems.slice(this.num * PAGE_SIZE, this.num * PAGE_SIZE + PAGE_SIZE);
 					}
 				});
 			});
@@ -163,10 +165,18 @@ export default {
 			return '请扫描完毕后确认';
 		},
 		gatheringGoods() {
-			let queryString = '/api/customer_orders/gather_goods';
+			if (this.searchValue) {
+				if (!this.userId) {
+					uni.showToast({
+						title: '请先选择工作人员',
+						icon: 'none'
+					});
+					return;
+				}
+			}
 			this.loading = true;
 			this.api
-				.post('/api/customer_orders/gather_goods/' + this.orderId)
+				.post(`/api/customer_orders/gather_goods/${this.orderId}/${this.searchValue}/${this.userId}`)
 				.then(res => {
 					if (res.statusCode == 201) {
 						uni.showToast({
@@ -341,7 +351,8 @@ export default {
 	},
 	onLoad(params) {
 		this.orderId = params.id;
-		this.searchValue = params.searchValue;
+		this.userId = params.userId==='undefined'?undefined:params.userId;;
+		this.searchValue = params.searchValue===''?undefined:params.searchValue;
 		this.loadOrderDetail(this.orderId, this.searchValue);
 	}
 };

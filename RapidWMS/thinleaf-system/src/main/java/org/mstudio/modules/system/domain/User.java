@@ -7,6 +7,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.customer_order.domain.CustomerOrderPage;
 import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pick_match.domain.PickMatch;
@@ -113,13 +114,21 @@ public class User implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private List<CustomerOrder> ordersCreator;
 
-    /**
-     * 复核
-     */
-    @JSONField(serialize = false)
-    @ManyToMany(mappedBy = "userReviewers", fetch = FetchType.LAZY)
-    @Fetch(FetchMode.SUBSELECT)
-    private List<CustomerOrder> ordersReviewer;
+//    /**
+//     * 复核
+//     */
+//    @JSONField(serialize = false)
+//    @ManyToMany(mappedBy = "userReviewers", fetch = FetchType.LAZY)
+//    @Fetch(FetchMode.SUBSELECT)
+//    private List<CustomerOrder> ordersReviewer;
+//
+//    /**
+//     * 拣配
+//     */
+//    @JSONField(serialize = false)
+//    @ManyToMany(mappedBy = "userGatherings", fetch = FetchType.LAZY)
+//    @Fetch(FetchMode.SUBSELECT)
+//    private List<CustomerOrder> ordersGathering;
 
     /**
      * 拣配
@@ -127,7 +136,15 @@ public class User implements Serializable {
     @JSONField(serialize = false)
     @ManyToMany(mappedBy = "userGatherings", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private List<CustomerOrder> ordersGathering;
+    private List<CustomerOrderPage> ordersGathering;
+
+    /**
+     * 复核
+     */
+    @JSONField(serialize = false)
+    @ManyToMany(mappedBy = "userReviewers", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<CustomerOrderPage> ordersReviewer;
 
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "userSending", fetch = FetchType.LAZY)

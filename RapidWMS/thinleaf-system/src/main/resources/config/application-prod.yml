@@ -79,5 +79,5 @@ jwt:
     # 获取用户信息
     account: /info
 rapidWMS:
-  logo_name: 海领物流
+  logo_name: 展鹿商贸
   print_extra_info: true

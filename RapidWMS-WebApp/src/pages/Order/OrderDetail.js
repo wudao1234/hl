@@ -258,7 +258,7 @@ class OrderDetail extends PureComponent {
         title: '出货数量',
         dataIndex: 'quantity',
         key: 'quantity',
-        width: '3%',
+        width: '5%',
         render: (text, record) => {
           if (record) {
             if (record.quantityInitial !== record.quantity) {

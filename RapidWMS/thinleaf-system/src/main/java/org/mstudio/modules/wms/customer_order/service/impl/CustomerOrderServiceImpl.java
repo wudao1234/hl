@@ -3,6 +3,7 @@ package org.mstudio.modules.wms.customer_order.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -26,16 +27,15 @@ import com.itextpdf.kernel.utils.PdfMerger;
 import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.*;
+import com.itextpdf.layout.property.AreaBreakType;
 import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.UnitValue;
 import lombok.extern.slf4j.Slf4j;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.security.security.JwtUser;
+import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.system.service.dto.UserVO;
 import org.mstudio.modules.wms.common.MultiOperateResult;
@@ -46,6 +46,7 @@ import org.mstudio.modules.wms.customer.service.object.CustomerDTO;
 import org.mstudio.modules.wms.customer.service.object.CustomerVO;
 import org.mstudio.modules.wms.customer_order.domain.*;
 import org.mstudio.modules.wms.customer_order.repository.CustomerOrderItemRepository;
+import org.mstudio.modules.wms.customer_order.repository.CustomerOrderPageRepository;
 import org.mstudio.modules.wms.customer_order.repository.CustomerOrderRepository;
 import org.mstudio.modules.wms.customer_order.repository.CustomerOrderStockRepository;
 import org.mstudio.modules.wms.customer_order.service.CustomerOrderService;
@@ -94,14 +95,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -118,6 +117,14 @@ import static org.mstudio.utils.SecurityContextHolder.getUserDetails;
 public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     public static final String CACHE_NAME = "CustomerOrder";
+
+    private static final String CUSTOMER_ORDER_PAGE_SN_PREFIX = "PAGE";
+
+    @Value("${rapidWMS.logo_name}")
+    private String logoName;
+
+    // todo 订单一页大小
+    private static final Integer CUSTOMER_ORDER_PAGE_SIZE = 1;
 
     @Value("${upload.path}")
     private String uploadPath;
@@ -175,6 +182,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Autowired
     private PickMatchService pickMatchService;
+
+    @Autowired
+    private CustomerOrderPageRepository customerOrderPageRepository;
 
     @Override
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
@@ -553,41 +563,82 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         Boolean isFinalSatisfied = isOrderItemsSatisfied && isOrderStocksSatisfied;
         order.setIsSatisfied(isFinalSatisfied);
         order.setOrderStatus(OrderStatus.FETCH_STOCK);
+
+
+        // todo 添加页信息
+        order.setCustomerOrderPages(new ArrayList<>());
+        int pageNum = (int) Math.ceil(Integer.valueOf(order.getCustomerOrderItems().size()).doubleValue() / CUSTOMER_ORDER_PAGE_SIZE);
+        for (int i = 0; i < pageNum; i++) {
+            CustomerOrderPage customerOrderPage = new CustomerOrderPage();
+            order.getCustomerOrderPages().add(customerOrderPage);
+        }
+        order.setWaitGatheringNum(pageNum);
+        order.setWaitReviewerNum(pageNum);
         customerOrderRepository.save(order);
+        for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
+            CustomerOrderPage page = order.getCustomerOrderPages().get(i);
+            page.setCustomerOrder(order);
+            page.setNum(i);
+            page.setOrderStatus(OrderStatus.FETCH_STOCK);
+            page.setFlowSn(CUSTOMER_ORDER_PAGE_SN_PREFIX + WmsUtil.generateSnowFlakeId());
+            customerOrderPageRepository.save(page);
+        }
         operateSnapshotService.create(OrderStatus.FETCH_STOCK.getName(), user.getUsername(), order);
 
         if (!isFinalSatisfied && order.getFetchAll()) {
             returnStock(order);
         }
+
+
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void gatherGoods(CustomerOrder order) {
+    synchronized public void gatherGoods(CustomerOrder order, String pageFlowSn, Long userId) {
+        // todo 开始分拣 代分页信息
         if (order.getOrderStatus() == OrderStatus.FETCH_STOCK) {
-            order.setOrderStatus(OrderStatus.GATHERING_GOODS);
+            if (ObjectUtil.isNotNull(pageFlowSn)) {
+                CustomerOrderPage page = order.getCustomerOrderPages().stream().filter(p -> pageFlowSn.equals(p.getFlowSn())).findAny().get();
+                page.setOrderStatus(OrderStatus.GATHERING_GOODS);
+                Optional<User> userOptional = page.getUserGatherings().stream().filter(user -> user.getId() == userId).findAny();
+                if (!userOptional.isPresent()) {
+                    User user = userRepository.getOne(userId);
+                    page.getUserGatherings().add(user);
+                }
+                order.setWaitGatheringNum(order.getWaitGatheringNum() - 1);
+            } else {
+                order.setWaitGatheringNum(0);
+            }
+            if (order.getWaitGatheringNum() == 0) {
+                order.setOrderStatus(OrderStatus.GATHERING_GOODS);
+            }
             customerOrderRepository.save(order);
             operateSnapshotService.create(OrderStatus.GATHERING_GOODS.getName(), order);
         } else {
             throw new BadRequestException("订单状态错误");
         }
+
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void gatherGoods(Long id) {
-        gatherGoods(getCustomerOrder(id));
+    synchronized public void gatherGoods(Long id, String pageFlowSn, Long userId) {
+        gatherGoods(getCustomerOrder(id), pageFlowSn, userId);
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     synchronized public void unGatherGoods(CustomerOrder order) {
+        // todo 取消分拣
         if (order.getOrderStatus() == OrderStatus.GATHERING_GOODS) {
             order.setOrderStatus(OrderStatus.FETCH_STOCK);
-            order.setUserGatherings(null);
+            order.getCustomerOrderPages().forEach(page -> {
+                page.setUserGatherings(null);
+            });
+            order.setWaitGatheringNum(order.getCustomerOrderPages().size());
             customerOrderRepository.save(order);
             operateSnapshotService.create("取消分拣", order);
         } else {
@@ -608,8 +659,10 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     synchronized public void completeGatherGoods(Long id) {
         CustomerOrder order = getCustomerOrder(id);
         if (order.getOrderStatus() == OrderStatus.GATHERING_GOODS) {
-            JwtUser user = (JwtUser) getUserDetails();
             order.setOrderStatus(OrderStatus.GATHER_GOODS);
+            order.getCustomerOrderPages().forEach(page -> {
+                page.setOrderStatus(OrderStatus.GATHER_GOODS);
+            });
             customerOrderRepository.save(order);
             operateSnapshotService.create(OrderStatus.GATHER_GOODS.getName(), order);
         } else {
@@ -624,7 +677,12 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         // 此处直接跳过正在分拣，回到订单匹配的状态
         if (order.getOrderStatus() == OrderStatus.GATHER_GOODS) {
             order.setOrderStatus(OrderStatus.FETCH_STOCK);
-            order.setUserGatherings(null);
+            // todo 取消分拣 - app
+            order.getCustomerOrderPages().forEach(page -> {
+                page.setUserGatherings(null);
+                page.setOrderStatus(OrderStatus.FETCH_STOCK);
+            });
+            order.setWaitGatheringNum(order.getCustomerOrderPages().size());
             customerOrderRepository.save(order);
             operateSnapshotService.create("取消分拣", order);
         } else {
@@ -1164,8 +1222,12 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             if (optionalCustomerOrder.isPresent()) {
                 try {
                     CustomerOrder customerOrder = optionalCustomerOrder.get();
-                    customerOrder.setUserGatherings(customerOrderMultipleOperateDTO.getUserGatherings());
-                    customerOrderService.gatherGoods(customerOrder);
+                    // todo 开始分拣-server-web
+                    customerOrder.getCustomerOrderPages().forEach(page -> {
+                        page.setOrderStatus(OrderStatus.GATHERING_GOODS);
+                        page.setUserGatherings(customerOrderMultipleOperateDTO.getUserGatherings());
+                    });
+                    customerOrderService.gatherGoods(customerOrder, null, null);
                     result.addSucceed();
                 } catch (BadRequestException e) {
                     result.addFailed();
@@ -1200,6 +1262,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MultiOperateResult batchCompleteGatherGoods(CustomerOrderMultipleOperateDTO customerOrderMultipleOperateDTO) {
+        // todo 完成分拣 server -web
         MultiOperateResult result = new MultiOperateResult();
         Arrays.stream(customerOrderMultipleOperateDTO.getIds()).forEach(id -> {
             try {
@@ -1242,7 +1305,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 try {
                     // todo 复核分拣 serverI
                     CustomerOrder customerOrder = optionalCustomerOrder.get();
-                    customerOrder.setUserReviewers(customerOrderMultipleOperateDTO.getUserReviewers());
+//                    customerOrder.setUserReviewers(customerOrderMultipleOperateDTO.getUserReviewers());
                     customerOrderService.confirm(customerOrder);
                     result.addSucceed();
                 } catch (BadRequestException e) {
@@ -1305,6 +1368,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(readOnly = true)
     public byte[] batchPrint(String orderIds, Boolean isOriginal) throws IOException {
+        // todo 打印出货单
         String[] ids = orderIds.split(",");
         List<ByteArrayOutputStream> allData = new ArrayList<>();
 
@@ -1550,6 +1614,51 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         return output.toByteArray();
     }
 
+    @Override
+    @CacheEvict(value = CACHE_NAME, allEntries = true)
+    public byte[] batchPrintPageInfo(String orderIds) throws IOException {
+        // todo 打印订单 页二维码
+        String[] ids = orderIds.split(",");
+        ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
+        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(outByteStream));
+        Document document = new Document(pdfDocument, PageSize.B8.rotate());
+        PdfFont font = PdfFontFactory.createFont(FileUtil.getRootPath() + "/fonts/simsun.ttf", PdfEncodings.IDENTITY_H, true);
+        document.setMargins(2f, 2f, 2f, 2f);
+        for (int i = 0; i < ids.length; i++) {
+            Optional<CustomerOrder> orderOptional = customerOrderRepository.findById(Long.valueOf(ids[i]));
+            if (!orderOptional.isPresent()) {
+                throw new BadRequestException("指定的订单ID有错误");
+            }
+            CustomerOrder customerOrder = orderOptional.get();
+            List<CustomerOrderPage> customerOrderPages = customerOrder.getCustomerOrderPages();
+            int pages = customerOrderPages.size();
+            if (i > 0) {
+                document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+            }
+            for (int j = 1; j <= pages; j++) {
+                if (j > 1) {
+                    document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+                }
+                Table table = new Table(2);
+                table.setWidth(UnitValue.createPercentValue(100));
+                table.setHeight(UnitValue.createPercentValue(100));
+                table.setFontSize(15f);
+                table.addCell(new Cell().add(new Paragraph(logoName).setFont(font)).setTextAlignment(TextAlignment.CENTER));
+                String text = pages + "-" + j;
+                table.addCell(new Cell().add(new Paragraph(text).setFont(font)).setTextAlignment(TextAlignment.CENTER).setBold());
+                table.addCell(new Cell().add(new Paragraph(customerOrder.getOwner().getShortNameCn()).setFont(font)).setTextAlignment(TextAlignment.CENTER));
+                table.addCell(new Cell().add(new Paragraph(customerOrder.getClientStore()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setBold());
+                Barcode128 barcode128 = new Barcode128(pdfDocument);
+                barcode128.setCode(customerOrderPages.get(i).getFlowSn());
+                table.addCell(new Cell(1, 2).add(new Image(barcode128.createFormXObject(null, null, pdfDocument)).setHorizontalAlignment(HorizontalAlignment.CENTER)));
+                document.add(table);
+            }
+        }
+        document.close();
+        pdfDocument.close();
+        return outByteStream.toByteArray();
+    }
+
     private void returnStockAndSaveOperateSnapshot(CustomerOrder order, OrderStatus orderStatus, String operation, String cancelDescription) {
         List<StockFlow> stockFlows = stockFlowRepository.findAllByCustomerOrderIdOrderByWarePositionOut(order.getId());
         JwtUser user = (JwtUser) getUserDetails();
@@ -1659,6 +1768,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 }
 
                 if (search != null) {
+                    Join<CustomerOrder, CustomerOrderPage> joinCustomerOrderPages = root.joinList("customerOrderPages", JoinType.LEFT);
                     predicates.add(criteriaBuilder.or(
                             criteriaBuilder.like(root.get("printTitle").as(String.class), "%" + search + "%"),
                             criteriaBuilder.like(root.get("clientName").as(String.class), "%" + search + "%"),
@@ -1669,7 +1779,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                             criteriaBuilder.like(root.get("clientOperator").as(String.class), "%" + search + "%"),
                             criteriaBuilder.like(root.get("flowSn").as(String.class), "%" + search + "%"),
                             criteriaBuilder.like(root.get("autoIncreaseSn").as(String.class), "%" + search + "%"),
-                            criteriaBuilder.like(root.get("description").as(String.class), "%" + search + "%")
+                            criteriaBuilder.like(root.get("description").as(String.class), "%" + search + "%"),
+                            criteriaBuilder.like(joinCustomerOrderPages.get("flowSn"), "%" + search + "%")
                     ));
                 }
 

@@ -180,21 +180,40 @@ public class CustomerOrder extends BaseEntity {
     @Fetch(FetchMode.JOIN)
     private User userCreator;
 
-    /**
-     * 订单分拣人
-     */
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "wms_join_table_customer_orders_userGatherings")
-    @Fetch(FetchMode.SUBSELECT)
-    private List<User> userGatherings;
+//    /**
+//     * 订单分拣人
+//     */
+//    @ManyToMany(fetch = FetchType.EAGER)
+//    @JoinTable(name = "wms_join_table_customer_orders_userGatherings")
+//    @Fetch(FetchMode.SUBSELECT)
+//    private List<User> userGatherings;
+//
+//    /**
+//     * 订单复核人
+//     */
+//    @ManyToMany(fetch = FetchType.EAGER)
+//    @JoinTable(name = "wms_join_table_customer_orders_userReviewers")
+//    @Fetch(FetchMode.SUBSELECT)
+//    private List<User> userReviewers;
 
     /**
-     * 订单复核人
+     * 分页信息
      */
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "wms_join_table_customer_orders_userReviewers")
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "customerOrder", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private List<User> userReviewers;
+    @OrderBy("createTime asc")
+    private List<CustomerOrderPage> customerOrderPages;
+
+    /**
+     * 剩余拣配数量
+     */
+    private Integer waitGatheringNum;
+
+    /**
+     * 剩余复检数量
+     */
+    private Integer waitReviewerNum;
 
     /**
      * 订单派送人

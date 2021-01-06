@@ -79,6 +79,7 @@ public class GeneralHandler implements RowHandler {
     synchronized public void handle(int i, int i1, List<Object> list) {
         //log.info("[{}] [{}] {}", i, i1, list);
 
+        // todo 常规导入订单
         // 第一行
         if (i1 == 0) {
             if (useNewAutoIncreaseSn) {

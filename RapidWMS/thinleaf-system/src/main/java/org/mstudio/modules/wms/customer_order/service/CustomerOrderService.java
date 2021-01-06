@@ -36,9 +36,9 @@ public interface CustomerOrderService {
 
     void returnStock(Long id);
 
-    void gatherGoods(CustomerOrder order);
+    void gatherGoods(CustomerOrder order,String pageFlowSn,Long userId);
 
-    void gatherGoods(Long id);
+    void gatherGoods(Long id,String pageFlowSn,Long userId);
 
     void unGatherGoods(CustomerOrder order);
 
@@ -120,4 +120,5 @@ public interface CustomerOrderService {
 
     List<OrderSales> queryOrderSales(String type, String date);
 
+    byte[] batchPrintPageInfo(String orderIds) throws IOException;
 }

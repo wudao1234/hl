@@ -707,6 +707,25 @@ class Order extends PureComponent {
     this.showPrintModal();
   };
 
+  // TODO TODO 打印页信息-func
+  handleBatchPrintPageInfo = () => {
+    const { dispatch } = this.props;
+    const { selectedRowKeys } = this.state;
+    dispatch({
+      type: 'order/batchPrintPageInfo',
+      payload: selectedRowKeys,
+      callback: response => {
+        if (response.status === 400) {
+          notification.error({
+            message: '操作发生错误',
+            description: response.message,
+          });
+        }
+      },
+    });
+    this.showPrintModal();
+  };
+
   handlePrintOrigin = () => {
     const { dispatch } = this.props;
     const { selectedRowKeys } = this.state;
@@ -1183,7 +1202,7 @@ class Order extends PureComponent {
         title: '客户订单号',
         dataIndex: 'clientOrderSn',
         key: 'clientOrderSn',
-        width: '15%',
+        width: '10%',
         sorter: true,
         sortOrder: sortClientOrderSn,
         render: text => {
@@ -1204,7 +1223,7 @@ class Order extends PureComponent {
         title: '客户单据号',
         dataIndex: 'clientOrderSn2',
         key: 'clientOrderSn2',
-        width: '15%',
+        width: '10%',
         sorter: true,
         sortOrder: sortClientOrderSn2,
         render: text => {
@@ -1225,7 +1244,7 @@ class Order extends PureComponent {
         title: '说明',
         dataIndex: 'description',
         key: 'description',
-        width: '15%',
+        width: '10%',
         render: text => {
           if (text) {
             return (
@@ -1267,7 +1286,7 @@ class Order extends PureComponent {
         title: '自编号',
         dataIndex: 'autoIncreaseSn',
         key: 'autoIncreaseSn',
-        width: '18%',
+        width: '15%',
         sorter: true,
         sortOrder: sortAutoIncreaseSn,
         render: text => {
@@ -1291,7 +1310,7 @@ class Order extends PureComponent {
         title: '接收',
         dataIndex: 'receiveType',
         key: 'receiveType',
-        width: '5%',
+        width: '1%',
         align: 'center',
         filters: this.handleReceiveTypeFilters(),
         filteredValue: receiveTypeFilter,
@@ -1579,6 +1598,15 @@ class Order extends PureComponent {
                         onClick={this.handlePrint}
                       >
                         打印出货单
+                      </Button>
+                      {/* TODO 打印页信息-html */}
+                      <Button
+                        icon="printer"
+                        htmlType="button"
+                        type="primary"
+                        onClick={this.handleBatchPrintPageInfo}
+                      >
+                        打印页信息
                       </Button>
                       <Button
                         icon="printer"

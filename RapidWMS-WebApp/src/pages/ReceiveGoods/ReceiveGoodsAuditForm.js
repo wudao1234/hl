@@ -244,7 +244,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
                 {getFieldDecorator(`receiveGoodsItems.${record.id}.quantityInitial`, {
                   rules: [{ required: true, message: '请输入数量' }],
                   initialValue: text,
-                })(<InputNumber min={1} max={99999999} disabled />)}
+                })(<InputNumber min={0} max={99999999} disabled />)}
               </FormItem>
             );
           }
@@ -282,7 +282,7 @@ class ReceiveGoodsAuditForm extends PureComponent {
                 {getFieldDecorator(`receiveGoodsItems.${record.id}.packagesInitial`, {
                   rules: [{ required: true, message: '请输入件数' }],
                   initialValue: text,
-                })(<InputNumber min={1} max={99999999} disabled />)}
+                })(<InputNumber min={0} max={99999999} disabled />)}
               </FormItem>
             );
           }

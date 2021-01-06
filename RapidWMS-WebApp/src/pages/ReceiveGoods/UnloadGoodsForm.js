@@ -693,7 +693,7 @@ class ReceiveGoodsForm extends PureComponent {
                 {getFieldDecorator(`receiveGoodsItems.${record.id}.quantityInitial`, {
                   rules: [{ required: true, message: '请输入数量' }],
                   initialValue: text,
-                })(<InputNumber min={1} max={99999999} precision={0} />)}
+                })(<InputNumber min={0} max={99999999} precision={0} />)}
               </FormItem>
             );
           }
@@ -712,7 +712,7 @@ class ReceiveGoodsForm extends PureComponent {
                 {getFieldDecorator(`receiveGoodsItems.${record.id}.packagesInitial`, {
                   rules: [{ required: true, message: '请输入件数' }],
                   initialValue: text,
-                })(<InputNumber min={1} max={99999999} precision={0} />)}
+                })(<InputNumber min={0} max={99999999} precision={0} />)}
               </FormItem>
             );
           }
@@ -883,7 +883,6 @@ class ReceiveGoodsForm extends PureComponent {
         if (err) {
           return;
         }
-        console.log(fieldsValue);
         dispatch({
           type: 'unloadGoods/submit',
           payload: { ...fieldsValue, isEdit },

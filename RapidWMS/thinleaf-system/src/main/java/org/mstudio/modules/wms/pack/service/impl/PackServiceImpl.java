@@ -210,6 +210,7 @@ public class PackServiceImpl implements PackService {
                 }
 
                 if (searchOrderSn != null) {
+                    // todo CriteriaBuilder join
                     Join<Pack, CustomerOrder> joinOrders = root.joinList("orders", JoinType.INNER);
                     predicates.add(criteriaBuilder.or(
                             criteriaBuilder.like(joinOrders.get("clientOrderSn"), "%" + searchOrderSn + "%"),
@@ -787,6 +788,7 @@ public class PackServiceImpl implements PackService {
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     public byte[] batchPrint(String packIds) throws IOException {
+        // todo 打印打包
         String[] ids = packIds.split(",");
         ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
         PdfDocument pdfDocument = new PdfDocument(new PdfWriter(outByteStream));

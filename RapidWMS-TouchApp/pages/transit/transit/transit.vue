@@ -546,7 +546,7 @@ export default {
 		},
 		viewOrderDetail(id) {
 			uni.navigateTo({
-				url: `../order-confirm/order-confirm?id=${id}&searchValue=${this.searchValue}`,
+				url: `../order-confirm/order-confirm?id=${id}&searchValue=${this.searchValue}&userId=${this.userInfo.id}`,
 				animationType: 'slide-in-right'
 			});
 		},
@@ -650,7 +650,6 @@ export default {
 	onLoad() {
 		this.loadOrders();
 		uni.$on('updateUserInfo', user => {
-			console.log(user)
 			this.userInfo = user;
 		});
 		uni.$on('updateConfirmOrderList', id => {

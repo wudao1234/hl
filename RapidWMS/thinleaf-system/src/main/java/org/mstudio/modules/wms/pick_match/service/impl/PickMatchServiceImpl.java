@@ -99,7 +99,7 @@ public class PickMatchServiceImpl implements PickMatchService {
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     public void create(Pack pack) {
-         // todo 新增 拣配 复核信息
+        // todo 新增 拣配 复核信息
         // 获取门店信息
         Address address = addressRepository.getOne(pack.getAddress().getId());
         if (Objects.isNull(address.getCoefficient())) {
@@ -112,17 +112,21 @@ public class PickMatchServiceImpl implements PickMatchService {
         List<User> userGatherings = new ArrayList<>();
         List<User> userReviewers = new ArrayList<>();
         pack.getOrders().forEach(customerOrder -> {
-            customerOrder.getUserGatherings().forEach(user -> {
-                boolean noMatch = userGatherings.stream().noneMatch(u -> u.getId().equals(user.getId()));
-                if (noMatch) {
-                    userGatherings.add(user);
-                }
+            customerOrder.getCustomerOrderPages().forEach(page -> {
+                page.getUserGatherings().forEach(user -> {
+                    boolean noMatch = userGatherings.stream().noneMatch(u -> u.getId().equals(user.getId()));
+                    if (noMatch) {
+                        userGatherings.add(user);
+                    }
+                });
             });
-            customerOrder.getUserReviewers().forEach(user -> {
-                boolean noMatch = userReviewers.stream().noneMatch(u -> u.getId().equals(user.getId()));
-                if (noMatch) {
-                    userReviewers.add(user);
-                }
+            customerOrder.getCustomerOrderPages().forEach(page -> {
+                page.getUserReviewers().forEach(user -> {
+                    boolean noMatch = userReviewers.stream().noneMatch(u -> u.getId().equals(user.getId()));
+                    if (noMatch) {
+                        userReviewers.add(user);
+                    }
+                });
             });
         });
 

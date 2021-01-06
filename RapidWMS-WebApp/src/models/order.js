@@ -28,6 +28,7 @@ import {
   queryOrderForConfirm,
   printOrderByIds,
   printOriginOrderByIds,
+  batchPrintPageInfo,
 } from '@/services/order';
 
 export default {
@@ -149,6 +150,14 @@ export default {
     },
     *printByIds({ payload, callback }, { call, put }) {
       const response = yield call(printOrderByIds, payload);
+      yield put({
+        type: 'savePdf',
+        payload: response,
+      });
+      if (callback) callback(response);
+    },
+    *batchPrintPageInfo({ payload, callback }, { call, put }) {
+      const response = yield call(batchPrintPageInfo, payload);
       yield put({
         type: 'savePdf',
         payload: response,

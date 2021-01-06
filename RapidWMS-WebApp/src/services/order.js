@@ -413,6 +413,19 @@ export async function printOrderByIds(ids) {
   return objectUrl;
 }
 
+export async function batchPrintPageInfo(ids) {
+  const queryString = `/api/customer_orders/batchPrintPageInfo?orderIds=${ids.join(',')}`;
+  const headers = new Headers();
+  headers.append('Authorization', `Bearer ${getToken()}`);
+  let objectUrl = null;
+  await fetch(queryString, { headers })
+    .then(response => response.blob())
+    .then(blobBody => {
+      objectUrl = URL.createObjectURL(blobBody);
+    });
+  return objectUrl;
+}
+
 export async function printOriginOrderByIds(ids) {
   const queryString = `/api/customer_orders/batchPrintOrigin?orderIds=${ids.join(',')}`;
   const headers = new Headers();

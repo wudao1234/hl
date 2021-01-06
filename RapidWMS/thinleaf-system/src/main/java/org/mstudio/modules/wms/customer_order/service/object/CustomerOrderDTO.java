@@ -99,4 +99,6 @@ public class CustomerOrderDTO extends BaseObject {
      */
     private Float qualityAssuranceExponent;
 
+    private List<CustomerOrderPageVO> customerOrderPages;
+
 }

@@ -95,6 +95,12 @@ public class UserQueryService {
                  */
                 list.add(cb.like(root.get("email").as(String.class),"%"+user.getEmail()+"%"));
             }
+            if(!ObjectUtils.isEmpty(user.getNum())){
+                /**
+                 * 模糊
+                 */
+                list.add(cb.like(root.get("num").as(String.class),"%"+user.getNum()+"%"));
+            }
 
             Predicate[] p = new Predicate[list.size()];
             return cb.and(list.toArray(p));
