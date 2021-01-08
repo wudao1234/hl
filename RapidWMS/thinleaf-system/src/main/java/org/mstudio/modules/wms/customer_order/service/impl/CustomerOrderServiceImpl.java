@@ -605,12 +605,12 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Transactional(rollbackFor = Exception.class)
     synchronized public void gatherGoods(CustomerOrder order, String pageFlowSn, Long userId) {
         // todo 开始分拣 代分页信息
-        if (order.getOrderStatus() != OrderStatus.FETCH_STOCK) {
+        if (!(order.getOrderStatus() == OrderStatus.FETCH_STOCK || order.getOrderStatus() == OrderStatus.GATHERING_GOODS)) {
             throw new BadRequestException("订单状态错误");
         }
         for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
             CustomerOrderPage p = order.getCustomerOrderPages().get(i);
-            if (ObjectUtil.isNotNull(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
             if (null != userId) {
                 Optional<User> userOptional = p.getUserGatherings().stream().filter(user -> user.getId() == userId).findAny();
                 if (!userOptional.isPresent()) {
@@ -618,9 +618,12 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     p.getUserGatherings().add(user);
                 }
             }
-            p.setOrderStatus(OrderStatus.GATHERING_GOODS);
-            order.setWaitGatheringNum(order.getWaitGatheringNum() - 1);
+            if (p.getOrderStatus().getIndex() < OrderStatus.GATHERING_GOODS.getIndex()) {
+                p.setOrderStatus(OrderStatus.GATHERING_GOODS);
+            }
         }
+        int num = (int) order.getCustomerOrderPages().stream().filter(p -> p.getUserGatherings().size() == 0).count();
+        order.setWaitGatheringNum(num);
         order.setOrderStatus(order.getWaitGatheringNum() == 0 ? OrderStatus.GATHERING_GOODS : OrderStatus.FETCH_STOCK);
 
         customerOrderRepository.save(order);
@@ -644,18 +647,20 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             throw new BadRequestException("订单状态错误");
         }
 
-
         for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
             CustomerOrderPage p = order.getCustomerOrderPages().get(i);
-            if (ObjectUtil.isNotNull(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
             if (null != userId) {
                 p.getUserGatherings().removeIf(u -> u.getId() == userId);
             } else {
-                p.setUserGatherings(null);
+                p.setUserGatherings(new ArrayList<>());
             }
-            p.setOrderStatus(OrderStatus.FETCH_STOCK);
-            order.setWaitGatheringNum(order.getWaitGatheringNum() + 1);
+            if (p.getUserGatherings().size() == 0) {
+                p.setOrderStatus(OrderStatus.FETCH_STOCK);
+            }
         }
+        int num = (int) order.getCustomerOrderPages().stream().filter(p -> p.getUserGatherings().size() == 0).count();
+        order.setWaitGatheringNum(num);
         order.setOrderStatus(order.getWaitGatheringNum() == 0 ? OrderStatus.GATHERING_GOODS : OrderStatus.FETCH_STOCK);
 
         customerOrderRepository.save(order);
@@ -672,65 +677,96 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void completeGatherGoods(Long id) {
+    synchronized public void completeGatherGoods(Long id, String pageFlowSn) {
+        // todo 完成分拣
         CustomerOrder order = getCustomerOrder(id);
-        if (order.getOrderStatus() == OrderStatus.GATHERING_GOODS) {
-            order.setOrderStatus(OrderStatus.GATHER_GOODS);
-            order.getCustomerOrderPages().forEach(page -> {
-                page.setOrderStatus(OrderStatus.GATHER_GOODS);
-            });
-            customerOrderRepository.save(order);
-            operateSnapshotService.create(OrderStatus.GATHER_GOODS.getName(), order);
-        } else {
+        if (order.getOrderStatus() != OrderStatus.GATHERING_GOODS) {
             throw new BadRequestException("订单状态错误");
         }
+
+        for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
+            CustomerOrderPage p = order.getCustomerOrderPages().get(i);
+            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (p.getOrderStatus().getIndex() < OrderStatus.GATHER_GOODS.getIndex()) {
+                p.setOrderStatus(OrderStatus.GATHER_GOODS);
+            }
+        }
+        int num = (int) order.getCustomerOrderPages().stream().filter(p -> p.getOrderStatus().getIndex() >= OrderStatus.GATHER_GOODS.getIndex()).count();
+        order.setOrderStatus(order.getCustomerOrderPages().size() == num ? OrderStatus.GATHER_GOODS : order.getOrderStatus());
+
+        customerOrderRepository.save(order);
+        operateSnapshotService.create(OrderStatus.GATHER_GOODS.getName(), order);
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void unCompleteGatherGoods(CustomerOrder order) {
+    synchronized public void unCompleteGatherGoods(CustomerOrder order, String pageFlowSn) {
         // 此处直接跳过正在分拣，回到订单匹配的状态
-        if (order.getOrderStatus() == OrderStatus.GATHER_GOODS) {
-            order.setOrderStatus(OrderStatus.FETCH_STOCK);
-            // todo 取消分拣 - app
-            order.getCustomerOrderPages().forEach(page -> {
-                page.setUserGatherings(null);
-                page.setOrderStatus(OrderStatus.FETCH_STOCK);
-            });
-            order.setWaitGatheringNum(order.getCustomerOrderPages().size());
-            customerOrderRepository.save(order);
-            operateSnapshotService.create("取消分拣", order);
-        } else {
+        // todo 取消分拣/复核 - app
+        if (!(order.getOrderStatus() == OrderStatus.GATHER_GOODS)) {
             throw new BadRequestException("订单状态错误");
         }
+
+        for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
+            CustomerOrderPage p = order.getCustomerOrderPages().get(i);
+            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (p.getOrderStatus().getIndex() < OrderStatus.CONFIRM.getIndex()) {
+                p.setOrderStatus(OrderStatus.FETCH_STOCK);
+                p.setUserReviewers(new ArrayList<>());
+                p.setUserGatherings(new ArrayList<>());
+            }
+        }
+        int num = (int) order.getCustomerOrderPages().stream().filter(p -> p.getUserGatherings().size() == 0).count();
+        order.setWaitGatheringNum(num);
+        order.setOrderStatus(order.getWaitGatheringNum() == 0 ? OrderStatus.GATHERING_GOODS : OrderStatus.FETCH_STOCK);
+
+        customerOrderRepository.save(order);
+        operateSnapshotService.create("取消分拣", order);
+
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    public void unCompleteGatherGoods(Long id) {
-        unCompleteGatherGoods(getCustomerOrder(id));
+    public void unCompleteGatherGoods(Long id, String pageFlowSn) {
+        unCompleteGatherGoods(getCustomerOrder(id), pageFlowSn);
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void confirm(CustomerOrder order) {
-        if (order.getOrderStatus() == OrderStatus.GATHER_GOODS) {
-            order.setOrderStatus(OrderStatus.CONFIRM);
-            customerOrderRepository.save(order);
-            operateSnapshotService.create(OrderStatus.CONFIRM.getName(), order);
-        } else {
+    synchronized public void confirm(CustomerOrder order, Long userId, String pageFlowSn) {
+        // todo 确认复核 app
+        if (!(order.getOrderStatus() == OrderStatus.GATHER_GOODS)) {
             throw new BadRequestException("订单状态错误");
         }
+
+        for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
+            CustomerOrderPage p = order.getCustomerOrderPages().get(i);
+            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (ObjectUtil.isNull(p.getUserReviewers())) {
+                p.setUserReviewers(new ArrayList<>());
+            }
+            if (null != userId && !p.getUserReviewers().stream().filter(user1 -> user1.getId() == userId).findAny().isPresent()) {
+                User user = userRepository.getOne(userId);
+                p.getUserReviewers().add(user);
+            }
+            p.setOrderStatus(OrderStatus.CONFIRM);
+        }
+        int num = (int) order.getCustomerOrderPages().stream().filter(p -> p.getOrderStatus() == OrderStatus.CONFIRM).count();
+        order.setWaitReviewerNum(order.getCustomerOrderPages().size() - num);
+        order.setOrderStatus(order.getWaitReviewerNum() == 0 ? OrderStatus.CONFIRM : order.getOrderStatus());
+
+        customerOrderRepository.save(order);
+        operateSnapshotService.create(OrderStatus.CONFIRM.getName(), order);
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void confirm(Long id) {
-        confirm(getCustomerOrder(id));
+    synchronized public void confirm(Long id, Long userId, String pageFlowSn) {
+        confirm(getCustomerOrder(id), userId, pageFlowSn);
     }
 
     @Override
@@ -1282,7 +1318,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         MultiOperateResult result = new MultiOperateResult();
         Arrays.stream(customerOrderMultipleOperateDTO.getIds()).forEach(id -> {
             try {
-                customerOrderService.completeGatherGoods(id);
+                customerOrderService.completeGatherGoods(id, null);
                 result.addSucceed();
             } catch (BadRequestException e) {
                 result.addFailed();
@@ -1299,7 +1335,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             Optional<CustomerOrder> optionalCustomerOrder = customerOrderRepository.findById(id);
             if (optionalCustomerOrder.isPresent()) {
                 try {
-                    customerOrderService.unCompleteGatherGoods(optionalCustomerOrder.get());
+                    customerOrderService.unCompleteGatherGoods(optionalCustomerOrder.get(), null);
                     result.addSucceed();
                 } catch (BadRequestException e) {
                     result.addFailed();
@@ -1322,7 +1358,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     // todo 复核分拣 serverI
                     CustomerOrder customerOrder = optionalCustomerOrder.get();
 //                    customerOrder.setUserReviewers(customerOrderMultipleOperateDTO.getUserReviewers());
-                    customerOrderService.confirm(customerOrder);
+                    customerOrderService.confirm(customerOrder, null, null);
                     result.addSucceed();
                 } catch (BadRequestException e) {
                     result.addFailed();

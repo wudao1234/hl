@@ -243,7 +243,7 @@ public class CustomerOrderController {
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
 
-    @PostMapping("/gather_goods/{id}/{userId}")
+    @GetMapping("/gather_goods/{id}/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
     public ResponseEntity gatherGoods(@PathVariable(value = "id") Long id,
                                       @RequestParam(value = "pageFlowSn", required = false) String pageFlowSn,
@@ -260,20 +260,23 @@ public class CustomerOrderController {
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
 
-    @PostMapping("/un_gather_goods/{id}/{userId}")
+    @GetMapping("/un_gather_goods/{id}/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
     public ResponseEntity unGatherGoods(@PathVariable(value = "id") Long id,
                                         @PathVariable(value = "userId") Long userId,
                                         @RequestParam(value = "pageFlowSn", required = false) String pageFlowSn) {
         // todo app -取消分拣
-        customerOrderService.unGatherGoods(id,userId,pageFlowSn);
+        customerOrderService.unGatherGoods(id, userId, pageFlowSn);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
     }
 
-    @PostMapping("{id}/completeGatherGoods")
+    @GetMapping("{id}/completeGatherGoods")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
-    public ResponseEntity completeGatherGoods(@PathVariable Long id) {
-        customerOrderService.completeGatherGoods(id);
+    public ResponseEntity completeGatherGoods(
+            @PathVariable Long id,
+            @RequestParam(value = "pageFlowSn", required = false) String pageFlowSn) {
+        // todo 确认分拣 app
+        customerOrderService.completeGatherGoods(id, pageFlowSn);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
     }
 
@@ -291,10 +294,13 @@ public class CustomerOrderController {
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
 
-    @PostMapping("/un_complete_gather_goods/{id}")
+    @GetMapping("/un_complete_gather_goods/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
-    public ResponseEntity unCompleteGatherGoods(@PathVariable Long id) {
-        customerOrderService.unCompleteGatherGoods(id);
+    public ResponseEntity unCompleteGatherGoods(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "pageFlowSn", required = false) String pageFlowSn) {
+        // todo 取消复核
+        customerOrderService.unCompleteGatherGoods(id, pageFlowSn);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
     }
 
@@ -306,10 +312,13 @@ public class CustomerOrderController {
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
 
-    @PostMapping("/confirm/{id}")
+    @GetMapping("/confirm/{id}/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_CONFIRM')")
-    public ResponseEntity confirm(@PathVariable Long id) {
-        customerOrderService.confirm(id);
+    public ResponseEntity confirm(@PathVariable("id") Long id,
+                                  @PathVariable("userId") Long userId,
+                                  @RequestParam(value = "pageFlowSn", required = false) String pageFlowSn) {
+        // todo 复核分拣 -app
+        customerOrderService.confirm(id, userId, pageFlowSn);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
     }
 

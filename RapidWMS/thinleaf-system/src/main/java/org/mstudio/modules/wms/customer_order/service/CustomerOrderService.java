@@ -44,15 +44,15 @@ public interface CustomerOrderService {
 
     void unGatherGoods(Long id, Long userId, String pageFlowSn);
 
-    void completeGatherGoods(Long id);
+    void completeGatherGoods(Long id,String pageFlowSn);
 
-    void unCompleteGatherGoods(CustomerOrder order);
+    void unCompleteGatherGoods(CustomerOrder order,String pageFlowSn);
 
-    void unCompleteGatherGoods(Long id);
+    void unCompleteGatherGoods(Long id,String pageFlowSn);
 
-    void confirm(CustomerOrder order);
+    void confirm(CustomerOrder order,Long userId,String pageFlowSn);
 
-    void confirm(Long id);
+    void confirm(Long id,Long userId,String pageFlowSn);
 
     void unConfirm(CustomerOrder order);
 

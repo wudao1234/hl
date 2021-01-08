@@ -707,7 +707,7 @@ export default {
 			case 0:
 				this.orders = [];
 				this.currentPage = 0;
-				this.searchValue = '';
+				// this.searchValue = '';
 				this.loadOrders();
 				break;
 			case 1:
@@ -773,6 +773,9 @@ export default {
 				this.loadMyOrders();
 				break;
 		}
+	},
+	onShow() {
+		uni.startPullDownRefresh()
 	}
 };
 </script>

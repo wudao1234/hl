@@ -56,24 +56,39 @@
 			总金额：
 			<uni-tag class="price_tag" :circle="true" :text="totalPrice" type="error" size="small" />
 		</view>
-		<view class="padding flex flex-direction" v-if="orderStatus == 'FETCH_STOCK'">
-			<button class="cu-btn bg-red margin-tb-sm lg" type="primary" :loading="loading" @click="gatheringGoods">开始分拣</button>
-		</view>
-		<view class="padding flex flex-direction" v-if="orderStatus == 'GATHERING_GOODS'">
-			<button class="cu-btn bg-blue margin-tb-sm lg" type="primary" :loading="loading" @click="scanGoods">扫描商品</button>
-			<button class="cu-btn bg-red margin-tb-sm lg" type="primary" :loading="loading" :disabled="notConfirm()" @click="confirmWithSacn">
-				{{ this.confirmButtonText() }}
-			</button>
-			<button class="cu-btn bg-red margin-tb-sm lg" type="danger" :loading="loading" @click="cancelGathering">取消分拣</button>
-			<button class="cu-btn bg-red margin-tb-sm lg" type="danger" :loading="loading" @click="confirmWithNoSacn">不扫码一键分拣</button>
-		</view>
-		<view class="padding flex flex-direction" v-if="orderStatus == 'GATHER_GOODS'">
-			<button class="cu-btn bg-blue margin-tb-sm lg" type="primary" :loading="loading" @click="scanGoods">扫描商品</button>
-			<button class="cu-btn bg-red margin-tb-sm lg" type="primary" :loading="loading" :disabled="notConfirm()" @click="confirmWithSacn">
-				{{ this.confirmButtonText() }}
-			</button>
-			<button class="cu-btn bg-red margin-tb-sm lg" type="danger" :loading="loading" @click="cancelConfirm">取消复核</button>
-			<button class="cu-btn bg-red margin-tb-sm lg" type="danger" :loading="loading" @click="confirmWithNoSacn">不扫码一键复核</button>
+		<view v-if="userId">
+			<view class="padding flex flex-direction" v-if="orderStatus == 'FETCH_STOCK'">
+				<button class="cu-btn bg-red margin-tb-sm lg" v-if="showFetchStockCancelGathering" type="danger" :loading="loading" @click="cancelGathering">取消分拣</button>
+				<button class="cu-btn bg-red margin-tb-sm lg" v-if="showGatheringGoods" type="primary" :loading="loading" @click="gatheringGoods">开始分拣</button>
+			</view>
+			<view class="padding flex flex-direction" v-if="orderStatus == 'GATHERING_GOODS'">
+				<button class="cu-btn bg-red margin-tb-sm lg" v-if="showGatheringGoods" type="primary" :loading="loading" @click="gatheringGoods">开始分拣</button>
+				<button class="cu-btn bg-blue margin-tb-sm lg" v-if="showFetchStockCancelGathering && showConfirmOrder" type="primary" :loading="loading" @click="scanGoods">
+					扫描商品
+				</button>
+				<button
+					class="cu-btn bg-red margin-tb-sm lg"
+					v-if="showFetchStockCancelGathering && showConfirmOrder"
+					type="primary"
+					:loading="loading"
+					:disabled="notConfirm()"
+					@click="confirmWithSacn"
+				>
+					{{ this.confirmButtonText() }}
+				</button>
+				<button class="cu-btn bg-red margin-tb-sm lg" v-if="showFetchStockCancelGathering" type="danger" :loading="loading" @click="cancelGathering">取消分拣</button>
+				<button class="cu-btn bg-red margin-tb-sm lg" v-if="showFetchStockCancelGathering && showConfirmOrder" type="danger" :loading="loading" @click="confirmWithNoSacn">
+					不扫码一键分拣
+				</button>
+			</view>
+			<view class="padding flex flex-direction" v-if="orderStatus == 'GATHER_GOODS' && showConfirm">
+				<button class="cu-btn bg-blue margin-tb-sm lg" type="primary" :loading="loading" @click="scanGoods">扫描商品</button>
+				<button class="cu-btn bg-red margin-tb-sm lg" type="primary" :loading="loading" :disabled="notConfirm()" @click="confirmWithSacn">
+					{{ this.confirmButtonText() }}
+				</button>
+				<button class="cu-btn bg-red margin-tb-sm lg" type="danger" :loading="loading" @click="cancelConfirm">取消复核</button>
+				<button class="cu-btn bg-red margin-tb-sm lg" type="danger" :loading="loading" @click="confirmWithNoSacn">不扫码一键复核</button>
+			</view>
 		</view>
 	</view>
 </template>
@@ -89,10 +104,21 @@ const ORDER_STATUS = {
 	PACKAGE: '整理打包',
 	SENDING: '物流派送'
 };
+
+const ORDER_STATUS_JSON = {
+	FETCH_STOCK: 'FETCH_STOCK',
+	GATHERING_GOODS: 'GATHERING_GOODS',
+	GATHER_GOODS: 'GATHER_GOODS',
+	CONFIRM: 'CONFIRM',
+	PACKAGE: 'PACKAGE',
+	SENDING: 'SENDING'
+};
+
 export default {
 	components: { uniList, uniListItem, uniSteps, uniTag },
 	data() {
 		return {
+			ORDER_STATUS_JSON,
 			ORDER_STATUS,
 			loading: false,
 			customerName: '',
@@ -109,18 +135,22 @@ export default {
 			orderStatus: '',
 			orderId: '',
 			stockFlowItems: [],
-			searchValue: '',
+			pageFlowSn: '',
 			spageItems: [],
 			num: undefined,
 			userId: undefined,
-			customerOrderPages: []
+			customerOrderPages: [],
+			showFetchStockCancelGathering: false,
+			showGatheringGoods: false,
+			showConfirmOrder: false,
+			showConfirm: false
 		};
 	},
 	computed: {
 		listJoin() {
 			return list => {
-				if (list.length === 0) return;
-				return list.reduce((acc, cur) => (acc = acc + cur.username + '/' + cur.num + ','),'');
+				if (list.length === 0) return '';
+				return list.reduce((acc, cur) => (acc = acc + cur.username + '/' + cur.num + ','), '');
 			};
 		},
 		formatTitle() {
@@ -140,7 +170,7 @@ export default {
 		}
 	},
 	methods: {
-		loadOrderDetail(id, searchValue) {
+		loadOrderDetail(id, pageFlowSn) {
 			this.api.get(`/api/customer_orders/${id}`).then(res => {
 				const order = res.data;
 				this.customerName = '客户：' + order.owner.name;
@@ -159,10 +189,38 @@ export default {
 				this.orderStatus = order.orderStatus;
 				this.customerOrderPages = order.customerOrderPages;
 
+				const showFetchStockCancelGathering1 = this.customerOrderPages.find(p => p.userGatherings.length > 0);
+				const showFetchStockCancelGathering2 = this.customerOrderPages.find(p => {
+					if (this.pageFlowSn) {
+						return p.userGatherings.find(u => u.id == this.userId) && p.flowSn === this.pageFlowSn;
+					} else {
+						return p.userGatherings.find(u => u.id == this.userId);
+					}
+				});
+				this.showFetchStockCancelGathering = showFetchStockCancelGathering1 && showFetchStockCancelGathering2;
+
+				const showGatheringGoods1 = this.customerOrderPages.find(p => p.userGatherings.length > 0);
+				const showGatheringGoods2 = this.customerOrderPages.find(p => {
+					if (this.pageFlowSn) {
+						return p.userGatherings.find(u => u.id == this.userId) && p.flowSn === this.pageFlowSn;
+					} else {
+						return p.userGatherings.find(u => u.id == this.userId);
+					}
+				});
+				this.showGatheringGoods = !showGatheringGoods1 || !showGatheringGoods2;
+
+				const showConfirmOrder1 = this.customerOrderPages.filter(p => p.userGatherings.find(u => u.id == this.userId)).length === this.customerOrderPages.length;
+				const showConfirmOrder2 = this.customerOrderPages.find(
+					p => p.userGatherings.find(u => u.id == this.userId) && p.flowSn === this.pageFlowSn && p.orderStatus === this.ORDER_STATUS_JSON.GATHERING_GOODS
+				);
+				this.showConfirmOrder = showConfirmOrder1 || showConfirmOrder2;
+
+				this.showConfirm = this.customerOrderPages.filter(p => p.flowSn === this.pageFlowSn && p.orderStatus === this.ORDER_STATUS_JSON.CONFIRM).length===0;
+console.log(this.showConfirm)
 				this.api.get(`/api/stock_flows/findByOrderId/${id}`).then(res => {
 					this.stockFlowItems = [...res.data].reverse();
-					if (this.searchValue && 'PAGE' === this.searchValue.substr(0, 4)) {
-						this.num = order.customerOrderPages.find(e => e.flowSn === this.searchValue).num;
+					if (this.pageFlowSn && 'PAGE' === this.pageFlowSn.substr(0, 4)) {
+						this.num = order.customerOrderPages.find(e => e.flowSn === this.pageFlowSn).num;
 						console.log(this.num);
 						this.spageItems = this.stockFlowItems.slice(this.num * PAGE_SIZE, this.num * PAGE_SIZE + PAGE_SIZE);
 					}
@@ -199,9 +257,7 @@ export default {
 			}
 			this.loading = true;
 			this.api
-				.post(`/api/customer_orders/gather_goods/${this.orderId}/${this.userId}`, {
-					pageFlowSn: this.searchValue
-				})
+				.get(`/api/customer_orders/gather_goods/${this.orderId}/${this.userId}?pageFlowSn=${this.pageFlowSn ? this.pageFlowSn : ''}`)
 				.then(res => {
 					if (res.statusCode == 201) {
 						uni.showToast({
@@ -212,6 +268,7 @@ export default {
 								setTimeout(() => {
 									uni.$emit('updateConfirmOrderList', this.orderId);
 								}, 1000);
+								this.loadOrderDetail(this.orderId, this.pageFlowSn);
 							}
 						});
 					}
@@ -237,9 +294,10 @@ export default {
 		confirmOrder() {
 			let queryString;
 			if (this.orderStatus == 'GATHERING_GOODS') {
-				queryString = '/api/customer_orders/' + this.orderId + '/completeGatherGoods';
+				// TODO 确认分拣
+				queryString = `/api/customer_orders/${this.orderId}/completeGatherGoods?pageFlowSn=${this.pageFlowSn ? this.pageFlowSn : ''}`;
 				this.loading = true;
-				this.api.post(queryString).then(res => {
+				this.api.get(queryString).then(res => {
 					if (res.statusCode == 201) {
 						uni.showToast({
 							title: '操作成功',
@@ -257,8 +315,9 @@ export default {
 				});
 			}
 			if (this.orderStatus == 'GATHER_GOODS') {
+				// TODO 确认复核
 				this.loading = true;
-				this.api.post('/api/customer_orders/confirm/' + this.orderId).then(res => {
+				this.api.get(`/api/customer_orders/confirm/${this.orderId}/${this.userId}?pageFlowSn=${this.pageFlowSn ? this.pageFlowSn : ''}`).then(res => {
 					if (res.statusCode == 201) {
 						uni.showToast({
 							title: '操作成功',
@@ -282,11 +341,44 @@ export default {
 				content: '确认取消分拣？',
 				success: res => {
 					if (res.confirm) {
+						if (!this.userId) {
+							uni.showToast({
+								title: '请先选择工作人员',
+								icon: 'none'
+							});
+							return;
+						}
+						this.loading = true;
+						this.api.get(`/api/customer_orders/un_gather_goods/${this.orderId}/${this.userId}?pageFlowSn=${this.pageFlowSn ? this.pageFlowSn : ''}`).then(res => {
+							if (res.statusCode == 201) {
+								uni.showToast({
+									title: '取消成功',
+									icon: 'success',
+									success: () => {
+										setTimeout(() => {
+											uni.$emit('updateConfirmOrderList', this.orderId);
+											uni.navigateBack();
+										}, 1000);
+									}
+								});
+							} else {
+								this.loading = false;
+							}
+						});
+					}
+				}
+			});
+		},
+		cancelConfirm() {
+			// TODO 取消复核
+			uni.showModal({
+				title: '确认对话框',
+				content: '确认取消分拣？',
+				success: res => {
+					if (res.confirm) {
 						this.loading = true;
 						this.api
-							.post(`/api/customer_orders/un_gather_goods/${this.orderId}/${this.userId}`, {
-								pageFlowSn: this.searchValue
-							})
+							.get(`/api/customer_orders/un_complete_gather_goods/${this.orderId}?pageFlowSn=${this.pageFlowSn ? this.pageFlowSn : ''}`)
 							.then(res => {
 								if (res.statusCode == 201) {
 									uni.showToast({
@@ -303,33 +395,6 @@ export default {
 									this.loading = false;
 								}
 							});
-					}
-				}
-			});
-		},
-		cancelConfirm() {
-			uni.showModal({
-				title: '确认对话框',
-				content: '确认取消分拣？',
-				success: res => {
-					if (res.confirm) {
-						this.loading = true;
-						this.api.post('/api/customer_orders/un_complete_gather_goods/' + this.orderId).then(res => {
-							if (res.statusCode == 201) {
-								uni.showToast({
-									title: '取消成功',
-									icon: 'success',
-									success: () => {
-										setTimeout(() => {
-											uni.$emit('updateConfirmOrderList', this.orderId);
-											uni.navigateBack();
-										}, 1000);
-									}
-								});
-							} else {
-								this.loading = false;
-							}
-						});
 					}
 				}
 			});
@@ -381,8 +446,8 @@ export default {
 	onLoad(params) {
 		this.orderId = params.id;
 		this.userId = params.userId === 'undefined' ? undefined : params.userId;
-		this.searchValue = params.searchValue === '' ? undefined : params.searchValue;
-		this.loadOrderDetail(this.orderId, this.searchValue);
+		this.pageFlowSn = params.searchValue === '' ? undefined : params.searchValue;
+		this.loadOrderDetail(this.orderId, this.pageFlowSn);
 	}
 };
 </script>
