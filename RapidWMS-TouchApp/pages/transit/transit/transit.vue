@@ -552,7 +552,7 @@ export default {
 		},
 		viewPackDetail(id) {
 			uni.navigateTo({
-				url: `../pack-detail/pack-detail?id=${id}`,
+				url: `../pack-detail/pack-detail?id=${id}&searchValue=${this.searchValue}&userId=${this.userInfo.id}`,
 				animationType: 'slide-in-right'
 			});
 		},

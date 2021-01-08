@@ -197,6 +197,7 @@ public class PackController {
     @PostMapping("/sendingByMe")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_PACK_EDIT')")
     public ResponseEntity sendingByMe(@RequestBody PackMultipleOperateDTO packMultipleOperateDTO) {
+        // todo 指定派送-app
         MultiOperateResult result = packService.sendingByMe(packMultipleOperateDTO);
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }

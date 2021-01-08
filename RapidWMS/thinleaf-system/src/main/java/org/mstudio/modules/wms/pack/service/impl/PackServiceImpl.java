@@ -521,6 +521,7 @@ public class PackServiceImpl implements PackService {
             @CacheEvict(value = CustomerOrderServiceImpl.CACHE_NAME, allEntries = true)
     })
     synchronized public void sending(Long id, Long sendingUserId, Boolean sendingByMe) {
+        // todo 派送
         Optional<Pack> optionalPack = packRepository.findById(id);
         Optional<User> optionalUser = userRepository.findById(sendingUserId);
         if (!optionalPack.isPresent()) {
@@ -719,10 +720,9 @@ public class PackServiceImpl implements PackService {
     })
     public MultiOperateResult sendingByMe(PackMultipleOperateDTO packMultipleOperateDTO) {
         MultiOperateResult result = new MultiOperateResult();
-        Long userId = userRepository.findByUsername(getUserDetails().getUsername()).getId();
         Arrays.stream(packMultipleOperateDTO.getIds()).forEach(id -> {
             try {
-                packService.sending(id, userId, true);
+                packService.sending(id, packMultipleOperateDTO.getSendingUserId(), true);
                 result.addSucceed();
             } catch (BadRequestException e) {
                 result.addFailed();

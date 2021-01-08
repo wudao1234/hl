@@ -198,7 +198,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     @Transactional(readOnly = true)
     public Map listForPack(String customerFilter, String search, Pageable pageable) {
         return query(null, false, null, null, customerFilter, String.valueOf(OrderStatus.CONFIRM.getIndex()), null, true, null, null, search, pageable);

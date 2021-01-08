@@ -85,4 +85,6 @@ public class CustomerOrderVO extends BaseObject {
 
     private PackInfoVO pack;
 
+    private List<CustomerOrderPageVO> customerOrderPages;
+
 }
