@@ -243,14 +243,13 @@ public class CustomerOrderController {
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
 
-    @PostMapping("/gather_goods/{id}/{pageFlowSn}/{userId}")
+    @PostMapping("/gather_goods/{id}/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
-    public ResponseEntity gatherGoods(
-            @PathVariable("id") Long id,
-            @PathVariable("pageFlowSn") String pageFlowSn,
-            @PathVariable("userId") Long userId) {
+    public ResponseEntity gatherGoods(@PathVariable(value = "id") Long id,
+                                      @RequestParam(value = "pageFlowSn", required = false) String pageFlowSn,
+                                      @PathVariable(value = "userId") Long userId) {
         // todo app 开始分拣
-        customerOrderService.gatherGoods(id,pageFlowSn,userId);
+        customerOrderService.gatherGoods(id, pageFlowSn, userId);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
     }
 
@@ -261,10 +260,13 @@ public class CustomerOrderController {
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }
 
-    @PostMapping("/un_gather_goods/{id}")
+    @PostMapping("/un_gather_goods/{id}/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'T_ORDER_GATHER')")
-    public ResponseEntity unGatherGoods(@PathVariable Long id) {
-        customerOrderService.unGatherGoods(id);
+    public ResponseEntity unGatherGoods(@PathVariable(value = "id") Long id,
+                                        @PathVariable(value = "userId") Long userId,
+                                        @RequestParam(value = "pageFlowSn", required = false) String pageFlowSn) {
+        // todo app -取消分拣
+        customerOrderService.unGatherGoods(id,userId,pageFlowSn);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
     }
 
@@ -328,7 +330,7 @@ public class CustomerOrderController {
     @PostMapping("/batchCancel")
     @PreAuthorize("hasAnyRole('ADMIN', 'O_ORDER_EDIT')")
     public ResponseEntity batchCancel(@RequestBody CustomerOrderMultipleOperateDTO customerOrderMultipleOperateDTO) {
-         // todo 作废打包
+        // todo 作废打包
         MultiOperateResult result = customerOrderService.batchCancel(customerOrderMultipleOperateDTO);
         return new ResponseEntity<>(WmsUtil.getResultMessage(result), HttpStatus.CREATED);
     }

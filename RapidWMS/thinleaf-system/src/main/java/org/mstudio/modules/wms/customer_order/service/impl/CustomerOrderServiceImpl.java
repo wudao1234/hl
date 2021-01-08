@@ -65,6 +65,7 @@ import org.mstudio.modules.wms.operate_snapshot.service.OperateSnapshotService;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pack.service.impl.PackServiceImpl;
+import org.mstudio.modules.wms.pick_match.repository.PickMatchRepository;
 import org.mstudio.modules.wms.pick_match.service.PickMatchService;
 import org.mstudio.modules.wms.stock.domain.Stock;
 import org.mstudio.modules.wms.stock.dto.AddDTO;
@@ -185,6 +186,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Autowired
     private CustomerOrderPageRepository customerOrderPageRepository;
+
+    @Autowired
+    private PickMatchRepository pickMatchRepository;
 
     @Override
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
@@ -491,6 +495,10 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         if (order.getOrderStatus() != OrderStatus.INIT && order.getOrderStatus() != OrderStatus.CANCEL) {
             throw new BadRequestException("只能删除初始状态或者已废除的订单");
         } else {
+            if (ObjectUtil.isNotNull(order.getPack())) {
+                pickMatchRepository.deleteAll(order.getPack().getPickMatch());
+            }
+            customerOrderPageRepository.deleteAll(order.getCustomerOrderPages());
             customerOrderItemRepository.deleteAll(order.getCustomerOrderItems());
             customerOrderStockRepository.deleteAll(order.getCustomerOrderStocks());
             operateSnapshotRepository.deleteAll(order.getOperateSnapshots());
@@ -597,27 +605,26 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Transactional(rollbackFor = Exception.class)
     synchronized public void gatherGoods(CustomerOrder order, String pageFlowSn, Long userId) {
         // todo 开始分拣 代分页信息
-        if (order.getOrderStatus() == OrderStatus.FETCH_STOCK) {
-            if (ObjectUtil.isNotNull(pageFlowSn)) {
-                CustomerOrderPage page = order.getCustomerOrderPages().stream().filter(p -> pageFlowSn.equals(p.getFlowSn())).findAny().get();
-                page.setOrderStatus(OrderStatus.GATHERING_GOODS);
-                Optional<User> userOptional = page.getUserGatherings().stream().filter(user -> user.getId() == userId).findAny();
-                if (!userOptional.isPresent()) {
-                    User user = userRepository.getOne(userId);
-                    page.getUserGatherings().add(user);
-                }
-                order.setWaitGatheringNum(order.getWaitGatheringNum() - 1);
-            } else {
-                order.setWaitGatheringNum(0);
-            }
-            if (order.getWaitGatheringNum() == 0) {
-                order.setOrderStatus(OrderStatus.GATHERING_GOODS);
-            }
-            customerOrderRepository.save(order);
-            operateSnapshotService.create(OrderStatus.GATHERING_GOODS.getName(), order);
-        } else {
+        if (order.getOrderStatus() != OrderStatus.FETCH_STOCK) {
             throw new BadRequestException("订单状态错误");
         }
+        for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
+            CustomerOrderPage p = order.getCustomerOrderPages().get(i);
+            if (ObjectUtil.isNotNull(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (null != userId) {
+                Optional<User> userOptional = p.getUserGatherings().stream().filter(user -> user.getId() == userId).findAny();
+                if (!userOptional.isPresent()) {
+                    User user = userRepository.getOne(userId);
+                    p.getUserGatherings().add(user);
+                }
+            }
+            p.setOrderStatus(OrderStatus.GATHERING_GOODS);
+            order.setWaitGatheringNum(order.getWaitGatheringNum() - 1);
+        }
+        order.setOrderStatus(order.getWaitGatheringNum() == 0 ? OrderStatus.GATHERING_GOODS : OrderStatus.FETCH_STOCK);
+
+        customerOrderRepository.save(order);
+        operateSnapshotService.create(OrderStatus.GATHERING_GOODS.getName(), order);
 
     }
 
@@ -631,26 +638,35 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void unGatherGoods(CustomerOrder order) {
+    synchronized public void unGatherGoods(CustomerOrder order, Long userId, String pageFlowSn) {
         // todo 取消分拣
-        if (order.getOrderStatus() == OrderStatus.GATHERING_GOODS) {
-            order.setOrderStatus(OrderStatus.FETCH_STOCK);
-            order.getCustomerOrderPages().forEach(page -> {
-                page.setUserGatherings(null);
-            });
-            order.setWaitGatheringNum(order.getCustomerOrderPages().size());
-            customerOrderRepository.save(order);
-            operateSnapshotService.create("取消分拣", order);
-        } else {
+        if (!(order.getOrderStatus() == OrderStatus.GATHERING_GOODS || order.getOrderStatus() == OrderStatus.FETCH_STOCK)) {
             throw new BadRequestException("订单状态错误");
         }
+
+
+        for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
+            CustomerOrderPage p = order.getCustomerOrderPages().get(i);
+            if (ObjectUtil.isNotNull(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (null != userId) {
+                p.getUserGatherings().removeIf(u -> u.getId() == userId);
+            } else {
+                p.setUserGatherings(null);
+            }
+            p.setOrderStatus(OrderStatus.FETCH_STOCK);
+            order.setWaitGatheringNum(order.getWaitGatheringNum() + 1);
+        }
+        order.setOrderStatus(order.getWaitGatheringNum() == 0 ? OrderStatus.GATHERING_GOODS : OrderStatus.FETCH_STOCK);
+
+        customerOrderRepository.save(order);
+        operateSnapshotService.create("取消分拣", order);
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
-    synchronized public void unGatherGoods(Long id) {
-        unGatherGoods(getCustomerOrder(id));
+    synchronized public void unGatherGoods(Long id, Long userId, String pageFlowSn) {
+        unGatherGoods(getCustomerOrder(id), userId, pageFlowSn);
     }
 
     @Override
@@ -1247,7 +1263,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             Optional<CustomerOrder> optionalCustomerOrder = customerOrderRepository.findById(id);
             if (optionalCustomerOrder.isPresent()) {
                 try {
-                    customerOrderService.unGatherGoods(optionalCustomerOrder.get());
+                    customerOrderService.unGatherGoods(optionalCustomerOrder.get(), null, null);
                     result.addSucceed();
                 } catch (BadRequestException e) {
                     result.addFailed();

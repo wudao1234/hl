@@ -25,6 +25,7 @@ import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
+import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
 import org.mstudio.modules.wms.customer_order.repository.CustomerOrderRepository;
 import org.mstudio.modules.wms.customer_order.service.impl.CustomerOrderServiceImpl;
 import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderVO;
@@ -32,7 +33,6 @@ import org.mstudio.modules.wms.operate_snapshot.repository.OperateSnapshotReposi
 import org.mstudio.modules.wms.operate_snapshot.service.OperateSnapshotService;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.domain.PackItem;
-import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
 import org.mstudio.modules.wms.pack.repository.PackItemRepository;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pack.service.PackService;
@@ -41,6 +41,7 @@ import org.mstudio.modules.wms.pack.service.object.PackDTO;
 import org.mstudio.modules.wms.pack.service.object.PackExcelObj;
 import org.mstudio.modules.wms.pack.service.object.PackMultipleOperateDTO;
 import org.mstudio.modules.wms.pack.service.object.PackVO;
+import org.mstudio.modules.wms.pick_match.repository.PickMatchRepository;
 import org.mstudio.modules.wms.pick_match.service.PickMatchService;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 import org.mstudio.modules.wms.stock_flow.repository.StockFlowRepository;
@@ -128,6 +129,9 @@ public class PackServiceImpl implements PackService {
 
     @Autowired
     private PickMatchService pickMatchService;
+
+    @Autowired
+    private PickMatchRepository pickMatchRepository;
 
 
     @Override
@@ -503,6 +507,7 @@ public class PackServiceImpl implements PackService {
                 throw new BadRequestException("只能在打包或者已经作废状态下进行删除");
             } else {
                 detachOrders(pack.getOrders());
+                pickMatchRepository.deleteAll(pack.getPickMatch());
                 operateSnapshotRepository.deleteAll(pack.getOperateSnapshots());
                 packItemRepository.deleteAll(pack.getPackItems());
                 packRepository.delete(pack);

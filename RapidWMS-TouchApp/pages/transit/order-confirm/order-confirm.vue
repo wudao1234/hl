@@ -18,6 +18,14 @@
 			<uni-list-item :show-arrow="false" :title="clientOrderSn" />
 			<uni-list-item :show-arrow="false" :title="clientOperator" />
 		</uni-list>
+		<view class="title">页信息</view>
+		<uni-list v-for="(item, i) in customerOrderPages" :key="item.id">
+			<uni-list-item :show-arrow="false" :title="'第' + (i + 1) + '页'" />
+			<uni-list-item :show-arrow="false" :title="'流水:' + item.flowSn" />
+			<uni-list-item :show-arrow="false" :title="'拣配人:' + listJoin(item.userGatherings)" />
+			<uni-list-item :show-arrow="false" :title="'复核人:' + listJoin(item.userReviewers)" />
+			<uni-list-item :show-arrow="false" :title="'状态:' + ORDER_STATUS[item.orderStatus]" />
+		</uni-list>
 		<view class="title">商品出库明细</view>
 		<uni-list>
 			<uni-list-item
@@ -31,7 +39,7 @@
 				:badge-text="formatBadgeText(item)"
 			/>
 		</uni-list>
-		<view class="title" v-if="num">页码:{{ num + 1 }}</view>
+		<view class="title" v-if="num > -1">页码:{{ num + 1 }}</view>
 		<uni-list>
 			<uni-list-item
 				v-for="item in spageItems"
@@ -73,10 +81,19 @@
 <script>
 import { uniList, uniListItem, uniSteps, uniTag } from '@dcloudio/uni-ui';
 const PAGE_SIZE = 1;
+const ORDER_STATUS = {
+	FETCH_STOCK: '匹配出库',
+	GATHERING_GOODS: '正在分拣',
+	GATHER_GOODS: '分拣完成',
+	CONFIRM: '复核确认',
+	PACKAGE: '整理打包',
+	SENDING: '物流派送'
+};
 export default {
 	components: { uniList, uniListItem, uniSteps, uniTag },
 	data() {
 		return {
+			ORDER_STATUS,
 			loading: false,
 			customerName: '',
 			createTime: '',
@@ -95,10 +112,17 @@ export default {
 			searchValue: '',
 			spageItems: [],
 			num: undefined,
-			userId: undefined
+			userId: undefined,
+			customerOrderPages: []
 		};
 	},
 	computed: {
+		listJoin() {
+			return list => {
+				if (list.length === 0) return;
+				return list.reduce((acc, cur) => (acc = acc + cur.username + '/' + cur.num + ','),'');
+			};
+		},
 		formatTitle() {
 			return (name, quantity) => {
 				return `${this.accounting.formatNumber(quantity)} × ${name}`;
@@ -133,12 +157,13 @@ export default {
 				this.clientOperator = '操作员：' + (order.clientOperator ? order.clientOperator : '');
 
 				this.orderStatus = order.orderStatus;
+				this.customerOrderPages = order.customerOrderPages;
 
 				this.api.get(`/api/stock_flows/findByOrderId/${id}`).then(res => {
 					this.stockFlowItems = [...res.data].reverse();
-					if ('PAGE' === this.searchValue.substr(0, 4)) {
+					if (this.searchValue && 'PAGE' === this.searchValue.substr(0, 4)) {
 						this.num = order.customerOrderPages.find(e => e.flowSn === this.searchValue).num;
-						console.log(this.stockFlowItems);
+						console.log(this.num);
 						this.spageItems = this.stockFlowItems.slice(this.num * PAGE_SIZE, this.num * PAGE_SIZE + PAGE_SIZE);
 					}
 				});
@@ -165,18 +190,18 @@ export default {
 			return '请扫描完毕后确认';
 		},
 		gatheringGoods() {
-			if (this.searchValue) {
-				if (!this.userId) {
-					uni.showToast({
-						title: '请先选择工作人员',
-						icon: 'none'
-					});
-					return;
-				}
+			if (!this.userId) {
+				uni.showToast({
+					title: '请先选择工作人员',
+					icon: 'none'
+				});
+				return;
 			}
 			this.loading = true;
 			this.api
-				.post(`/api/customer_orders/gather_goods/${this.orderId}/${this.searchValue}/${this.userId}`)
+				.post(`/api/customer_orders/gather_goods/${this.orderId}/${this.userId}`, {
+					pageFlowSn: this.searchValue
+				})
 				.then(res => {
 					if (res.statusCode == 201) {
 						uni.showToast({
@@ -258,22 +283,26 @@ export default {
 				success: res => {
 					if (res.confirm) {
 						this.loading = true;
-						this.api.post('/api/customer_orders/un_gather_goods/' + this.orderId).then(res => {
-							if (res.statusCode == 201) {
-								uni.showToast({
-									title: '取消成功',
-									icon: 'success',
-									success: () => {
-										setTimeout(() => {
-											uni.$emit('updateConfirmOrderList', this.orderId);
-											uni.navigateBack();
-										}, 1000);
-									}
-								});
-							} else {
-								this.loading = false;
-							}
-						});
+						this.api
+							.post(`/api/customer_orders/un_gather_goods/${this.orderId}/${this.userId}`, {
+								pageFlowSn: this.searchValue
+							})
+							.then(res => {
+								if (res.statusCode == 201) {
+									uni.showToast({
+										title: '取消成功',
+										icon: 'success',
+										success: () => {
+											setTimeout(() => {
+												uni.$emit('updateConfirmOrderList', this.orderId);
+												uni.navigateBack();
+											}, 1000);
+										}
+									});
+								} else {
+									this.loading = false;
+								}
+							});
 					}
 				}
 			});
@@ -351,8 +380,8 @@ export default {
 	},
 	onLoad(params) {
 		this.orderId = params.id;
-		this.userId = params.userId==='undefined'?undefined:params.userId;;
-		this.searchValue = params.searchValue===''?undefined:params.searchValue;
+		this.userId = params.userId === 'undefined' ? undefined : params.userId;
+		this.searchValue = params.searchValue === '' ? undefined : params.searchValue;
 		this.loadOrderDetail(this.orderId, this.searchValue);
 	}
 };

@@ -40,9 +40,9 @@ public interface CustomerOrderService {
 
     void gatherGoods(Long id,String pageFlowSn,Long userId);
 
-    void unGatherGoods(CustomerOrder order);
+    void unGatherGoods(CustomerOrder order, Long userId, String pageFlowSn);
 
-    void unGatherGoods(Long id);
+    void unGatherGoods(Long id, Long userId, String pageFlowSn);
 
     void completeGatherGoods(Long id);
 
