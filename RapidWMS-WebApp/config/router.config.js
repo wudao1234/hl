@@ -464,6 +464,22 @@ export default [
         ],
       },
       {
+        name: 'logisticses',
+        path: '/logisticses',
+        routes: [
+          {
+            path: '/logisticses/logisticsDetail',
+            name: 'logisticsDetail',
+            component: './Logistics/LogisticsDetail',
+          },
+          {
+            path: '/logisticses/logisticsTemplate',
+            name: 'logisticsTemplate',
+            component: './Logistics/LogisticsTemplate',
+          },
+        ],
+      },
+      {
         component: '404',
       },
     ],

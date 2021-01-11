@@ -21,7 +21,5 @@ public interface DispatchSysRepository extends JpaRepository<DispatchSys, Long>,
 
     Page<DispatchSys> findAllByNameLike(String name, Pageable pageable);
 
-    Optional<DispatchSys> findTopByName(String name);
-
     DispatchSys findByName(String name);
 }

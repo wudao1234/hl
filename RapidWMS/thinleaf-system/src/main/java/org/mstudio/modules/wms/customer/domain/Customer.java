@@ -6,6 +6,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.validator.constraints.Length;
 import org.mstudio.modules.system.domain.User;
+import org.mstudio.modules.wms.Logistics.domain.LogisticsDetail;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.goods.domain.Goods;
@@ -58,5 +59,10 @@ public class Customer extends BaseEntity {
     @JoinTable(name = "wms_join_table_customers_users")
     @Fetch(FetchMode.SUBSELECT)
     private List<User> users;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<LogisticsDetail> logisticsDetails;
 
 }
