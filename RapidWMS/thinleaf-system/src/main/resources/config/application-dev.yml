@@ -62,7 +62,7 @@ spring:
   jpa:
     hibernate:
       # 生产环境设置成 none，避免程序运行时自动更新数据库结构
-      ddl-auto: none
+      ddl-auto: update
 
 #jwt
 jwt:
@@ -70,7 +70,7 @@ jwt:
   secret: 249fd614-8e1b-4f98-992e-13d097ae1a8a
   # token 过期时间 24个小时
   expiration: 86400000
-  licence: 1610236800000
+  licence: 1611236800000
   auth:
     # 授权路径
     path: /login
