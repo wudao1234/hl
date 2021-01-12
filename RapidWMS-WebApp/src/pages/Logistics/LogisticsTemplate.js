@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'dva';
+import accounting from 'accounting';
 import moment from 'moment';
 import {
   Button,
@@ -14,6 +15,7 @@ import {
   Table,
   DatePicker,
   InputNumber,
+  Tag,
 } from 'antd';
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -84,9 +86,12 @@ class LogisticsTemplate extends PureComponent {
   };
 
   showEditModal = item => {
+    const currentItem = Object.assign({}, item);
+    currentItem.firstPrice /= 100;
+    currentItem.renewPrice /= 100;
     this.setState({
       visible: true,
-      currentItem: item,
+      currentItem,
     });
   };
 
@@ -117,9 +122,13 @@ class LogisticsTemplate extends PureComponent {
         return;
       }
       this.handleDone();
+      const data = Object.assign({}, fieldsValue);
+      data.firstPrice *= 100;
+      data.renewPrice *= 100;
+      data.dateTime = new Date(moment(data.dateTime).format('YYYY-MM-DD 00:00:00'));
       dispatch({
         type: 'logisticsTemplate/submit',
-        payload: { id, ...fieldsValue },
+        payload: { id, ...data },
         callback: response => {
           if (response.status === 400) {
             notification.error({
@@ -229,20 +238,67 @@ class LogisticsTemplate extends PureComponent {
           </FormItem>
           <FormItem label="生效日期" {...this.formLayout} hasFeedback>
             {getFieldDecorator('dateTime', {
+              rules: [{ required: true, message: '请选择生效日期' }],
               initialValue: currentItem.dateTime ? moment(new Date(currentItem.dateTime)) : null,
             })(<DatePicker />)}
           </FormItem>
-          <FormItem hasFeedback>
+          <FormItem label="首重/首件" {...this.formLayout} hasFeedback>
             {getFieldDecorator(`first`, {
-              rules: [{ required: true, message: '请输入数量' }],
+              rules: [{ required: true, message: '请输入首重/首件（克、件）' }],
               initialValue: currentItem.first,
             })(
               <InputNumber
+                className={styles.myAntInputNumber}
+                min={0}
+                max={99999999}
+                step={1}
+                precision={0}
+                placeholder="请输入首重/首件（克、件）"
+              />
+            )}
+          </FormItem>
+          <FormItem label="首重/首件单价" {...this.formLayout} hasFeedback>
+            {getFieldDecorator(`firstPrice`, {
+              rules: [{ required: true, message: '请输入首重/首件单价(元)' }],
+              initialValue: currentItem.firstPrice,
+            })(
+              <InputNumber
+                className={styles.myAntInputNumber}
                 min={0}
                 max={99999999}
                 step={0.01}
                 precision={2}
-                placeholder="请输入价格"
+                placeholder="请输入首重/首件单价(元)"
+              />
+            )}
+          </FormItem>
+          <FormItem label="续重/续件" {...this.formLayout} hasFeedback>
+            {getFieldDecorator(`renew`, {
+              rules: [{ required: true, message: '请输入续重/续件（克、件）' }],
+              initialValue: currentItem.renew,
+            })(
+              <InputNumber
+                className={styles.myAntInputNumber}
+                min={0}
+                max={99999999}
+                step={1}
+                precision={0}
+                placeholder="请输入续重/续件（克、件）"
+              />
+            )}
+          </FormItem>
+          <FormItem label="续重/续件单价" {...this.formLayout} hasFeedback>
+            {getFieldDecorator(`renewPrice`, {
+              rules: [{ required: true, message: '请输入续重/续件单价(元)' }],
+              initialValue: currentItem.renewPrice,
+            })(
+              <InputNumber
+                className={styles.myAntInputNumber}
+                min={0}
+                max={99999999}
+                step={0.01}
+                precision={2}
+                placeholder="请输入续重/续件单价(元)"
               />
             )}
           </FormItem>
@@ -258,7 +314,7 @@ class LogisticsTemplate extends PureComponent {
         render: (text, record, index) => `${index + 1}`,
       },
       {
-        title: '名称',
+        title: '渠道',
         dataIndex: 'name',
         key: 'name',
         width: '15%',
@@ -278,10 +334,43 @@ class LogisticsTemplate extends PureComponent {
         },
       },
       {
-        title: '值',
-        dataIndex: 'value',
-        key: 'value',
+        title: '首重/首件',
+        dataIndex: 'first',
+        key: 'first',
         width: '10%',
+      },
+      {
+        title: '续重/续件',
+        dataIndex: 'renew',
+        key: 'renew',
+        width: '10%',
+      },
+      {
+        title: '首重/首件单价',
+        dataIndex: 'firstPrice',
+        key: 'firstPrice',
+        width: '10%',
+        render: text => {
+          return <Tag color="blue">{accounting.formatMoney(text / 100, '￥')}</Tag>;
+        },
+      },
+      {
+        title: '续重/续件单价',
+        dataIndex: 'renewPrice',
+        key: 'renewPrice',
+        width: '10%',
+        render: text => {
+          return <Tag color="blue">{accounting.formatMoney(text / 100, '￥')}</Tag>;
+        },
+      },
+      {
+        title: '提交时间',
+        dataIndex: 'dateTime',
+        key: 'dateTime',
+        width: '10%',
+        render: text => {
+          return <Tag>{moment(text).format('YYYY-MM-DD')}</Tag>;
+        },
       },
       {
         title: '操作',
@@ -316,7 +405,7 @@ class LogisticsTemplate extends PureComponent {
         <div className={styles.standardList}>
           <Card
             bordered={false}
-            title="系统系数管理"
+            title="模板管理"
             style={{ marginTop: 24 }}
             bodyStyle={{ padding: '0 32px 40px 32px' }}
             extra={searchContent}
@@ -332,7 +421,7 @@ class LogisticsTemplate extends PureComponent {
                 /* eslint-enable */
               }}
             >
-              创建新系数
+              创建新模板
             </Button>
             <Table
               columns={columns}
