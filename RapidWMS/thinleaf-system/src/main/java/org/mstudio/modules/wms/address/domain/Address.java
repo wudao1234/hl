@@ -2,9 +2,6 @@ package org.mstudio.modules.wms.address.domain;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.mstudio.modules.wms.Logistics.domain.LogisticsDetail;
 import org.mstudio.modules.wms.address_type.domain.AddressType;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.pack.domain.Pack;
@@ -42,10 +39,5 @@ public class Address extends BaseEntity {
     private Float coefficient;
 
     private String clientStore;
-
-    @JSONField(serialize = false)
-    @OneToMany(mappedBy = "address", fetch = FetchType.LAZY)
-    @Fetch(FetchMode.SUBSELECT)
-    private List<LogisticsDetail> logisticsDetails;
 
 }

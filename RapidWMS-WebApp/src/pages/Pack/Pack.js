@@ -1950,16 +1950,6 @@ class Pack extends PureComponent {
                 {selectedRowKeys.length >= 1 &&
                   selectedRows.every(row => row.packStatus === 'PACKAGE') && (
                     <span>
-                      <Popconfirm title="是否指派自己派送？" onConfirm={this.handleSendingByMe}>
-                        <Button icon="inbox" htmlType="button" type="primary">
-                          我来派送
-                        </Button>
-                      </Popconfirm>
-                    </span>
-                  )}
-                {selectedRowKeys.length >= 1 &&
-                  selectedRows.every(row => row.packStatus === 'PACKAGE') && (
-                    <span>
                       <Button
                         icon="inbox"
                         htmlType="button"

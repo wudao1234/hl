@@ -65,7 +65,6 @@ const initialState = {
   selectedRows: [],
   loadingGather: false,
   loadingUnGather: false,
-  loadingConfirm: false,
   ...initialSortState,
   ...initialModalState,
 };
@@ -522,6 +521,13 @@ class Order extends PureComponent {
     });
   };
 
+  handleReviewDone = () => {
+    this.setState({
+      done: false,
+      reviewModalVisible: false,
+    });
+  };
+
   handlePickMatchCancel = () => {
     this.setState({
       sendingModalVisible: false,
@@ -575,7 +581,7 @@ class Order extends PureComponent {
         return;
       }
       // TODO: 复核 dispatch
-      this.handlePickMatchDone();
+      this.handleReviewDone();
 
       const fieldsValue = Object.assign({}, fieldsVal);
       fieldsValue.userReviewers = fieldsValue.userGatheringIds.map(id => {
@@ -763,7 +769,6 @@ class Order extends PureComponent {
   };
 
   handleConfirm = () => {
-    this.setState({ loadingConfirm: true });
     const { selectedRowKeys } = this.state;
     if (selectedRowKeys.length >= 1) {
       const { dispatch } = this.props;
@@ -788,7 +793,6 @@ class Order extends PureComponent {
           }
         },
       });
-      this.setState({ loadingConfirm: false });
     }
   };
 
@@ -810,14 +814,7 @@ class Order extends PureComponent {
   render() {
     const { list, total, loading } = this.props;
     const { pageSize, currentPage } = this.state;
-    const {
-      loadingGather,
-      loadingUnGather,
-      loadingConfirm,
-      search,
-      startDate,
-      endDate,
-    } = this.state;
+    const { loadingGather, loadingUnGather, search, startDate, endDate } = this.state;
     const { isSatisfiedFilter, customerFilter, orderStatusFilter } = this.state;
     const { selectedRowKeys = [], selectedRows = [] } = this.state;
     const {
@@ -1294,16 +1291,6 @@ class Order extends PureComponent {
                 {selectedRowKeys.length >= 1 &&
                   selectedRows.every(row => row.orderStatus === 'GATHER_GOODS') && (
                     <span>
-                      <Popconfirm title="是否确认复核分拣？" onConfirm={this.handleConfirm}>
-                        <Button
-                          icon="check"
-                          htmlType="button"
-                          type="primary"
-                          loading={loadingConfirm}
-                        >
-                          复核分拣
-                        </Button>
-                      </Popconfirm>
                       <Button
                         icon="check"
                         htmlType="button"

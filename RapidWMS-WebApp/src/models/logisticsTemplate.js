@@ -1,9 +1,10 @@
 import {
-  addAddressType,
-  deleteAddressType,
-  queryAllAddressType,
-  queryAddressType,
-  updateAddressType,
+  addLogisticsTemplate,
+  deleteLogisticsTemplate,
+  queryAllLogisticsTemplate,
+  queryLogisticsTemplate,
+  updateLogisticsTemplate,
+  fetchGroupAll,
 } from '@/services/logisticsTemplate';
 
 export default {
@@ -15,7 +16,7 @@ export default {
 
   effects: {
     *fetch(state, { call, put }) {
-      const response = yield call(queryAddressType, state);
+      const response = yield call(queryLogisticsTemplate, state);
       if (response !== undefined && response !== null) {
         yield put({
           type: 'save',
@@ -26,15 +27,23 @@ export default {
     *submit({ payload, callback }, { call }) {
       let methodsName;
       if (payload.id) {
-        methodsName = Object.keys(payload).length === 1 ? deleteAddressType : updateAddressType;
+        methodsName =
+          Object.keys(payload).length === 1 ? deleteLogisticsTemplate : updateLogisticsTemplate;
       } else {
-        methodsName = addAddressType;
+        methodsName = addLogisticsTemplate;
       }
       const response = yield call(methodsName, payload);
       if (callback) callback(response);
     },
     *fetchAll(_, { call, put }) {
-      const response = yield call(queryAllAddressType);
+      const response = yield call(queryAllLogisticsTemplate);
+      yield put({
+        type: 'saveAllList',
+        payload: response,
+      });
+    },
+    *fetchGroupAll(_, { call, put }) {
+      const response = yield call(fetchGroupAll);
       yield put({
         type: 'saveAllList',
         payload: response,

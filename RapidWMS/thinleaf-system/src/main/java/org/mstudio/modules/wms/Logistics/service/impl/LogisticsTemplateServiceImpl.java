@@ -5,19 +5,23 @@ import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
 import org.mstudio.modules.wms.Logistics.repository.LogisticsTemplateRepository;
 import org.mstudio.modules.wms.Logistics.service.LogisticsTemplateService;
 import org.mstudio.modules.wms.Logistics.service.mapper.LogisticsTemplateMapper;
+import org.mstudio.modules.wms.Logistics.service.object.LogisticsTemplateDTO;
 import org.mstudio.utils.PageUtil;
 import org.mstudio.utils.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Macrow
@@ -56,6 +60,24 @@ public class LogisticsTemplateServiceImpl implements LogisticsTemplateService {
     }
 
     @Override
+    public List<LogisticsTemplateDTO> fetchGroupAll() {
+        Specification<LogisticsTemplate> spec = (root, criteriaQuery, criteriaBuilder) ->
+                criteriaBuilder.and(
+                        criteriaBuilder.lessThanOrEqualTo(root.get("dateTime").as(Date.class), new Date()));
+        Sort sort = new Sort(Sort.Direction.DESC, "dateTime");
+        Pageable pageable = PageRequest.of(0, 1000, sort);
+        Page<LogisticsTemplate> page = logisticsTemplateRepository.findAll(spec, pageable);
+        List<LogisticsTemplate> data = page.getContent();
+        Map<String, List<LogisticsTemplate>> LogisticsTemplateListMap = data.stream()
+                .collect(Collectors.groupingBy(LogisticsTemplate::getName));
+        List<LogisticsTemplate> newData = new ArrayList<>();
+        LogisticsTemplateListMap.forEach((k, v) -> {
+            newData.add(v.get(0));
+        });
+        return logisticsTemplateMapper.toDto(newData);
+    }
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
     @Cacheable(value = CACHE_NAME, key = "#p0")
     public LogisticsTemplate findById(Long id) {
@@ -66,8 +88,8 @@ public class LogisticsTemplateServiceImpl implements LogisticsTemplateService {
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     public LogisticsTemplate create(LogisticsTemplate resources) {
-        LogisticsTemplate dispatchSys = logisticsTemplateRepository.findByName(resources.getName());
-        Assert.isNull(dispatchSys, "名称不能重复");
+        LogisticsTemplate dispatchSys = logisticsTemplateRepository.findByNameAndDateTime(resources.getName(), resources.getDateTime());
+        Assert.isNull(dispatchSys, "不能重复");
         return logisticsTemplateRepository.save(resources);
     }
 

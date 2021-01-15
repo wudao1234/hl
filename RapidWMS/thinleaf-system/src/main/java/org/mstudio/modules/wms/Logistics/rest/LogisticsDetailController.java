@@ -21,14 +21,17 @@ import org.springframework.web.bind.annotation.*;
 public class LogisticsDetailController {
 
     private static final String ENTITY_NAME = "LogisticsDetail";
-    
+
     @Autowired
     private LogisticsDetailService logisticsDetailService;
 
     @GetMapping("")
     @PreAuthorize("hasAnyRole('ADMIN', 'LOGISTICSDETAIL_ALL')")
-    public Object list(@RequestParam(value = "search", required = false) String name, Pageable pageable) {
-        return new ResponseEntity<>(logisticsDetailService.queryAll(name, pageable), HttpStatus.OK);
+    public Object list(@RequestParam(value = "search", required = false) String name,
+                       @RequestParam(value = "startDate", required = false) String startDate,
+                       @RequestParam(value = "endDate", required = false) String endDate,
+                       Pageable pageable) {
+        return new ResponseEntity<>(logisticsDetailService.queryAll(name, startDate, endDate, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/all_list")

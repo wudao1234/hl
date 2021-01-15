@@ -6,7 +6,7 @@ import org.mstudio.modules.wms.common.BaseObject;
 @Data
 public class LogisticsDetailDTO extends BaseObject {
     /**
-     * 单价生效时间
+     * 省
      */
     private String province;
 
@@ -69,4 +69,19 @@ public class LogisticsDetailDTO extends BaseObject {
      * 备注
      */
     private String remark;
+
+    /**
+     * 客户
+     */
+    private String customer;
+
+    /**
+     * 地址
+     */
+    private String address;
+
+    /**
+     * 地址
+     */
+    private LogisticsTemplateVO logisticsTemplate;
 }

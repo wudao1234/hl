@@ -1,6 +1,6 @@
 import request from '@/utils/request';
 
-export async function queryAddressType(params) {
+export async function queryLogisticsTemplate(params) {
   const {
     payload: { search, pageSize, currentPage, orderBy },
   } = params;
@@ -15,25 +15,29 @@ export async function queryAddressType(params) {
   return request(queryString);
 }
 
-export async function queryAllAddressType() {
+export async function queryAllLogisticsTemplate() {
   return request('/api/Logistics_template/all_list');
 }
 
-export async function addAddressType(payload) {
+export async function fetchGroupAll() {
+  return request('/api/Logistics_template/fetch_group_all');
+}
+
+export async function addLogisticsTemplate(payload) {
   return request('/api/Logistics_template', {
     method: 'POST',
     body: payload,
   });
 }
 
-export async function updateAddressType(payload) {
+export async function updateLogisticsTemplate(payload) {
   return request('/api/Logistics_template', {
     method: 'PUT',
     body: payload,
   });
 }
 
-export async function deleteAddressType(params) {
+export async function deleteLogisticsTemplate(params) {
   return request(`/api/Logistics_template/${params.id}`, {
     method: 'DELETE',
   });

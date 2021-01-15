@@ -3,9 +3,7 @@ package org.mstudio.modules.wms.Logistics.domain;
 import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.common.BaseEntity;
-import org.mstudio.modules.wms.customer.domain.Customer;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -25,7 +23,7 @@ import javax.persistence.Table;
 public class LogisticsDetail extends BaseEntity {
 
     /**
-     * 单价生效时间
+     * 省
      */
     private String province;
 
@@ -92,16 +90,18 @@ public class LogisticsDetail extends BaseEntity {
     /**
      * 客户
      */
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
-    private Customer customer;
+    private String customer;
 
     /**
      * 地址
      */
+    private String address;
+
+    /**
+     * 模板
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
-    private Address address;
+    private LogisticsTemplate logisticsTemplate;
 
 }

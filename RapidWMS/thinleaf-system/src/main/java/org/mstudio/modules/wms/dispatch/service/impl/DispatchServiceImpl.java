@@ -15,11 +15,8 @@ import org.mstudio.modules.wms.dispatch.repository.DispatchCoefficientRepository
 import org.mstudio.modules.wms.dispatch.repository.DispatchPieceRepository;
 import org.mstudio.modules.wms.dispatch.repository.DispatchSysRepository;
 import org.mstudio.modules.wms.dispatch.service.DispatchService;
-import org.mstudio.modules.wms.dispatch.service.object.StatisticsDTO;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
-import org.mstudio.modules.wms.pick_match.domain.PickMatch;
-import org.mstudio.modules.wms.pick_match.domain.PickMatchTypeEnum;
 import org.mstudio.utils.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -262,7 +259,11 @@ public class DispatchServiceImpl implements DispatchService {
                 return criteriaBuilder.and(predicates.toArray(p));
             }
         };
-        DispatchPiece dispatchPiece = (DispatchPiece) dispatchPieceRepository.findOne(dispatchPieceSpec).get();
+        Optional optional = dispatchPieceRepository.findOne(dispatchPieceSpec);
+        if (!optional.isPresent()) {
+            throw new BadRequestException("已收车");
+        }
+        DispatchPiece dispatchPiece = (DispatchPiece)optional.get();
         dispatchPiece.setMileage(mileage);
         dispatchPiece.setDispatchSys(dispatchSys);
         dispatchPiece.setScore(

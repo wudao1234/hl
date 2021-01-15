@@ -68,4 +68,10 @@ public class LogisticsTemplateController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/fetch_group_all")
+    @PreAuthorize("isAuthenticated()")
+    public Object fetchGroupAll() {
+        return new ResponseEntity<>(logisticsTemplateService.fetchGroupAll(), HttpStatus.OK);
+    }
+
 }

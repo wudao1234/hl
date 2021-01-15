@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Date;
+
 /**
  * 物流结算明细
  * @author lfj
@@ -16,4 +18,6 @@ public interface LogisticsTemplateRepository extends JpaRepository<LogisticsTemp
     Page<LogisticsTemplate> findAllByNameLike(String name, Pageable pageable);
 
     LogisticsTemplate findByName(String name);
+
+    LogisticsTemplate findByNameAndDateTime(String name, Date dateTime);
 }

@@ -6,9 +6,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 /**
-* @author Macrow
-* @date 2019-07-09
-*/
+ * @author Macrow
+ * @date 2019-07-09
+ */
 
 public interface LogisticsDetailService {
 
@@ -20,7 +20,7 @@ public interface LogisticsDetailService {
 
     void delete(Long id);
 
-    Object queryAll(String search, Pageable pageable);
+    Object queryAll(String search, String startDate, String endDate, Pageable pageable);
 
     List<LogisticsDetail> getAllList();
 

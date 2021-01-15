@@ -2,6 +2,8 @@ package org.mstudio.modules.wms.goods.domain;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.validator.constraints.Length;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer.domain.Customer;
@@ -27,9 +29,11 @@ import java.util.List;
 public class Goods extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     private GoodsType goodsType;
 
     @JSONField(serialize = false)
