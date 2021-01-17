@@ -39,6 +39,7 @@ const initialSortState = {
   sortWarranty: null,
   sortPackCount: null,
   sortCustomer: null,
+  quantityGuarantee: null,
 };
 
 const initialModalState = {
@@ -54,6 +55,7 @@ const initialState = {
   pageSize: 10,
   orderBy: null,
   search: null,
+  quantityGuaranteeSearch: null,
   wareZoneFilter: null,
   customerFilter: null,
   goodsTypeFilter: null,
@@ -97,6 +99,7 @@ class Stock extends PureComponent {
       customerFilter,
       goodsTypeFilter,
       isActiveFilter,
+      quantityGuaranteeSearch,
     } = this.state;
     this.handleQuery(
       dispatch,
@@ -108,7 +111,8 @@ class Stock extends PureComponent {
       wareZoneFilter,
       customerFilter,
       goodsTypeFilter,
-      isActiveFilter
+      isActiveFilter,
+      quantityGuaranteeSearch
     );
     dispatch({
       type: 'wareZone/fetchAll',
@@ -178,9 +182,13 @@ class Stock extends PureComponent {
     });
   };
 
-  handleSearch = value => {
-    this.setState({ search: value });
-    const search = value === '' ? '' : value;
+  handleSearchChange2 = e => {
+    this.setState({
+      quantityGuaranteeSearch: e.target.value,
+    });
+  };
+
+  handleSearch = () => {
     const { dispatch } = this.props;
     const {
       pageSize,
@@ -189,6 +197,9 @@ class Stock extends PureComponent {
       goodsTypeFilter,
       isActiveFilter,
     } = this.state;
+    let { search, quantityGuaranteeSearch } = this.state;
+    search = search === '' ? '' : search;
+    quantityGuaranteeSearch = quantityGuaranteeSearch === '' ? '' : quantityGuaranteeSearch;
     this.setState({
       currentPage: 1,
       orderBy: null,
@@ -204,7 +215,8 @@ class Stock extends PureComponent {
       wareZoneFilter,
       customerFilter,
       goodsTypeFilter,
-      isActiveFilter
+      isActiveFilter,
+      quantityGuaranteeSearch
     );
   };
 
@@ -218,7 +230,8 @@ class Stock extends PureComponent {
     wareZoneFilter,
     customerFilter,
     goodsTypeFilter,
-    isActiveFilter
+    isActiveFilter,
+    quantityGuaranteeSearch
   ) => {
     dispatch({
       type: 'stock/fetch',
@@ -232,6 +245,7 @@ class Stock extends PureComponent {
         customerFilter,
         goodsTypeFilter,
         isActiveFilter,
+        quantityGuaranteeSearch,
       },
     });
   };
@@ -242,7 +256,7 @@ class Stock extends PureComponent {
 
   handleTableChange = (pagination, filters, sorter) => {
     const { dispatch } = this.props;
-    const { search } = this.state;
+    const { search, quantityGuaranteeSearch } = this.state;
     const { current: currentPage, pageSize } = pagination;
     const { field, order } = sorter;
     const {
@@ -285,6 +299,9 @@ class Stock extends PureComponent {
       case 'goods.customer.name':
         sortOrders = { ...initialSortState, sortCustomer: order };
         break;
+      case 'quantityGuarantee':
+        sortOrders = { ...initialSortState, quantityGuarantee: order };
+        break;
       default:
         sortOrders = initialSortState;
     }
@@ -310,7 +327,8 @@ class Stock extends PureComponent {
       wareZoneFilter,
       customerFilter,
       goodsTypeFilter,
-      isActiveFilter
+      isActiveFilter,
+      quantityGuaranteeSearch
     );
   };
 
@@ -357,6 +375,7 @@ class Stock extends PureComponent {
       customerFilter,
       goodsTypeFilter,
       isActiveFilter,
+      quantityGuaranteeSearch,
     } = this.state;
     dispatch({
       type: 'stock/activate',
@@ -379,7 +398,8 @@ class Stock extends PureComponent {
             wareZoneFilter,
             customerFilter,
             goodsTypeFilter,
-            isActiveFilter
+            isActiveFilter,
+            quantityGuaranteeSearch
           );
         }
       },
@@ -438,6 +458,7 @@ class Stock extends PureComponent {
               customerFilter,
               goodsTypeFilter,
               isActiveFilter,
+              quantityGuaranteeSearch,
             } = this.state;
             this.cleanSelectedKeys();
             this.handleQuery(
@@ -450,7 +471,8 @@ class Stock extends PureComponent {
               wareZoneFilter,
               customerFilter,
               goodsTypeFilter,
-              isActiveFilter
+              isActiveFilter,
+              quantityGuaranteeSearch
             );
           }
         },
@@ -534,6 +556,7 @@ class Stock extends PureComponent {
               customerFilter,
               goodsTypeFilter,
               isActiveFilter,
+              quantityGuaranteeSearch,
             } = this.state;
             this.cleanSelectedKeys();
             this.handleQuery(
@@ -546,7 +569,8 @@ class Stock extends PureComponent {
               wareZoneFilter,
               customerFilter,
               goodsTypeFilter,
-              isActiveFilter
+              isActiveFilter,
+              quantityGuaranteeSearch
             );
           }
         },
@@ -602,6 +626,7 @@ class Stock extends PureComponent {
       customerFilter,
       goodsTypeFilter,
       isActiveFilter,
+      quantityGuaranteeSearch,
     } = this.state;
     this.handleQuery(
       dispatch,
@@ -613,14 +638,15 @@ class Stock extends PureComponent {
       wareZoneFilter,
       customerFilter,
       goodsTypeFilter,
-      isActiveFilter
+      isActiveFilter,
+      quantityGuaranteeSearch
     );
   };
 
   render() {
     const { list, total, loading } = this.props;
     const { pageSize, currentPage } = this.state;
-    const { search } = this.state;
+    const { search, quantityGuaranteeSearch } = this.state;
     const { selectedRowKeys, selectedRows } = this.state;
     const { wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter } = this.state;
     const {
@@ -638,6 +664,7 @@ class Stock extends PureComponent {
       sortWarranty,
       sortPackCount,
       sortCustomer,
+      quantityGuarantee,
     } = this.state;
 
     const paginationProps = {
@@ -657,8 +684,15 @@ class Stock extends PureComponent {
         <Search
           value={search}
           className={styles.extraContentSearch}
-          placeholder="商品名, 条码, 库位"
+          placeholder="商品名, 条码, 库位,质保指数"
           onChange={this.handleSearchChange}
+          onSearch={this.handleSearch}
+        />
+        <Search
+          value={quantityGuaranteeSearch}
+          className={styles.extraContentSearch}
+          placeholder="质保指数"
+          onChange={this.handleSearchChange2}
           onSearch={this.handleSearch}
         />
         <Button
@@ -839,6 +873,21 @@ class Stock extends PureComponent {
             );
           }
           return <Tag color="orange">{text}月</Tag>;
+        },
+      },
+      {
+        title: '质保指数',
+        dataIndex: 'quantityGuarantee',
+        key: 'quantityGuarantee',
+        width: '6%',
+        align: 'right',
+        sorter: true,
+        sortOrder: quantityGuarantee,
+        render: text => {
+          if (text <= 0) {
+            return <span>已过期</span>;
+          }
+          return <span>{text.toFixed(2)}</span>;
         },
       },
       {

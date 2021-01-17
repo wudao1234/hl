@@ -13,6 +13,7 @@ export async function queryStock(params) {
       customerFilter,
       goodsTypeFilter,
       isActiveFilter,
+      quantityGuaranteeSearch,
     },
   } = params;
 
@@ -38,6 +39,8 @@ export async function queryStock(params) {
     queryString += `isActiveFilter=${isActiveFilter}&`;
   }
 
+  if (quantityGuaranteeSearch && quantityGuaranteeSearch !== '')
+    queryString += `quantityGuaranteeSearch=${quantityGuaranteeSearch}&`;
   if (search && search !== '') queryString += `search=${search}&`;
   if (pageSize && pageSize !== '') queryString += `size=${pageSize}&`;
   if (currentPage && currentPage !== '') queryString += `page=${currentPage - 1}&`;

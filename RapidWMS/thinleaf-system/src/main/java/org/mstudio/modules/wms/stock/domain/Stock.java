@@ -43,6 +43,11 @@ public class Stock extends BaseEntity {
     private Long quantity;
 
     /**
+     * 质保指数
+     */
+    private Double quantityGuarantee;
+
+    /**
      * isActive 库存是否冻结
      */
     private Boolean isActive;

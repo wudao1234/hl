@@ -23,7 +23,7 @@ import java.util.Set;
 
 public interface StockService {
 
-    Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable);
+    Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable,Double quantityGuaranteeSearch);
 
     StockDTO findById(Long id);
 
@@ -63,4 +63,5 @@ public interface StockService {
 
     void move(MoveDTO moveDTO);
 
+    void updateQuantityGuarantee();
 }

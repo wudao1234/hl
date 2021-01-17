@@ -25,4 +25,6 @@ public class StockDTO extends BaseObject {
 
     private Boolean isActive;
 
+    private Double quantityGuarantee;
+
 }

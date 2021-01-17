@@ -54,6 +54,7 @@ public class StockController {
             @RequestParam(value = "goodsTypeFilter", required = false) String goodsTypeFilter,
             @RequestParam(value = "isActiveFilter", required = false) Boolean isActiveFilter,
             @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "quantityGuaranteeSearch", required = false) Double quantityGuaranteeSearch,
             Pageable pageable) {
         JwtUser jwtUser = (JwtUser) getUserDetails();
         UserDTO user = userService.findById(jwtUser.getId());
@@ -63,11 +64,11 @@ public class StockController {
             return new ResponseEntity<>(PageUtil.toPage(stockMapper.toDto(emptyStocks), 0), HttpStatus.OK);
         }
         if (exportExcel != null && exportExcel) {
-            Map result = stockService.queryAll(customers, true, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable);
+            Map result = stockService.queryAll(customers, true, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch);
             List<StockDTO> stocks = (List)result.get("content");
             return new ResponseEntity<>(stockService.exportExcelData(stocks), WmsUtil.getExportExcelHeaders(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(stockService.queryAll(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable), HttpStatus.OK);
+            return new ResponseEntity<>(stockService.queryAll(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch), HttpStatus.OK);
         }
     }
 

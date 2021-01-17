@@ -97,8 +97,8 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
-    public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable) {
+//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+    public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable, Double quantityGuaranteeSearch) {
         Specification<Stock> spec = new Specification<Stock>() {
             @Override
             public Predicate toPredicate(Root<Stock> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -136,6 +136,12 @@ public class StockServiceImpl implements StockService {
                             criteriaBuilder.like(root.get("warePosition").get("name").as(String.class), "%" + search + "%")
                     ));
                 }
+                if (quantityGuaranteeSearch != null) {
+                    predicates.add(criteriaBuilder.or(
+                            criteriaBuilder.ge(root.get("quantityGuarantee").as(Double.class), quantityGuaranteeSearch)
+                    ));
+                }
+
 
                 // 查询权限内的客户库存
                 if (!customers.isEmpty()) {
@@ -527,6 +533,20 @@ public class StockServiceImpl implements StockService {
     @Transactional(rollbackFor = Exception.class)
     public void move(MoveDTO moveDTO) {
         synchronizedOperate(StockOperate.MOVE, moveDTO);
+    }
+
+    @Override
+    public void updateQuantityGuarantee() {
+        long now = new Date().getTime();
+        List<Stock> stockList = stockRepository.findAll();
+        stockList.forEach(s -> {
+            long expireDate = s.getExpireDate().getTime();
+            long monthsOfWarranty = Long.valueOf(s.getGoods().getMonthsOfWarranty());
+            long timeOfWarranty = (monthsOfWarranty * 365 * 24 * 60 * 60 * 1000) / 12;
+            double quantityGuarantee = 1 - (expireDate - now) * 1D / timeOfWarranty;
+            s.setQuantityGuarantee(quantityGuarantee);
+            stockRepository.save(s);
+        });
     }
 
     private void moveStub(Stock stock, Stock newStock, JwtUser user, String description, BigDecimal price) {
