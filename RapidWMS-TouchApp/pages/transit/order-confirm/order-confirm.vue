@@ -171,6 +171,7 @@ export default {
 	},
 	methods: {
 		loadOrderDetail(id, pageFlowSn) {
+			const _this = this
 			this.api.get(`/api/customer_orders/${id}`).then(res => {
 				const order = res.data;
 				this.customerName = '客户：' + order.owner.name;
@@ -220,8 +221,8 @@ console.log(this.showConfirm)
 				this.api.get(`/api/stock_flows/findByOrderId/${id}`).then(res => {
 					this.stockFlowItems = [...res.data].reverse();
 					if (this.pageFlowSn && 'PAGE' === this.pageFlowSn.substr(0, 4)) {
-						this.num = order.customerOrderPages.find(e => e.flowSn === this.pageFlowSn).num;
-						console.log(this.num);
+						_this.num = order.customerOrderPages.find(e => e.flowSn === this.pageFlowSn).num;
+						console.log(_this.num);
 						this.spageItems = this.stockFlowItems.slice(this.num * PAGE_SIZE, this.num * PAGE_SIZE + PAGE_SIZE);
 					}
 				});
