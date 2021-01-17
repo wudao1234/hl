@@ -303,7 +303,7 @@ class Address extends PureComponent {
           <FormItem label="门店" {...this.formLayout} hasFeedback>
             {getFieldDecorator('clientStore', {
               rules: [{ required: true, message: '请输入门店' }],
-              initialValue: currentItem.naclientStoreme,
+              initialValue: currentItem.clientStore,
             })(<Input placeholder="XX重庆江北店" />)}
           </FormItem>
           <FormItem label="地址" {...this.formLayout} hasFeedback>
