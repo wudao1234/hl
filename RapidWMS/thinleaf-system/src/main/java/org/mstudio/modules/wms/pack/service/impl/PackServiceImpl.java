@@ -294,6 +294,7 @@ public class PackServiceImpl implements PackService {
         }
         // 添加拣配、复核计件信息
         pickMatchService.create(pack);
+
         return packMapper.toDto(pack);
     }
 

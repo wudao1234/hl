@@ -18,22 +18,22 @@ public class LogisticsDetailDTO extends BaseObject {
     /**
      * 件
      */
-    private Integer piece;
+    private Float piece;
 
     /**
      * 实际重量
      */
-    private Integer realityWeight;
+    private Float realityWeight;
 
     /**
      * 计算重量
      */
-    private Integer computeWeight;
+    private Float computeWeight;
 
     /**
-     * 续重/续件（克、件）
+     * 续重/续件（千克、件）
      */
-    private Integer renewNum;
+    private Float renewNum;
 
     /**
      * 渠道
@@ -41,14 +41,14 @@ public class LogisticsDetailDTO extends BaseObject {
     private String name;
 
     /**
-     * 首重/首件（克、件）
+     * 首重/首件（千克、件）
      */
-    private Integer first;
+    private Float first;
 
     /**
-     * 续重/续件（克、件）
+     * 续重/续件（千克、件）
      */
-    private Integer renew;
+    private Float renew;
 
     /**
      * 首重/首件单价（分）

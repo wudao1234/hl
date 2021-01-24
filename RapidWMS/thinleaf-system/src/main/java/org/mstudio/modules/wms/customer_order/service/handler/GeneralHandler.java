@@ -1,10 +1,10 @@
 package org.mstudio.modules.wms.customer_order.service.handler;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.sax.handler.RowHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.mstudio.exception.BadRequestException;
+import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer.domain.Customer;
@@ -12,6 +12,7 @@ import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrderItem;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.service.CustomerOrderService;
+import org.mstudio.modules.wms.goods.domain.Goods;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -139,9 +140,12 @@ public class GeneralHandler implements RowHandler {
             order.setClientOperator(list.get(ORDER_OPERATOR) == null ? "" : list.get(ORDER_OPERATOR).toString());
             order.setDescription(list.get(ORDER_DESCRIPTION) == null ? "" : list.get(ORDER_DESCRIPTION).toString());
 
-            // 以下两项信息暂时由订货点名称填入
-            order.setClientAddress(list.get(ORDER_CLIENT_ADDRESS) == null ? "" : list.get(ORDER_CLIENT_ADDRESS).toString());
-            order.setClientStore(list.get(ORDER_CLIENT_STORE) == null ? "" : list.get(ORDER_CLIENT_STORE).toString());
+            // 门店处理
+            String clientStore = list.get(ORDER_CLIENT_STORE).toString();
+            Address address = orderService.getAddressByClientStore(clientStore);
+            order.setClientAddress(address.getName());
+            order.setClientStore(address.getClientStore());
+
             order.setExpireDateMin(expireDateMin);
             order.setExpireDateMax(expireDateMax);
             order.setFetchAll(fetchAll);
@@ -155,9 +159,7 @@ public class GeneralHandler implements RowHandler {
         CustomerOrderItem orderItem = new CustomerOrderItem();
         orderItem.setSortOrder(itemSortOrder++);
         orderItem.setName(list.get(GOODS_NAME).toString());
-        if (ObjectUtil.isNotNull(list.get(MONTHS_OF_WARRANTY))) {
-            orderItem.setMonthsOfWarranty(Integer.parseInt(StrUtil.removeAll(list.get(MONTHS_OF_WARRANTY).toString(), ".0")));
-        }
+
 
         Object goodsSN = list.get(GOODS_SN);
         if (goodsSN instanceof Double) {
@@ -166,9 +168,12 @@ public class GeneralHandler implements RowHandler {
             orderItem.setSn(goodsSN.toString());
         }
 
-        orderItem.setPackCount(WmsUtil.getFirstNumbersFromString(list.get(GOODS_PACK_COUNT) == null ? "0" : list.get(GOODS_PACK_COUNT).toString()));
         orderItem.setQuantityInitial(new Long(StrUtil.removeAll(list.get(GOODS_QUANTITY).toString(), ".0")));
-        orderItem.setPrice(new BigDecimal(list.get(GOODS_PRICE).toString()));
+        // 设置价格、规格、质保
+        Goods goods = orderService.getGoodsByCustomerAndNameAndSn(customer.getId(), orderItem.getName(), orderItem.getSn());
+        orderItem.setPrice(new BigDecimal(goods.getPrice()));
+        orderItem.setMonthsOfWarranty(goods.getMonthsOfWarranty());
+        orderItem.setPackCount(goods.getPackCount());
         orderItems.add(orderItem);
     }
 

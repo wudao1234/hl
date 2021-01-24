@@ -1,10 +1,12 @@
 package org.mstudio.modules.wms.customer_order.service;
 
+import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.customer.service.object.CustomerVO;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.service.object.*;
+import org.mstudio.modules.wms.goods.domain.Goods;
 import org.mstudio.modules.wms.kpi.Object.OrderSales;
 import org.springframework.data.domain.Pageable;
 
@@ -121,4 +123,8 @@ public interface CustomerOrderService {
     List<OrderSales> queryOrderSales(String type, String date);
 
     byte[] batchPrintPageInfo(String orderIds) throws IOException;
+
+    Address getAddressByClientStore(String clientStore);
+
+    Goods getGoodsByCustomerAndNameAndSn(Long id, String name, String sn);
 }

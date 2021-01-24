@@ -1,13 +1,9 @@
 package org.mstudio.modules.wms.Logistics.domain;
 
 import lombok.Data;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.wms.common.BaseEntity;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -35,22 +31,22 @@ public class LogisticsDetail extends BaseEntity {
     /**
      * 件
      */
-    private Integer piece;
+    private Float piece;
 
     /**
      * 实际重量
      */
-    private Integer realityWeight;
+    private Float realityWeight;
 
     /**
      * 计算重量
      */
-    private Integer computeWeight;
+    private Float computeWeight;
 
     /**
-     * 续重/续件（克、件）
+     * 续重/续件（千克、件）
      */
-    private Integer renewNum;
+    private Float renewNum;
 
     /**
      * 渠道
@@ -58,14 +54,14 @@ public class LogisticsDetail extends BaseEntity {
     private String name;
 
     /**
-     * 首重/首件（克、件）
+     * 首重/首件（千克、件）
      */
-    private Integer first;
+    private Float first;
 
     /**
-     * 续重/续件（克、件）
+     * 续重/续件（千克、件）
      */
-    private Integer renew;
+    private Float renew;
 
     /**
      * 首重/首件单价（分）
@@ -97,11 +93,5 @@ public class LogisticsDetail extends BaseEntity {
      */
     private String address;
 
-    /**
-     * 模板
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
-    private LogisticsTemplate logisticsTemplate;
 
 }

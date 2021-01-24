@@ -31,12 +31,13 @@ const { Step } = Steps;
 
 const PinyinMatch = require('pinyin-match');
 
-@connect(({ order, customer, address, loading }) => ({
+@connect(({ order, customer, address, loading, logisticsTemplate }) => ({
   orderList: order.list.content,
   orderTotal: order.list.totalElements,
   customerList: customer.allList,
   addressList: address.allList,
   loadingOrders: loading.models.order,
+  logisticsTemplateList: logisticsTemplate.allList,
 }))
 @Form.create()
 class PackForm extends PureComponent {
@@ -53,6 +54,8 @@ class PackForm extends PureComponent {
     address: null,
     packStatus: null,
     allItems: [],
+    weight: null,
+    logisticsTemplate: { id: undefined },
   };
 
   componentDidMount() {
@@ -65,6 +68,9 @@ class PackForm extends PureComponent {
     });
     dispatch({
       type: 'order/fetchNone',
+    });
+    dispatch({
+      type: 'logisticsTemplate/fetchGroupAll',
     });
   }
 
@@ -127,6 +133,7 @@ class PackForm extends PureComponent {
       isEdit,
       loading,
       queryParams,
+      logisticsTemplateList,
     } = this.props;
 
     const { orderPageSize, orderCurrentPage, search } = this.state;
@@ -141,6 +148,8 @@ class PackForm extends PureComponent {
       address,
       packStatus,
       allItems,
+      weight,
+      logisticsTemplate,
     } = this.state;
 
     const handleSelectCustomer = value => {
@@ -599,6 +608,20 @@ class PackForm extends PureComponent {
       }
     };
 
+    const getLogisticsTemplateOptions = () => {
+      const children = [];
+      if (Array.isArray(logisticsTemplateList)) {
+        logisticsTemplateList.forEach(item => {
+          children.push(
+            <Option key={item.id} value={item.id}>
+              {item.name}
+            </Option>
+          );
+        });
+      }
+      return children;
+    };
+
     return (
       <div className={styles.standardList}>
         <Card
@@ -663,12 +686,39 @@ class PackForm extends PureComponent {
                   )}
                 </FormItem>
               </Col>
-              <Col span={3}>
+              <Col span={2}>
                 <FormItem label="打包数量" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('packages', {
-                    rules: [{ required: true, message: '请打包数量' }],
+                    rules: [{ required: true, message: '请输入打包数量' }],
                     initialValue: packages,
                   })(<InputNumber min={1} />)}
+                </FormItem>
+              </Col>
+              <Col span={2}>
+                <FormItem label="渠道" {...this.formLayout} hasFeedback>
+                  {getFieldDecorator('logisticsTemplate.id', {
+                    rules: [{ required: true, message: '请选择渠道' }],
+                    initialValue: logisticsTemplate.id,
+                  })(
+                    <Select
+                      showSearch
+                      allowClear
+                      filterOption={(input, option) =>
+                        PinyinMatch.match(option.props.children.toString(), input)
+                      }
+                      placeholder="请选择渠道"
+                    >
+                      {getLogisticsTemplateOptions()}
+                    </Select>
+                  )}
+                </FormItem>
+              </Col>
+              <Col span={2}>
+                <FormItem label="重量" {...this.formLayout} hasFeedback>
+                  {getFieldDecorator('weight', {
+                    rules: [{ required: true, message: '请输入打包重量' }],
+                    initialValue: weight,
+                  })(<InputNumber min={1} max={99999999} step={1} precision={2} />)}
                 </FormItem>
               </Col>
               <Col span={3}>
@@ -678,7 +728,7 @@ class PackForm extends PureComponent {
                   })(<Input />)}
                 </FormItem>
               </Col>
-              <Col span={10}>
+              <Col span={6}>
                 <FormItem label="备注" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('description', {
                     initialValue: packDescription,

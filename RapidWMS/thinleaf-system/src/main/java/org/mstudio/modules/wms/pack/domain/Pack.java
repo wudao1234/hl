@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.system.domain.User;
+import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
 import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer.domain.Customer;
@@ -126,5 +127,18 @@ public class Pack extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private DispatchPiece dispatchPiece;
+
+    /**
+     * 渠道
+     */
+    @JSONField(serialize = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private LogisticsTemplate logisticsTemplate;
+
+    /**
+     * 打包重量
+     */
+    private Float weight;
 
 }

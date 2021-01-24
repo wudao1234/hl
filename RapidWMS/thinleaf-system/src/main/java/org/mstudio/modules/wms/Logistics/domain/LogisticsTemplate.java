@@ -30,14 +30,14 @@ public class LogisticsTemplate extends BaseEntity {
     private String name;
 
     /**
-     * 首重/首件（克、件）
+     * 首重/首件（千克、件）
      */
-    private Integer first;
+    private Float first;
 
     /**
-     * 续重/续件（克、件）
+     * 续重/续件（千克、件）
      */
-    private Integer renew;
+    private Float renew;
 
     /**
      * 首重/首件单价（分）
@@ -48,6 +48,11 @@ public class LogisticsTemplate extends BaseEntity {
      * 续重/续件单价（分）
      */
     private Integer renewPrice;
+
+    /**
+     * 按件：0；按重：1
+     */
+    private Boolean type;
 
 
 }

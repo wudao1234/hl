@@ -38,6 +38,8 @@ import org.mstudio.modules.security.security.JwtUser;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.system.service.dto.UserVO;
+import org.mstudio.modules.wms.address.domain.Address;
+import org.mstudio.modules.wms.address.repository.AddressRepository;
 import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer.service.CustomerService;
@@ -189,6 +191,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Autowired
     private PickMatchRepository pickMatchRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
 
     @Override
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
@@ -610,7 +615,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         }
         for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
             CustomerOrderPage p = order.getCustomerOrderPages().get(i);
-            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) {
+                continue;
+            }
             if (null != userId) {
                 Optional<User> userOptional = p.getUserGatherings().stream().filter(user -> user.getId() == userId).findAny();
                 if (!userOptional.isPresent()) {
@@ -1709,6 +1716,20 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         document.close();
         pdfDocument.close();
         return outByteStream.toByteArray();
+    }
+
+    @Override
+    public Address getAddressByClientStore(String clientStore) {
+        return addressRepository.findOneByClientStore(clientStore);
+    }
+
+    @Override
+    public Goods getGoodsByCustomerAndNameAndSn(Long id, String name, String sn) {
+        Specification<Goods> spec = (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.and(
+                criteriaBuilder.equal(root.get("customer").get("id").as(Long.class), id),
+                criteriaBuilder.equal(root.get("name").as(String.class), name),
+                criteriaBuilder.equal(root.get("sn").as(String.class), sn));
+        return (Goods) goodsRepository.findOne(spec).get();
     }
 
     private void returnStockAndSaveOperateSnapshot(CustomerOrder order, OrderStatus orderStatus, String operation, String cancelDescription) {

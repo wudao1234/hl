@@ -105,22 +105,22 @@ public class LogisticsDetailServiceImpl implements LogisticsDetailService {
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
-    public LogisticsDetail create(LogisticsDetail resources) {
-        return logisticsDetailRepository.save(initLogisticsDetail(resources));
+    public LogisticsDetail create(LogisticsDetail resources,Long logisticsTemplateId) {
+        return logisticsDetailRepository.save(initLogisticsDetail(resources,logisticsTemplateId));
     }
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
-    public LogisticsDetail update(Long id, LogisticsDetail resources) {
+    public LogisticsDetail update(Long id, LogisticsDetail resources,Long logisticsTemplateId) {
         // todo 修改
         Optional<LogisticsDetail> optional = logisticsDetailRepository.findById(id);
         ValidationUtil.isNull(optional, "LogisticsDetail", "id", id);
         resources.setId(id);
-        return logisticsDetailRepository.save(initLogisticsDetail(resources));
+        return logisticsDetailRepository.save(initLogisticsDetail(resources,logisticsTemplateId));
     }
 
-    private LogisticsDetail initLogisticsDetail(LogisticsDetail resources) {
-        LogisticsTemplate logisticsTemplate = logisticsTemplateRepository.getOne(resources.getLogisticsTemplate().getId());
+    private LogisticsDetail initLogisticsDetail(LogisticsDetail resources,Long logisticsTemplateId) {
+        LogisticsTemplate logisticsTemplate = logisticsTemplateRepository.getOne(logisticsTemplateId);
         resources.setName(logisticsTemplate.getName());
         resources.setFirst(logisticsTemplate.getFirst());
         resources.setRenew(logisticsTemplate.getRenew());
@@ -129,8 +129,8 @@ public class LogisticsDetailServiceImpl implements LogisticsDetailService {
         resources.setRenewNum(
                 ((ObjectUtil.isNotNull(resources.getPiece()) && resources.getPiece() > 0) ? resources.getPiece() : resources.getComputeWeight()) -
                         logisticsTemplate.getFirst());
-        resources.setTotalPrice(logisticsTemplate.getFirst() * logisticsTemplate.getFirstPrice() +
-                resources.getRenewNum() / logisticsTemplate.getRenew() * logisticsTemplate.getRenewPrice());
+        resources.setTotalPrice((int) (logisticsTemplate.getFirst() * logisticsTemplate.getFirstPrice() +
+                resources.getRenewNum() / logisticsTemplate.getRenew() * logisticsTemplate.getRenewPrice()));
         return resources;
     }
 

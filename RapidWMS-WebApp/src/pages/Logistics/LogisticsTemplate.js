@@ -16,6 +16,7 @@ import {
   DatePicker,
   InputNumber,
   Tag,
+  Radio,
 } from 'antd';
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -25,6 +26,8 @@ import styles from '../Common.less';
 
 const FormItem = Form.Item;
 const { Search } = Input;
+const RadioButton = Radio.Button;
+const RadioGroup = Radio.Group;
 
 @connect(({ logisticsTemplate, loading }) => ({
   list: logisticsTemplate.list.content,
@@ -236,6 +239,17 @@ class LogisticsTemplate extends PureComponent {
               initialValue: currentItem.name,
             })(<Input placeholder="请输入渠道" />)}
           </FormItem>
+          <FormItem label="按件/按重" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('type', {
+              rules: [{ required: true, message: '请选择按件/按重' }],
+              initialValue: currentItem.type,
+            })(
+              <RadioGroup>
+                <Radio value={false}>按件</Radio>
+                <Radio value={true}>按重</Radio>
+              </RadioGroup>
+            )}
+          </FormItem>
           <FormItem label="生效日期" {...this.formLayout} hasFeedback>
             {getFieldDecorator('dateTime', {
               rules: [{ required: true, message: '请选择生效日期' }],
@@ -244,16 +258,16 @@ class LogisticsTemplate extends PureComponent {
           </FormItem>
           <FormItem label="首重/首件" {...this.formLayout} hasFeedback>
             {getFieldDecorator(`first`, {
-              rules: [{ required: true, message: '请输入首重/首件（克、件）' }],
+              rules: [{ required: true, message: '请输入首重/首件（千克、件）' }],
               initialValue: currentItem.first,
             })(
               <InputNumber
                 className={styles.myAntInputNumber}
-                min={0}
+                min={0.01}
                 max={99999999}
                 step={1}
-                precision={0}
-                placeholder="请输入首重/首件（克、件）"
+                precision={2}
+                placeholder="请输入首重/首件（千克、件）"
               />
             )}
           </FormItem>
@@ -264,7 +278,7 @@ class LogisticsTemplate extends PureComponent {
             })(
               <InputNumber
                 className={styles.myAntInputNumber}
-                min={0}
+                min={0.01}
                 max={99999999}
                 step={0.01}
                 precision={2}
@@ -274,16 +288,16 @@ class LogisticsTemplate extends PureComponent {
           </FormItem>
           <FormItem label="续重/续件" {...this.formLayout} hasFeedback>
             {getFieldDecorator(`renew`, {
-              rules: [{ required: true, message: '请输入续重/续件（克、件）' }],
+              rules: [{ required: true, message: '请输入续重/续件（千克、件）' }],
               initialValue: currentItem.renew,
             })(
               <InputNumber
                 className={styles.myAntInputNumber}
-                min={0}
+                min={0.01}
                 max={99999999}
                 step={1}
-                precision={0}
-                placeholder="请输入续重/续件（克、件）"
+                precision={2}
+                placeholder="请输入续重/续件（千克、件）"
               />
             )}
           </FormItem>
@@ -331,6 +345,15 @@ class LogisticsTemplate extends PureComponent {
             );
           }
           return '';
+        },
+      },
+      {
+        title: '按件/按重',
+        dataIndex: 'type',
+        key: 'type',
+        width: '10%',
+        render: text => {
+          return <Tag color={text ? 'blue' : 'red'}>{text ? '按重' : '按件'}</Tag>;
         },
       },
       {

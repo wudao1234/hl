@@ -2,13 +2,13 @@ package org.mstudio.modules.wms.pack.service.object;
 
 import lombok.Data;
 import org.mstudio.modules.system.service.dto.UserVO;
+import org.mstudio.modules.wms.Logistics.service.object.LogisticsTemplateVO;
 import org.mstudio.modules.wms.address.service.object.AddressVO;
 import org.mstudio.modules.wms.common.BaseObject;
 import org.mstudio.modules.wms.customer.service.object.CustomerVO;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
-import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderVO;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
-import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
+import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderVO;
 import org.mstudio.modules.wms.dispatch.service.object.DispatchPieceVO;
 import org.mstudio.modules.wms.pack.domain.PackType;
 
@@ -60,5 +60,9 @@ public class PackVO extends BaseObject {
     private ReceiveType receiveType;
 
     private DispatchPieceVO dispatchPiece;
+
+    private LogisticsTemplateVO logisticsTemplate;
+
+    private Float weight;
 
 }

@@ -14,9 +14,9 @@ public interface LogisticsDetailService {
 
     LogisticsDetail findById(Long id);
 
-    LogisticsDetail create(LogisticsDetail resources);
+    LogisticsDetail create(LogisticsDetail resources,Long logisticsTemplateId);
 
-    LogisticsDetail update(Long Id, LogisticsDetail resources);
+    LogisticsDetail update(Long Id, LogisticsDetail resources,Long logisticsTemplateId);
 
     void delete(Long id);
 

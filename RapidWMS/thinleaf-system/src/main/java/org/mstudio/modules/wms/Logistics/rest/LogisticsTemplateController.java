@@ -2,6 +2,7 @@ package org.mstudio.modules.wms.Logistics.rest;
 
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
+import org.mstudio.modules.wms.Logistics.repository.LogisticsDetailRepository;
 import org.mstudio.modules.wms.Logistics.service.LogisticsTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

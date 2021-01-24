@@ -34,3 +34,7 @@ upload:
 # excel 导出最大行数
 excel:
   export-max-count: 100000
+
+#jwt
+jwt:
+  licence: 1611532800000
