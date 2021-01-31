@@ -1600,22 +1600,6 @@ class Order extends PureComponent {
                         打印出货单
                       </Button>
                       {/* TODO 打印页信息-html */}
-                      <Button
-                        icon="printer"
-                        htmlType="button"
-                        type="primary"
-                        onClick={this.handleBatchPrintPageInfo}
-                      >
-                        打印页信息
-                      </Button>
-                      <Button
-                        icon="printer"
-                        htmlType="button"
-                        type="primary"
-                        onClick={this.handlePrintOrigin}
-                      >
-                        打印原始单
-                      </Button>
                     </span>
                   )}
                 {selectedRowKeys.length === 1 &&

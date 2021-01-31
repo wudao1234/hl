@@ -136,7 +136,7 @@ public class GeneralHandler implements RowHandler {
                 order.setClientOrderSn2(orderSN2.toString());
             }
 
-            order.setClientName(list.get(ORDER_CLIENT_NAME) == null ? "" : list.get(ORDER_CLIENT_NAME).toString());
+            order.setClientName(list.get(ORDER_CLIENT_NAME) == null ? customer.getName() : list.get(ORDER_CLIENT_NAME).toString());
             order.setClientOperator(list.get(ORDER_OPERATOR) == null ? "" : list.get(ORDER_OPERATOR).toString());
             order.setDescription(list.get(ORDER_DESCRIPTION) == null ? "" : list.get(ORDER_DESCRIPTION).toString());
 

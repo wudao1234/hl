@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
+ * 订单商品出库信息
 * @author Macrow
 * @date 2019-02-22
 */

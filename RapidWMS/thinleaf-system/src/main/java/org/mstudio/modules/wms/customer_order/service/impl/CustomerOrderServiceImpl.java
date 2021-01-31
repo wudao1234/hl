@@ -591,7 +591,6 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
             CustomerOrderPage page = order.getCustomerOrderPages().get(i);
             page.setCustomerOrder(order);
-            page.setNum(i);
             page.setOrderStatus(OrderStatus.FETCH_STOCK);
             page.setFlowSn(CUSTOMER_ORDER_PAGE_SN_PREFIX + WmsUtil.generateSnowFlakeId());
             customerOrderPageRepository.save(page);
@@ -871,10 +870,13 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Transactional(rollbackFor = Exception.class)
     synchronized public void returnStock(CustomerOrder order) {
         if (order.getOrderStatus() == OrderStatus.FETCH_STOCK || order.getOrderStatus() == OrderStatus.GATHER_GOODS || order.getOrderStatus() == OrderStatus.CONFIRM) {
+            order.setIsPrinted(false);
             returnStockAndSaveOperateSnapshot(order, OrderStatus.INIT, "回退商品", null);
             stockFlowRepository.deleteAllByCustomerOrderId(order.getId());
             List<CustomerOrderItem> orderItems = order.getCustomerOrderItems();
             List<CustomerOrderStock> orderStocks = order.getCustomerOrderStocks();
+            customerOrderPageRepository.deleteByCustomerOrder(order);
+            List<CustomerOrderPage> customerOrderPages = order.getCustomerOrderPages();
             orderItems = orderItems.stream().peek(item -> {
                 item.setQuantity(null);
             }).collect(Collectors.toList());
@@ -1425,7 +1427,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
-    @Transactional(readOnly = true)
+    @Transactional(rollbackFor = Exception.class)
     public byte[] batchPrint(String orderIds, Boolean isOriginal) throws IOException {
         // todo 打印出货单
         String[] ids = orderIds.split(",");
@@ -1433,6 +1435,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
         for (int i = 0; i < ids.length; i++) {
             Long id = Long.valueOf(ids[i]);
+
             Optional<CustomerOrder> orderOptional = customerOrderRepository.findById(Long.valueOf(ids[i]));
             if (!orderOptional.isPresent()) {
                 throw new BadRequestException("指定的订单ID有错误");
@@ -1450,62 +1453,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             if (order.getClientOperator() == null) {
                 order.setClientOperator("未填写");
             }
-            ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
-            PdfDocument pdfDocument = new PdfDocument(new PdfWriter(outByteStream));
             PdfFont font = PdfFontFactory.createFont(FileUtil.getRootPath() + "/fonts/simsun.ttf", PdfEncodings.IDENTITY_H, true);
-            PageXofY event = new PageXofY(pdfDocument, font);
-            pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event);
-            Document document = new Document(pdfDocument, PageSize.A5.rotate());
-            document.setMargins(0, 0, 0, 0);
-
-            Table tableHeader = new Table(6);
-            tableHeader.setWidth(UnitValue.createPercentValue(100));
-            tableHeader.setFontSize(11f);
-            tableHeader.addCell(new Cell(1, 4).add(new Paragraph(order.getPrintTitle() + "销售单").setFont(font).setFontSize(20f)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            Barcode128 barcode128 = new Barcode128(pdfDocument);
-            barcode128.setCode(order.getFlowSn());
-            barcode128.setSize(11f);
-            tableHeader.addCell(new Cell(1, 2).add(new Image(barcode128.createFormXObject(null, null, pdfDocument)).setHorizontalAlignment(HorizontalAlignment.RIGHT)).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("购物单位:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell(1, 2).add(new Paragraph(order.getClientName()).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("门店:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell(1, 2).add(new Paragraph(order.getClientStore()).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("客户订单号:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph(order.getClientOrderSn()).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("客户单据号:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph(order.getClientOrderSn2()).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("制单时间:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph(DateUtil.format(order.getCreateTime(), "yyyy-MM-dd")).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("客户制单人:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph(order.getClientOperator()).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("打印时间:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph(DateUtil.format(new Date(), "yyyy-MM-dd")).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph("制单人:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableHeader.addCell(new Cell().add(new Paragraph(order.getUserCreator().getUsername()).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-
-            Table table = new Table(printExtraInfo ? 11 : 7);
-            table.setWidth(UnitValue.createPercentValue(100));
-            table.setFontSize(11f);
-
-            table.addHeaderCell(new Cell(1, 11).add(tableHeader).setBorder(Border.NO_BORDER));
-
-            table.addHeaderCell(new Cell().add(new Paragraph("#").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-            table.addHeaderCell(new Cell().add(new Paragraph("商品条码").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-            table.addHeaderCell(new Cell().add(new Paragraph("商品名称").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-            if (printExtraInfo) {
-                table.addHeaderCell(new Cell().add(new Paragraph("质保日期").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true).setWidth(55f));
-            }
-            table.addHeaderCell(new Cell().add(new Paragraph("规").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-            table.addHeaderCell(new Cell().add(new Paragraph("单").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-            table.addHeaderCell(new Cell().add(new Paragraph("数").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-            if (printExtraInfo) {
-                table.addHeaderCell(new Cell().add(new Paragraph("单价").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                table.addHeaderCell(new Cell().add(new Paragraph("金额").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-            }
-            table.addHeaderCell(new Cell().add(new Paragraph("库位").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true).setWidth(40f));
-            if (printExtraInfo) {
-                table.addHeaderCell(new Cell().add(new Paragraph("拣货").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true).setWidth(40f));
-            }
 
             List<StockFlowDTO> stockFlows = stockFlowService.queryAllByOrderId(id);
             // fix lazy load no session error
@@ -1585,68 +1533,38 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 stockFlowPrint.addAll(stockFlows);
             }
 
-            int allCount = 0;
-
-            for (int j = 0; j < stockFlowPrint.size(); j++) {
-                StockFlowDTO stockFlow = stockFlowPrint.get(j);
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(j + 1)).setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                table.addCell(new Cell().add(new Paragraph(stockFlow.getSn()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                table.addCell(new Cell().add(new Paragraph(stockFlow.getName()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                if (printExtraInfo) {
-                    table.addCell(new Cell().add(new Paragraph(stockFlow.getExpireDate() != null ? DateUtil.format(stockFlow.getExpireDate(), "yyyy-MM-dd") : "").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                }
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(stockFlow.getPackCount())).setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                table.addCell(new Cell().add(new Paragraph(stockFlow.getUnit()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(stockFlow.getQuantity() > 0 ? stockFlow.getQuantity() : "")).setFont(font)).setTextAlignment(TextAlignment.RIGHT).setKeepTogether(true));
-                if (printExtraInfo) {
-                    table.addCell(new Cell().add(new Paragraph(NumberUtil.decimalFormat("###,##0.00", stockFlow.getPrice().doubleValue())).setFont(font)).setTextAlignment(TextAlignment.RIGHT).setKeepTogether(true));
-                }
-                if (stockFlow.getQuantity() > 0) {
-                    allCount += stockFlow.getQuantity();
-                    if (printExtraInfo) {
-                        table.addCell(new Cell().add(new Paragraph(NumberUtil.decimalFormat("###,##0.00", stockFlow.getPrice().multiply(BigDecimal.valueOf(stockFlow.getQuantity())).doubleValue())).setFont(font)).setTextAlignment(TextAlignment.RIGHT).setKeepTogether(true));
-                    }
-                    //table.addCell(new Cell().add(new Paragraph(stockFlow.getWarePositionOut().getWareZone().getName() + "/" + stockFlow.getWarePositionOut().getName()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                    table.addCell(new Cell().add(new Paragraph(stockFlow.getWarePositionOut().getName()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                    if (printExtraInfo) {
-                        if (stockFlow.getPackCount().equals(0)) {
-                            table.addCell(new Cell().add(new Paragraph("").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                        } else {
-                            table.addCell(new Cell().add(new Paragraph(stockFlow.getQuantity() / stockFlow.getPackCount() + "件" + stockFlow.getQuantity() % stockFlow.getPackCount() + "个").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-                        }
-                    }
-                } else {
-                    table.addCell(new Cell(1, printExtraInfo ? 3 : 1).add(new Paragraph("缺少数量：" + (0L - stockFlow.getQuantity())).setFont(font).setFontSize(11f)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
+            int start = 0;
+            List<Integer> indexs = new ArrayList<>();
+            indexs.add(0);
+            while (start < stockFlowPrint.size()) {
+                int maxIndex = getIndex(order, stockFlowPrint, start, start);
+                start = maxIndex;
+                indexs.add(start);
+            }
+            if (!order.getIsPrinted()) {
+                customerOrderPageRepository.deleteByCustomerOrder(order);
+                order.setCustomerOrderPages(new ArrayList<CustomerOrderPage>());
+                for (int j = 0; j < indexs.size() - 1; j++) {
+                    CustomerOrderPage customerOrderPage = new CustomerOrderPage();
+                    customerOrderPage.setCustomerOrder(order);
+                    customerOrderPage.setStockFlows(
+                            stockFlowPrint.subList(indexs.get(j), indexs.get(j + 1)).stream().map(f -> {
+                                StockFlow sf = new StockFlow();
+                                sf.setId(Long.valueOf(f.getId()));
+                                return sf;
+                            }).collect(Collectors.toList()));
+                    customerOrderPage.setOrderStatus(order.getOrderStatus());
+                    customerOrderPage.setFlowSn(CUSTOMER_ORDER_PAGE_SN_PREFIX + WmsUtil.generateSnowFlakeId());
+                    order.getCustomerOrderPages().add(customerOrderPage);
+                    customerOrderPageRepository.save(customerOrderPage);
                 }
             }
 
-            if (printExtraInfo) {
-                table.addCell(new Cell(1, 9).add(new Paragraph(
-                        "合计数量：" + NumberUtil.decimalFormat("###,##0", allCount) + " / 合计金额： " + NumberUtil.decimalFormat("###,##0.00", order.getTotalPrice().doubleValue())).setFont(font).setFontSize(11f)).setTextAlignment(TextAlignment.RIGHT).setKeepTogether(true));
-            } else {
-                table.addCell(new Cell(1, 6).add(new Paragraph(
-                        "合计数量：" + NumberUtil.decimalFormat("###,##0", allCount)).setFont(font).setFontSize(11f)).setTextAlignment(TextAlignment.RIGHT).setKeepTogether(true));
+
+            for (int j = 0; j < indexs.size() - 1; j++) {
+                ByteArrayOutputStream byteArr = getOutByteStream(order, stockFlowPrint, indexs, j);
+                allData.add(byteArr);
             }
-            table.addCell(new Cell(1, printExtraInfo ? 2 : 1).add(new Paragraph("").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
-
-            Table tableFooter = new Table(6);
-            tableFooter.setWidth(UnitValue.createPercentValue(100));
-            tableFooter.setFontSize(11f);
-            tableFooter.addCell(new Cell().add(new Paragraph("拣货人:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableFooter.addCell(new Cell().add(new Paragraph("              ").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableFooter.addCell(new Cell().add(new Paragraph("复核人:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableFooter.addCell(new Cell().add(new Paragraph("              ").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableFooter.addCell(new Cell().add(new Paragraph("收货人:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableFooter.addCell(new Cell().add(new Paragraph("              ").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableFooter.addCell(new Cell().add(new Paragraph("备注:").setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            tableFooter.addCell(new Cell(1, 5).add(new Paragraph(order.getDescription() == null ? "" : order.getDescription()).setFont(font)).setTextAlignment(TextAlignment.LEFT).setKeepTogether(true).setBorder(Border.NO_BORDER));
-            table.addFooterCell(new Cell(0, 11).add(tableFooter).setBorder(Border.NO_BORDER));
-
-            document.add(table);
-            event.writeTotal(pdfDocument);
-            document.close();
-            pdfDocument.close();
-            allData.add(outByteStream);
         }
 
         Arrays.asList(ids).forEach(stringId -> {
@@ -1671,6 +1589,93 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         pdfAll.close();
 
         return output.toByteArray();
+    }
+
+
+    private ByteArrayOutputStream getOutByteStream(CustomerOrder order, List<StockFlowDTO> stockFlowPrint, List<Integer> indexs, int i) throws IOException {
+        String flowSn = order.getCustomerOrderPages().get(i).getFlowSn();
+        ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
+        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(outByteStream));
+        PdfFont font = PdfFontFactory.createFont(FileUtil.getRootPath() + "/fonts/simsun.ttf", PdfEncodings.IDENTITY_H, true);
+        PageXofY event = new PageXofY(pdfDocument, font);
+        pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event);
+        Document document = new Document(pdfDocument, PageSize.A5.rotate());
+        document.setMargins(0, 0, 0, 0);
+
+        Table tableHeader = BatchPrintUtil.getTableHeaderOfBatchPrint(order, pdfDocument, font, indexs.size() - 1, i + 1, flowSn);
+        Table table = BatchPrintUtil.newTable(tableHeader, font);
+
+        Long PageAllCount = 0L;
+        BigDecimal price = BigDecimal.valueOf(0);
+
+        Table tableFooter = BatchPrintUtil.getTableFooterOfBatchPrint(order, stockFlowPrint, font);
+
+        for (int j = indexs.get(i); j < indexs.get(i + 1); j++) {
+            StockFlowDTO stockFlow = stockFlowPrint.get(j);
+            if (stockFlow.getQuantity() > 0) {
+                PageAllCount += stockFlow.getQuantity();
+                price = price.add(stockFlow.getPrice().multiply(BigDecimal.valueOf(stockFlow.getQuantity())));
+            }
+
+            BatchPrintUtil.addCell(table, stockFlow, font, price, PageAllCount, j);
+        }
+
+        table.addCell(new Cell(1, 9).add(new Paragraph(
+                "合计数量：" + NumberUtil.decimalFormat("###,##0", PageAllCount) + " / 合计金额： " + NumberUtil.decimalFormat("###,##0.00", price.doubleValue())).setFont(font).setFontSize(11f)).setTextAlignment(TextAlignment.RIGHT).setKeepTogether(true));
+
+        table.addCell(new Cell(1, printExtraInfo ? 2 : 1).add(new Paragraph("").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
+
+        table.addFooterCell(new Cell(0, 11).add(tableFooter).setBorder(Border.NO_BORDER));
+
+        document.add(table);
+        event.writeTotal(pdfDocument);
+        document.close();
+        pdfDocument.close();
+        return outByteStream;
+    }
+
+    /**
+     * 获取出库流水索引
+     *
+     * @return
+     * @throws IOException
+     */
+    private int getIndex(CustomerOrder order, List<StockFlowDTO> stockFlowPrint, int start, int min) throws IOException {
+
+        ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
+        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(outByteStream));
+        PdfFont font = PdfFontFactory.createFont(FileUtil.getRootPath() + "/fonts/simsun.ttf", PdfEncodings.IDENTITY_H, true);
+
+        Table tableHeader = BatchPrintUtil.getTableHeaderOfBatchPrint(order, pdfDocument, font);
+        Table table = BatchPrintUtil.newTable(tableHeader, font);
+
+        Long PageAllCount = 0L;
+        BigDecimal price = BigDecimal.valueOf(0);
+
+        Table tableFooter = BatchPrintUtil.getTableFooterOfBatchPrint(order, stockFlowPrint, font);
+
+        for (int j = start; j < stockFlowPrint.size(); j++) {
+            StockFlowDTO stockFlow = stockFlowPrint.get(j);
+            if (stockFlow.getQuantity() > 0) {
+                PageAllCount += stockFlow.getQuantity();
+            }
+            price = price.add(stockFlow.getPrice().multiply(BigDecimal.valueOf(stockFlow.getQuantity())));
+            BatchPrintUtil.addCell(table, stockFlow, font, price, PageAllCount, j);
+            if (j == min) {
+                table.addCell(new Cell(1, 9).add(new Paragraph(
+                        "合计数量：" + NumberUtil.decimalFormat("###,##0", PageAllCount) + " / 合计金额： " + NumberUtil.decimalFormat("###,##0.00", price.doubleValue())).setFont(font).setFontSize(11f)).setTextAlignment(TextAlignment.RIGHT).setKeepTogether(true));
+                table.addCell(new Cell(1, printExtraInfo ? 2 : 1).add(new Paragraph("").setFont(font)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
+                table.addFooterCell(new Cell(0, 11).add(tableFooter).setBorder(Border.NO_BORDER));
+                float height = BatchPrintUtil.getHeight(table);
+                System.out.println(height);
+                if (height > 400) {
+                    return j;
+                } else {
+                    return getIndex(order, stockFlowPrint, start, j + 1);
+                }
+            }
+        }
+        return stockFlowPrint.size();
     }
 
     @Override
@@ -1974,15 +1979,13 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             PdfDocumentEvent docEvent = (PdfDocumentEvent) event;
             PdfDocument pdf = docEvent.getDocument();
             PdfPage page = docEvent.getPage();
-            int pageNumber = pdf.getPageNumber(page);
             Rectangle pageSize = page.getPageSize();
             PdfCanvas pdfCanvas = new PdfCanvas(
                     page.getLastContentStream(), page.getResources(), pdf);
             Canvas canvas = new Canvas(pdfCanvas, pdf, pageSize);
             canvas.setFont(font);
             canvas.setFontSize(10);
-            Paragraph p = new Paragraph()
-                    .add("第").add(String.valueOf(pageNumber)).add("页/总页数");
+            Paragraph p = new Paragraph();
             canvas.showTextAligned(p, x, y, TextAlignment.RIGHT);
             pdfCanvas.addXObject(placeholder, x + space, y - descent);
             pdfCanvas.release();
@@ -1992,7 +1995,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             Canvas canvas = new Canvas(placeholder, pdf);
             canvas.setFont(font);
             canvas.setFontSize(10);
-            canvas.showTextAligned(String.valueOf(pdf.getNumberOfPages()),
+            canvas.showTextAligned("",
                     0, descent, TextAlignment.LEFT);
         }
     }

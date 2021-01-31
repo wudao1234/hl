@@ -13,6 +13,7 @@ import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 
 /**
+ * 订单商品
 * @author Macrow
 * @date 2019-02-22
 */

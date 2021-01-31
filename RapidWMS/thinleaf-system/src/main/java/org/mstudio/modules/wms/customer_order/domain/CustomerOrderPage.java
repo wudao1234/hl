@@ -7,6 +7,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.wms.common.BaseEntity;
+import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 
 import javax.persistence.*;
 import java.util.List;
@@ -27,11 +28,6 @@ public class CustomerOrderPage extends BaseEntity {
      * flowSN 流水号，按照时间戳自动生成
      */
     private String flowSn;
-
-    /**
-     * num 第几页
-     */
-    private Integer num;
 
     /**
      * orderStatus 订单状态，订单流转的重要判断依据
@@ -61,5 +57,14 @@ public class CustomerOrderPage extends BaseEntity {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     private CustomerOrder customerOrder;
+
+    /**
+     * 出库流水
+     */
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "customerOrder", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    @OrderBy("createTime asc")
+    private List<StockFlow> stockFlows;
 
 }

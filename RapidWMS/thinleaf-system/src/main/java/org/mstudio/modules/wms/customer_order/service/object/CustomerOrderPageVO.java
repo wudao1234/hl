@@ -17,7 +17,6 @@ import java.util.List;
 @Data
 public class CustomerOrderPageVO extends BaseObject {
     private String flowSn;
-    private Integer num;
     private OrderStatus orderStatus;
     private List<UserVO> userGatherings;
     private List<UserVO> userReviewers;
