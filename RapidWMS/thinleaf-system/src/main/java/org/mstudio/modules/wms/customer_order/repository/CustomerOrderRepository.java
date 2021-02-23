@@ -37,6 +37,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 
     List<CustomerOrder> findByCreateTimeBetweenAndIsActive(Date startDate, Date endDate, Boolean isActive);
 
-    List<CustomerOrder> findByPackId(Long packId);
+    List<CustomerOrder> findByCustomerOrderPagesIdIn(Long id);
+
+//    List<CustomerOrder> findByPackId(Long packId);
 
 }

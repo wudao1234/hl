@@ -26,6 +26,8 @@ public interface StockFlowRepository extends JpaRepository<StockFlow, Long>, Jpa
 
     List<StockFlow> findAllByCustomerOrderIdOrderByWarePositionOut(Long orderId);
 
+    List<StockFlow> findAllByCustomerOrderPageIdOrderByWarePositionOut(Long orderId);
+
     List<StockFlow> findAllByReceiveGoodsIdOrderByCreateTimeDesc(Long receiveGoodsId);
 
     @EntityGraph(value = "stockFlow.onlyEntity")

@@ -8,7 +8,6 @@ import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer.domain.Customer;
 import org.mstudio.modules.wms.operate_snapshot.domain.OperateSnapshot;
-import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 
 import javax.persistence.*;
@@ -28,8 +27,7 @@ import java.util.List;
 @Table(name = "wms_customer_order")
 @NamedEntityGraph(name = "customerOrder.all",
         attributeNodes = {
-                @NamedAttributeNode(value = "owner"),
-                @NamedAttributeNode(value = "pack")
+                @NamedAttributeNode(value = "owner")
         })
 public class CustomerOrder extends BaseEntity {
 
@@ -218,9 +216,9 @@ public class CustomerOrder extends BaseEntity {
     /**
      * 订单派送人
      */
-    @ManyToOne
-    @Fetch(FetchMode.JOIN)
-    private User userSending;
+//    @ManyToOne
+//    @Fetch(FetchMode.JOIN)
+//    private User userSending;
 
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "customerOrder", fetch = FetchType.LAZY)
@@ -246,10 +244,10 @@ public class CustomerOrder extends BaseEntity {
     @OrderBy("id asc")
     private List<OperateSnapshot> operateSnapshots;
 
-    @JSONField(serialize = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
-    private Pack pack;
+//    @JSONField(serialize = false)
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @Fetch(FetchMode.JOIN)
+//    private Pack pack;
 
 
 }

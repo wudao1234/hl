@@ -7,6 +7,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.customer_order.domain.CustomerOrderPage;
 import org.mstudio.modules.wms.goods.domain.Goods;
 import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoods;
 import org.mstudio.modules.wms.ware_position.domain.WarePosition;
@@ -79,5 +80,8 @@ public class StockFlow extends BaseEntity {
     @ManyToOne
     @Fetch(FetchMode.JOIN)
     private WarePosition warePositionOut;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CustomerOrderPage customerOrderPage;
 
 }

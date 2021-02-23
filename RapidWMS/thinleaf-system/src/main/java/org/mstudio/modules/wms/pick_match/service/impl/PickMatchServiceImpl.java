@@ -111,22 +111,20 @@ public class PickMatchServiceImpl implements PickMatchService {
         // 获取 分拣 拣配人
         List<User> userGatherings = new ArrayList<>();
         List<User> userReviewers = new ArrayList<>();
-        pack.getOrders().forEach(customerOrder -> {
-            customerOrder.getCustomerOrderPages().forEach(page -> {
-                page.getUserGatherings().forEach(user -> {
-                    boolean noMatch = userGatherings.stream().noneMatch(u -> u.getId().equals(user.getId()));
-                    if (noMatch) {
-                        userGatherings.add(user);
-                    }
-                });
+        pack.getCustomerOrderPages().forEach(page -> {
+            page.getUserGatherings().forEach(user -> {
+                boolean noMatch = userGatherings.stream().noneMatch(u -> u.getId().equals(user.getId()));
+                if (noMatch) {
+                    userGatherings.add(user);
+                }
             });
-            customerOrder.getCustomerOrderPages().forEach(page -> {
-                page.getUserReviewers().forEach(user -> {
-                    boolean noMatch = userReviewers.stream().noneMatch(u -> u.getId().equals(user.getId()));
-                    if (noMatch) {
-                        userReviewers.add(user);
-                    }
-                });
+        });
+        pack.getCustomerOrderPages().forEach(page -> {
+            page.getUserReviewers().forEach(user -> {
+                boolean noMatch = userReviewers.stream().noneMatch(u -> u.getId().equals(user.getId()));
+                if (noMatch) {
+                    userReviewers.add(user);
+                }
             });
         });
 

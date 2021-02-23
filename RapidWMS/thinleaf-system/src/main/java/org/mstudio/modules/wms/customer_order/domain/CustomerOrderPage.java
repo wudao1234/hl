@@ -7,6 +7,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.wms.common.BaseEntity;
+import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 
 import javax.persistence.*;
@@ -33,6 +34,19 @@ public class CustomerOrderPage extends BaseEntity {
      * orderStatus 订单状态，订单流转的重要判断依据
      */
     private OrderStatus orderStatus;
+
+    /**
+     * 签收状态
+     */
+    private ReceiveType receiveType;
+
+    /**
+     * 打包信息据
+     */
+    @JSONField(serialize = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    private Pack pack;
 
     /**
      * 订单分拣人
@@ -62,9 +76,16 @@ public class CustomerOrderPage extends BaseEntity {
      * 出库流水
      */
     @JSONField(serialize = false)
-    @OneToMany(mappedBy = "customerOrder", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "customerOrderPage", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     @OrderBy("createTime asc")
     private List<StockFlow> stockFlows;
+
+    /**
+     * 订单派送人
+     */
+    @ManyToOne
+    @Fetch(FetchMode.JOIN)
+    private User userSending;
 
 }

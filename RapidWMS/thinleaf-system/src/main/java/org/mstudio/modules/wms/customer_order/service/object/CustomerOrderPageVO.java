@@ -4,6 +4,7 @@ import lombok.Data;
 import org.mstudio.modules.system.service.dto.UserVO;
 import org.mstudio.modules.wms.common.BaseObject;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
+import org.mstudio.modules.wms.stock_flow.service.object.StockFlowVO;
 
 import java.util.List;
 
@@ -20,4 +21,5 @@ public class CustomerOrderPageVO extends BaseObject {
     private OrderStatus orderStatus;
     private List<UserVO> userGatherings;
     private List<UserVO> userReviewers;
+    private List<StockFlowVO> stockFlows;
 }

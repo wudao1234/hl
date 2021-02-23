@@ -24,8 +24,10 @@ import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.customer_order.domain.CustomerOrderPage;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
+import org.mstudio.modules.wms.customer_order.repository.CustomerOrderPageRepository;
 import org.mstudio.modules.wms.customer_order.repository.CustomerOrderRepository;
 import org.mstudio.modules.wms.customer_order.service.impl.CustomerOrderServiceImpl;
 import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderVO;
@@ -66,8 +68,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.criteria.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -132,6 +132,9 @@ public class PackServiceImpl implements PackService {
 
     @Autowired
     private PickMatchRepository pickMatchRepository;
+
+    @Autowired
+    private CustomerOrderPageRepository customerOrderPageRepository;
 
 
     @Override
@@ -269,33 +272,59 @@ public class PackServiceImpl implements PackService {
         resource.setIsPackaged(false);
         resource.setIsActive(true);
         // 2019.10.24 杨环认为没有订单也可以打包，为了满足一些特殊情况
-        if (resource.getOrders().isEmpty()) {
-            resource.setTotalPrice(BigDecimal.ZERO);
-        } else {
-            // 检查打包中所有订单的状态是否符合要求
-            confirmOrdersStatus(resource.getOrders(), OrderStatus.CONFIRM);
-            BigDecimal totalPrice = resource.getOrders().stream().map(CustomerOrder::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
-            resource.setTotalPrice(totalPrice);
-        }
+//        if (resource.getOrders().isEmpty()) {
+//            resource.setTotalPrice(BigDecimal.ZERO);
+//        } else {
+        // 检查打包中所有订单的状态是否符合要求
+        confirmOrdersStatus(resource.getCustomerOrderPages(), OrderStatus.CONFIRM);
+//            BigDecimal totalPrice = resource.getOrders().stream().map(CustomerOrder::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+//            resource.setTotalPrice(totalPrice);
+//        }
         Pack pack = packRepository.save(resource);
         operateSnapshotService.create(OrderStatus.PACKAGE.getName(), pack);
 
-        if (!resource.getOrders().isEmpty()) {
-            pack.setOrders(attachOrders(pack, resource.getOrders()));
-            if (pack.getPackages() == 1) {
-                List<PackItem> packItems = new ArrayList<>();
-                getStockFLows(pack).forEach(item -> {
-                    packItems.add(new PackItem(pack, 1, item.getQuantity(), item.getName(), item.getSn(), item.getExpireDate()));
-                });
-                packItemRepository.saveAll(packItems);
-                pack.setIsPackaged(true);
-                packRepository.save(pack);
-            }
+//        if (!resource.getOrders().isEmpty()) {
+//        pack.setCustomerOrderPages(attachOrders(pack, resource.getOrders()));
+        List<CustomerOrderPage> pages = attachCustomerOrderPages(pack, resource.getCustomerOrderPages());
+        pack.setCustomerOrderPages(pages);
+        if (pack.getPackages() == 1) {
+            List<PackItem> packItems = new ArrayList<>();
+            getStockFLows(pack).forEach(item -> {
+                packItems.add(new PackItem(pack, 1, item.getQuantity(), item.getName(), item.getSn(), item.getExpireDate()));
+            });
+            packItemRepository.saveAll(packItems);
+            pack.setIsPackaged(true);
+            packRepository.save(pack);
         }
-        // 添加拣配、复核计件信息
-        pickMatchService.create(pack);
+//        }
+        // 添加拣配、复核计件信息-转到配送完成时统计
+//        pickMatchService.create(pack);
+
+        // 判断 更新CustomerOrder 状态
+        updateOrderStatusByPages(pages);
 
         return packMapper.toDto(pack);
+    }
+
+    /**
+     * 判断 更新CustomerOrder 状态
+     *
+     * @param pages
+     */
+    private void updateOrderStatusByPages(List<CustomerOrderPage> pages) {
+        List<CustomerOrder> orders = new ArrayList<>();
+        List<CustomerOrder> finalOrders = orders;
+        pages.forEach(p ->{
+            List<CustomerOrder> o = customerOrderRepository.findByCustomerOrderPagesIdIn(p.getId());
+            finalOrders.add(o.get(0));
+        });
+        orders = orders.stream().distinct().collect(Collectors.toList());
+        orders.forEach(o -> {
+            boolean b = o.getCustomerOrderPages().stream().anyMatch(p ->
+                    OrderStatus.CONFIRM.equals(p.getOrderStatus()));
+            o.setOrderStatus(b ? OrderStatus.CONFIRM : OrderStatus.PACKAGE);
+            customerOrderRepository.save(o);
+        });
     }
 
     @Override
@@ -304,7 +333,7 @@ public class PackServiceImpl implements PackService {
             @CacheEvict(value = CustomerOrderServiceImpl.CACHE_NAME, allEntries = true)
     })
     synchronized public PackDTO update(Long id, Pack resource) {
-        if (resource.getOrders().isEmpty()) {
+        if (resource.getCustomerOrderPages().isEmpty()) {
             throw new BadRequestException("打包必须包含至少一个订单");
         }
         Optional<Pack> optionalPack = packRepository.findById(id);
@@ -319,12 +348,12 @@ public class PackServiceImpl implements PackService {
             throw new BadRequestException("只能在打包状态下进行修改");
         }
 
-        List<CustomerOrder> oldOrders = pack.getOrders();
-        List<CustomerOrder> newOrders = resource.getOrders();
+        List<CustomerOrderPage> oldOrders = pack.getCustomerOrderPages();
+        List<CustomerOrderPage> newOrders = resource.getCustomerOrderPages();
 
-        List<CustomerOrder> detachOrders = oldOrders.stream().filter(
+        List<CustomerOrderPage> detachOrders = oldOrders.stream().filter(
                 order -> newOrders.stream().noneMatch(innerOrder -> innerOrder.getId().equals(order.getId()))).collect(Collectors.toList());
-        List<CustomerOrder> attachOrders = newOrders.stream().filter(
+        List<CustomerOrderPage> attachOrders = newOrders.stream().filter(
                 order -> oldOrders.stream().noneMatch(innerOrder -> innerOrder.getId().equals(order.getId()))).collect(Collectors.toList());
 
         // 检查打包中所有订单的状态是否符合要求
@@ -340,8 +369,8 @@ public class PackServiceImpl implements PackService {
         pack.setPackages(resource.getPackages());
         pack.setPackType(resource.getPackType());
         pack.setTrackingNumber(resource.getTrackingNumber());
-        BigDecimal totalPrice = resource.getOrders().stream().map(CustomerOrder::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
-        pack.setTotalPrice(totalPrice);
+//        BigDecimal totalPrice = resource.getOrders().stream().map(CustomerOrder::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+//        pack.setTotalPrice(totalPrice);
         if (!attachOrders.isEmpty() || !detachOrders.isEmpty()) {
             pack.setIsPackaged(false);
             List<PackItem> packItems = pack.getPackItems();
@@ -363,7 +392,7 @@ public class PackServiceImpl implements PackService {
         }
 
         operateSnapshotService.create("修改打包", pack);
-        attachOrders(pack, attachOrders);
+        attachCustomerOrderPages(pack, attachOrders);
 
         return packMapper.toDto(pack);
     }
@@ -507,7 +536,7 @@ public class PackServiceImpl implements PackService {
             if (pack.getPackStatus() != OrderStatus.PACKAGE && pack.getPackStatus() != OrderStatus.CANCEL) {
                 throw new BadRequestException("只能在打包或者已经作废状态下进行删除");
             } else {
-                detachOrders(pack.getOrders());
+                detachOrders(pack.getCustomerOrderPages());
                 pickMatchRepository.deleteAll(pack.getPickMatch());
                 operateSnapshotRepository.deleteAll(pack.getOperateSnapshots());
                 packItemRepository.deleteAll(pack.getPackItems());
@@ -541,9 +570,9 @@ public class PackServiceImpl implements PackService {
                 operateName += "（指定 " + optionalUser.get().getUsername() + " 派送）";
             }
             operateSnapshotService.create(operateName, pack);
-            List<CustomerOrder> orders = customerOrderRepository.findByPackId(pack.getId());
-            pack.setOrders(orders);
-            updateOrderStatus(orders, OrderStatus.SENDING, userRepository.findById(sendingUserId).get());
+//            List<CustomerOrder> orders = customerOrderRepository.findByPackId(pack.getId());
+//            pack.setCustomerOrderPages(orders);
+//            updateOrderStatus(orders, OrderStatus.SENDING, userRepository.findById(sendingUserId).get());
         }
     }
 
@@ -585,7 +614,7 @@ public class PackServiceImpl implements PackService {
             pack.setSignedPhoto(photoFileUrl);
             packRepository.save(pack);
             operateSnapshotService.create(OrderStatus.CLIENT_SIGNED.getName(), pack);
-            updateOrderStatus(pack.getOrders(), OrderStatus.CLIENT_SIGNED, null);
+//            updateOrderStatus(pack.getOrders(), OrderStatus.CLIENT_SIGNED, null);
         }
     }
 
@@ -660,7 +689,7 @@ public class PackServiceImpl implements PackService {
             throw new BadRequestException("打包不存在ID=" + id);
         } else {
             Pack pack = optionalPack.get();
-            detachOrders(pack.getOrders());
+//            detachOrders(pack.getOrders());
             pack.setIsActive(false);
             pack.setPackStatus(OrderStatus.CANCEL);
             pack.setCancelDescription(cancelDescription);
@@ -956,42 +985,54 @@ public class PackServiceImpl implements PackService {
             if (!order.getOrderStatus().equals(OrderStatus.CONFIRM)) {
                 throw new BadRequestException("打包的订单中，流水号为" + order.getFlowSn() + "的订单已被打包或者没准备好");
             }
-            order.setPack(pack);
+//            order.setPack(pack);
             order.setOrderStatus(OrderStatus.PACKAGE);
             operateSnapshotService.create(OrderStatus.PACKAGE.getName(), order);
         });
         return customerOrderRepository.saveAll(orders);
     }
 
-    private List<CustomerOrder> detachOrders(List<CustomerOrder> orders) {
-        orders.forEach(order -> {
-            if (order.getOrderStatus().getIndex() < OrderStatus.PACKAGE.getIndex()) {
-                throw new BadRequestException("打包的订单中，流水号为" + order.getFlowSn() + "的订单已被取消打包");
+    private List<CustomerOrderPage> attachCustomerOrderPages(Pack pack, List<CustomerOrderPage> pages) {
+        pages.forEach(page -> {
+            if (!page.getOrderStatus().equals(OrderStatus.CONFIRM)) {
+                throw new BadRequestException("打包的订单页中，流水号为" + page.getFlowSn() + "的订单已被打包或者没准备好");
             }
-            order.setPack(null);
-            order.setOrderStatus(OrderStatus.CONFIRM);
-            order.setCompletePrice(null);
-            order.setCompleteDescription(null);
-            operateSnapshotService.create("取消打包", order);
+            page.setPack(pack);
+            page.setOrderStatus(OrderStatus.PACKAGE);
+            operateSnapshotService.create(OrderStatus.PACKAGE.getName(), page.getCustomerOrder());
         });
-        return customerOrderRepository.saveAll(orders);
+        return customerOrderPageRepository.saveAll(pages);
     }
 
-    private void updateOrderStatus(List<CustomerOrder> orders, OrderStatus status, User userSending) {
+    private List<CustomerOrderPage> detachOrders(List<CustomerOrderPage> orders) {
+        orders.forEach(order -> {
+            if (order.getOrderStatus().getIndex() < OrderStatus.PACKAGE.getIndex()) {
+                throw new BadRequestException("打包的订单页中，流水号为" + order.getFlowSn() + "的订单已被取消打包");
+            }
+//            order.setPack(null);
+            order.setOrderStatus(OrderStatus.CONFIRM);
+//            order.setCompletePrice(null);
+//            order.setCompleteDescription(null);
+            operateSnapshotService.create("取消打包", order.getCustomerOrder());
+        });
+        return customerOrderPageRepository.saveAll(orders);
+    }
+
+    private void updateOrderStatus(List<CustomerOrderPage> orders, OrderStatus status, User userSending) {
         orders.forEach(order -> {
             order.setOrderStatus(status);
-            order.setSignTime(new Timestamp((new Date()).getTime()));
+//            order.setSignTime(new Timestamp((new Date()).getTime()));
             if (userSending != null) {
-                order.setUserSending(userSending);
+//                order.setUserSending(userSending);
             }
-            operateSnapshotService.create(status.getName(), order);
+            operateSnapshotService.create(status.getName(), order.getCustomerOrder());
         });
-        customerOrderRepository.saveAll(orders);
+        customerOrderPageRepository.saveAll(orders);
     }
 
     private List<StockFlow> getStockFLows(Pack pack) {
         List<StockFlow> stockFlowsOrigin = new ArrayList<>();
-        pack.getOrders().forEach(order -> stockFlowsOrigin.addAll(stockFlowRepository.findAllByCustomerOrderIdOrderByWarePositionOut(order.getId())));
+        pack.getCustomerOrderPages().forEach(order -> stockFlowsOrigin.addAll(stockFlowRepository.findAllByCustomerOrderPageIdOrderByWarePositionOut(order.getId())));
 
         List<StockFlow> stockFlowsResultList = new ArrayList<>();
         stockFlowsOrigin.forEach(stockFlow -> {
@@ -1014,11 +1055,11 @@ public class PackServiceImpl implements PackService {
         return stockFlowsResultList;
     }
 
-    private void confirmOrdersStatus(List<CustomerOrder> orders, OrderStatus status) {
+    private void confirmOrdersStatus(List<CustomerOrderPage> orders, OrderStatus status) {
         orders.forEach(order -> {
-            Optional<CustomerOrder> optionalCustomerOrder = customerOrderRepository.findById(order.getId());
+            Optional<CustomerOrderPage> optionalCustomerOrder = customerOrderPageRepository.findById(order.getId());
             if (optionalCustomerOrder.isPresent()) {
-                CustomerOrder customerOrder = optionalCustomerOrder.get();
+                CustomerOrderPage customerOrder = optionalCustomerOrder.get();
                 if (!customerOrder.getOrderStatus().equals(status)) {
                     throw new BadRequestException("打包中订单的状态有误");
                 }

@@ -450,6 +450,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             resource.setPrintTitle(resource.getOwner().getName());
         }
         order.setDescription(resource.getDescription());
+        order.setIsPrinted(false);
         order.setExpireDateMin(resource.getExpireDateMin());
         order.setExpireDateMax(resource.getExpireDateMax());
         order.setFetchAll(resource.getFetchAll());
@@ -500,9 +501,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         if (order.getOrderStatus() != OrderStatus.INIT && order.getOrderStatus() != OrderStatus.CANCEL) {
             throw new BadRequestException("只能删除初始状态或者已废除的订单");
         } else {
-            if (ObjectUtil.isNotNull(order.getPack())) {
-                pickMatchRepository.deleteAll(order.getPack().getPickMatch());
-            }
+//            if (ObjectUtil.isNotNull(order.getPack())) {
+//                pickMatchRepository.deleteAll(order.getPack().getPickMatch());
+//            }
             customerOrderPageRepository.deleteAll(order.getCustomerOrderPages());
             customerOrderItemRepository.deleteAll(order.getCustomerOrderItems());
             customerOrderStockRepository.deleteAll(order.getCustomerOrderStocks());
@@ -876,7 +877,6 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             List<CustomerOrderItem> orderItems = order.getCustomerOrderItems();
             List<CustomerOrderStock> orderStocks = order.getCustomerOrderStocks();
             customerOrderPageRepository.deleteByCustomerOrder(order);
-            List<CustomerOrderPage> customerOrderPages = order.getCustomerOrderPages();
             orderItems = orderItems.stream().peek(item -> {
                 item.setQuantity(null);
             }).collect(Collectors.toList());
@@ -1549,14 +1549,15 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     customerOrderPage.setCustomerOrder(order);
                     customerOrderPage.setStockFlows(
                             stockFlowPrint.subList(indexs.get(j), indexs.get(j + 1)).stream().map(f -> {
-                                StockFlow sf = new StockFlow();
-                                sf.setId(Long.valueOf(f.getId()));
+                                StockFlow sf = stockFlowRepository.getOne(Long.valueOf(f.getId()));
+                                sf.setCustomerOrderPage(customerOrderPage);
                                 return sf;
                             }).collect(Collectors.toList()));
                     customerOrderPage.setOrderStatus(order.getOrderStatus());
                     customerOrderPage.setFlowSn(CUSTOMER_ORDER_PAGE_SN_PREFIX + WmsUtil.generateSnowFlakeId());
                     order.getCustomerOrderPages().add(customerOrderPage);
                     customerOrderPageRepository.save(customerOrderPage);
+                    stockFlowRepository.saveAll(customerOrderPage.getStockFlows());
                 }
             }
 
@@ -1929,35 +1930,42 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     }
 
     private void updatePackReceiveType(CustomerOrder order) {
-        Pack pack = order.getPack();
-        List<CustomerOrder> packOrders = pack.getOrders();
-        if (packOrders.stream().allMatch(packOrder -> packOrder.getOrderStatus().equals(OrderStatus.COMPLETE))) {
-            List<ReceiveType> receiveTypes = packOrders.stream().map(CustomerOrder::getReceiveType).collect(Collectors.toList());
-            if (receiveTypes.stream().anyMatch(Objects::isNull)) {
-                //throw new BadRequestException("订单参数有误，无法更新打包信息，请确保此订单所在打包里的订单都已经正确回执!");
-                //手工修正错误
-                packOrders.forEach(innerOrder -> {
-                    if (innerOrder.getReceiveType() == null) {
-                        innerOrder.setReceiveType(ReceiveType.ALL_SEND);
-                        customerOrderRepository.save(innerOrder);
-                    }
-                });
-            }
-            ReceiveType packReceiveType;
-            if (receiveTypes.stream().allMatch(ReceiveType.ALL_SEND::equals)) {
-                packReceiveType = ReceiveType.ALL_SEND;
-            } else {
-                if (receiveTypes.stream().allMatch(ReceiveType.ALL_REJECT::equals)) {
-                    packReceiveType = ReceiveType.ALL_REJECT;
-                } else {
-                    packReceiveType = ReceiveType.PARTIAL_REJECT;
+//        Pack pack = order.getPack();
+        List<CustomerOrderPage> pages = order.getCustomerOrderPages();
+        List<Pack> packs = pages.stream().map(CustomerOrderPage::getPack).collect(Collectors.toList());
+//        List<CustomerOrderPage> packOrders = order.getCustomerOrderPages();
+        packs.forEach(pack -> {
+            List<CustomerOrderPage> packOrders = pack.getCustomerOrderPages();
+            if (packOrders.stream().allMatch(packOrder -> packOrder.getOrderStatus().equals(OrderStatus.COMPLETE))) {
+                List<ReceiveType> receiveTypes = packOrders.stream().map(CustomerOrderPage::getReceiveType).collect(Collectors.toList());
+                if (receiveTypes.stream().anyMatch(Objects::isNull)) {
+                    //throw new BadRequestException("订单参数有误，无法更新打包信息，请确保此订单所在打包里的订单都已经正确回执!");
+                    //手工修正错误
+                    packOrders.forEach(innerOrder -> {
+                        if (innerOrder.getReceiveType() == null) {
+                            innerOrder.setReceiveType(ReceiveType.ALL_SEND);
+                            customerOrderPageRepository.save(innerOrder);
+                        }
+                    });
                 }
+                ReceiveType packReceiveType;
+                if (receiveTypes.stream().allMatch(ReceiveType.ALL_SEND::equals)) {
+                    packReceiveType = ReceiveType.ALL_SEND;
+                } else {
+                    if (receiveTypes.stream().allMatch(ReceiveType.ALL_REJECT::equals)) {
+                        packReceiveType = ReceiveType.ALL_REJECT;
+                    } else {
+                        packReceiveType = ReceiveType.PARTIAL_REJECT;
+                    }
+                }
+                pack.setReceiveType(packReceiveType);
+                pack.setPackStatus(OrderStatus.COMPLETE);
+                pack = packRepository.save(pack);
+                operateSnapshotService.create(OrderStatus.COMPLETE.getName(), pack);
             }
-            pack.setReceiveType(packReceiveType);
-            pack.setPackStatus(OrderStatus.COMPLETE);
-            pack = packRepository.save(pack);
-            operateSnapshotService.create(OrderStatus.COMPLETE.getName(), pack);
-        }
+        });
+
+
     }
 
     protected static class PageXofY implements IEventHandler {

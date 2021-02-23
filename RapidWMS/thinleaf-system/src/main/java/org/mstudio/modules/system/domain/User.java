@@ -149,7 +149,7 @@ public class User implements Serializable {
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "userSending", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private List<CustomerOrder> ordersSending;
+    private List<CustomerOrderPage> ordersSending;
 
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

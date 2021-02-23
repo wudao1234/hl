@@ -9,7 +9,7 @@ import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
 import org.mstudio.modules.wms.address.domain.Address;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.customer.domain.Customer;
-import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
+import org.mstudio.modules.wms.customer_order.domain.CustomerOrderPage;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
 import org.mstudio.modules.wms.dispatch.domain.DispatchPiece;
@@ -31,7 +31,7 @@ import java.util.List;
 @Table(name = "wms_pack")
 @NamedEntityGraph(name = "pack.all", attributeNodes = {
         @NamedAttributeNode(value = "customer"),
-        @NamedAttributeNode(value = "orders"),
+        @NamedAttributeNode(value = "customerOrderPages"),
         @NamedAttributeNode(value = "address"),
         @NamedAttributeNode(value = "user")
 })
@@ -44,7 +44,7 @@ public class Pack extends BaseEntity {
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "pack", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private List<CustomerOrder> orders;
+    private List<CustomerOrderPage> customerOrderPages;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
