@@ -78,7 +78,6 @@
 						:show-extra-icon="true"
 						:extra-icon="formatIcon(pack.packStatus)"
 						:show-badge="true"
-						:badge-text="formatPrice(pack.totalPrice)"
 						:badge-type="pack.totalPrice > 0 ? 'error' : 'success'"
 						:title="formatTitle2(pack)"
 						@click="viewPackDetail(pack.id)"
@@ -246,7 +245,6 @@ export default {
 		},
 		formatNote2() {
 			return (user, packages, packType, description) => {
-				console.log(user);
 				const userName = user ? user.username : '未指定';
 				let packTypeName;
 				switch (packType) {
@@ -347,7 +345,6 @@ export default {
 	},
 	methods: {
 		changeUser() {
-			console.log(1)
 			uni.navigateTo({
 				animationType: 'slide-in-right',
 				url: '../select-user'
@@ -635,8 +632,15 @@ export default {
 			}
 		},
 		addPack() {
+			if(typeof(this.userInfo.id)==='undefined'){
+				uni.showToast({
+					title: '必须选择工作人员',
+					icon: 'none'
+				});
+				return;
+			}
 			uni.navigateTo({
-				url: '../pack-add/pack-add',
+				url: `../pack-add/pack-add?userId=${this.userInfo.id}`,
 				animationType: 'slide-in-bottom'
 			});
 		},

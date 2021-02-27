@@ -751,11 +751,13 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
         for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
             CustomerOrderPage p = order.getCustomerOrderPages().get(i);
-            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) continue;
+            if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) {
+                continue;
+            }
             if (ObjectUtil.isNull(p.getUserReviewers())) {
                 p.setUserReviewers(new ArrayList<>());
             }
-            if (null != userId && !p.getUserReviewers().stream().filter(user1 -> user1.getId() == userId).findAny().isPresent()) {
+            if (null != userId && !p.getUserReviewers().stream().filter(user1 -> user1.getId().equals(userId)).findAny().isPresent()) {
                 User user = userRepository.getOne(userId);
                 p.getUserReviewers().add(user);
             }
@@ -1366,8 +1368,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 try {
                     // todo 复核分拣 serverI
                     CustomerOrder customerOrder = optionalCustomerOrder.get();
-//                    customerOrder.setUserReviewers(customerOrderMultipleOperateDTO.getUserReviewers());
-                    customerOrderService.confirm(customerOrder, null, null);
+                    customerOrderMultipleOperateDTO.getUserReviewers().forEach(u ->{
+                        customerOrderService.confirm(customerOrder, u.getId(), null);
+                    });
                     result.addSucceed();
                 } catch (BadRequestException e) {
                     result.addFailed();

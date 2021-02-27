@@ -174,7 +174,7 @@ public class CustomerOrder extends BaseEntity {
     /**
      * 订单创建人
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private User userCreator;
 

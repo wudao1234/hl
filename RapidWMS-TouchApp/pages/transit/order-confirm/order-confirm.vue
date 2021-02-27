@@ -39,7 +39,7 @@
 				:badge-text="formatBadgeText(item)"
 			/>
 		</uni-list>
-		<view class="title" v-if="num > -1">页码:{{ num + 1 }}</view>
+		<view class="title" v-if="showPageList">页码:{{pageFlowSn}}</view>
 		<uni-list>
 			<uni-list-item
 				v-for="item in spageItems"
@@ -137,7 +137,6 @@ export default {
 			stockFlowItems: [],
 			pageFlowSn: '',
 			spageItems: [],
-			num: undefined,
 			userId: undefined,
 			customerOrderPages: [],
 			showFetchStockCancelGathering: false,
@@ -147,6 +146,9 @@ export default {
 		};
 	},
 	computed: {
+		showPageList(){
+			return this.pageFlowSn && 'PAGE' === this.pageFlowSn.substr(0, 4)
+		},
 		listJoin() {
 			return list => {
 				if (list.length === 0) return '';
@@ -217,13 +219,14 @@ export default {
 				this.showConfirmOrder = showConfirmOrder1 || showConfirmOrder2;
 
 				this.showConfirm = this.customerOrderPages.filter(p => p.flowSn === this.pageFlowSn && p.orderStatus === this.ORDER_STATUS_JSON.CONFIRM).length===0;
-console.log(this.showConfirm)
 				this.api.get(`/api/stock_flows/findByOrderId/${id}`).then(res => {
 					this.stockFlowItems = [...res.data].reverse();
 					if (this.pageFlowSn && 'PAGE' === this.pageFlowSn.substr(0, 4)) {
-						_this.num = order.customerOrderPages.find(e => e.flowSn === this.pageFlowSn).num;
-						console.log(_this.num);
-						this.spageItems = this.stockFlowItems.slice(this.num * PAGE_SIZE, this.num * PAGE_SIZE + PAGE_SIZE);
+						this.spageItems = this.customerOrderPages.find(p =>  p.flowSn === this.pageFlowSn).stockFlows
+						this.spageItems.forEach(item =>{
+							item.warePositionOut = this.stockFlowItems.find(item1 => item1.id===item.id).warePositionOut
+						})
+						console.log(this.spageItems)
 					}
 				});
 			});

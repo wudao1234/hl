@@ -122,13 +122,22 @@
 			"style": {
 				"navigationBarTitleText": "新增打包"
 			}
-		}, {
+		},
+		{
 			"path": "pages/transit/order-select/order-select",
 			"style": {
 				"navigationBarTitleText": "订单列表",
 				"enablePullDownRefresh": true
 			}
-		}, {
+		},
+		{
+			"path": "pages/transit/order-select/order-page-select",
+			"style": {
+				"navigationBarTitleText": "订单页列表",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
 			"path": "pages/transit/address-select/address-select",
 			"style": {
 				"navigationBarTitleText": "地址列表",

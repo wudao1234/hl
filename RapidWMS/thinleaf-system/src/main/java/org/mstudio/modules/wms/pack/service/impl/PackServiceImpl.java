@@ -271,20 +271,14 @@ public class PackServiceImpl implements PackService {
         resource.setIsPrinted(false);
         resource.setIsPackaged(false);
         resource.setIsActive(true);
-        // 2019.10.24 杨环认为没有订单也可以打包，为了满足一些特殊情况
-//        if (resource.getOrders().isEmpty()) {
-//            resource.setTotalPrice(BigDecimal.ZERO);
-//        } else {
         // 检查打包中所有订单的状态是否符合要求
         confirmOrdersStatus(resource.getCustomerOrderPages(), OrderStatus.CONFIRM);
-//            BigDecimal totalPrice = resource.getOrders().stream().map(CustomerOrder::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
-//            resource.setTotalPrice(totalPrice);
-//        }
+        resource.getCustomerOrderPages().forEach( page -> {
+            CustomerOrder o = customerOrderRepository.findByCustomerOrderPagesId(page.getId());
+            page.setCustomerOrder(o);
+        });
         Pack pack = packRepository.save(resource);
         operateSnapshotService.create(OrderStatus.PACKAGE.getName(), pack);
-
-//        if (!resource.getOrders().isEmpty()) {
-//        pack.setCustomerOrderPages(attachOrders(pack, resource.getOrders()));
         List<CustomerOrderPage> pages = attachCustomerOrderPages(pack, resource.getCustomerOrderPages());
         pack.setCustomerOrderPages(pages);
         if (pack.getPackages() == 1) {
@@ -296,10 +290,6 @@ public class PackServiceImpl implements PackService {
             pack.setIsPackaged(true);
             packRepository.save(pack);
         }
-//        }
-        // 添加拣配、复核计件信息-转到配送完成时统计
-//        pickMatchService.create(pack);
-
         // 判断 更新CustomerOrder 状态
         updateOrderStatusByPages(pages);
 
@@ -314,9 +304,9 @@ public class PackServiceImpl implements PackService {
     private void updateOrderStatusByPages(List<CustomerOrderPage> pages) {
         List<CustomerOrder> orders = new ArrayList<>();
         List<CustomerOrder> finalOrders = orders;
-        pages.forEach(p ->{
-            List<CustomerOrder> o = customerOrderRepository.findByCustomerOrderPagesIdIn(p.getId());
-            finalOrders.add(o.get(0));
+        pages.forEach(p -> {
+            CustomerOrder o = customerOrderRepository.findByCustomerOrderPagesId(p.getId());
+            finalOrders.add(o);
         });
         orders = orders.stream().distinct().collect(Collectors.toList());
         orders.forEach(o -> {

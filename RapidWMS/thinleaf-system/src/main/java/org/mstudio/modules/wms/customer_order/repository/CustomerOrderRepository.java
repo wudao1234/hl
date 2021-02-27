@@ -8,15 +8,16 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 /**
-* @author Macrow
-* @date 2019-02-22
-*/
+ * @author Macrow
+ * @date 2019-02-22
+ */
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Long>, JpaSpecificationExecutor {
 
     Integer countByOwnerId(Long ownerId);
@@ -37,7 +38,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 
     List<CustomerOrder> findByCreateTimeBetweenAndIsActive(Date startDate, Date endDate, Boolean isActive);
 
-    List<CustomerOrder> findByCustomerOrderPagesIdIn(Long id);
+    @Query(value = "SELECT co.* FROM wms_customer_order co LEFT JOIN wms_customer_order_page cop ON cop.customer_order_id = co.id WHERE cop.id = ?1", nativeQuery = true)
+    CustomerOrder findByCustomerOrderPagesId(Long id);
 
 //    List<CustomerOrder> findByPackId(Long packId);
 
