@@ -19,7 +19,7 @@
 			<uni-list-item :show-arrow="false" :title="pack.address.phone ? '联系电话：' + pack.address.phone : ''" @click="call(pack.address.phone)" />
 			<uni-list-item :show-arrow="false" :title="pack.address.description ? '说明：' + pack.address.description : ''" />
 		</uni-list>
-		<view class="title">订单明细</view>
+		<view class="title">订单页明细</view>
 		<uni-list>
 			<uni-list-item
 				v-for="order in orders"
@@ -27,30 +27,10 @@
 				:show-arrow="true"
 				:title="formatTitle(order.clientName)"
 				clickable
-				:note="formatNote(order.flowSn, order.clientStore)"
-				:show-badge="true"
-				:badge-text="formatPrice(order.totalPrice)"
+				:note="formatNote(order.flowSn)"
 				@click="viewOrderDetail(order)"
 			/>
 		</uni-list>
-		<view class="price_total">
-			总金额：
-			<uni-tag class="price_tag" :circle="true" :text="totalPrice" type="primary" size="small" />
-		</view>
-		<view class="title">分包明细</view>
-		<uni-list>
-			<uni-list-item
-				v-for="item in packItems"
-				:key="item.id"
-				:show-arrow="false"
-				:title="formatTitle2(item.name, item.number)"
-				:note="formatGoodsNote(item.sn, item.expireDate)"
-				:show-badge="true"
-				:badge-text="item.quantity"
-				badge-type="error"
-			/>
-		</uni-list>
-		<view class="price_total" v-if="packItems.length == 0">暂未分配分包信息</view>
 		<view class="title">操作记录</view>
 		<view class="step_area"><uni-steps :options="operateSnapshots" :active="active" direction="column" /></view>
 		<view class="title" v-if="pack.signedPhoto" @error="imageError">签收照片</view>
@@ -59,7 +39,6 @@
 		</view>
 		<view class="padding flex flex-direction">
 			<button class="cu-btn bg-blue lg" :loading="loading" @click="sendingByMe" v-if="packStatus == 'PACKAGE'">指定派送</button>
-			<button class="cu-btn bg-mauve margin-tb-sm lg" :loading="loading" @click="packagePack" v-if="packStatus == 'PACKAGE'">箱码分包</button>
 			<button class="cu-btn bg-purple lg" :loading="loading" @click="userSigned" v-if="isEdit && packStatus == 'SENDING'">拍照签收</button>
 			<button class="cu-btn bg-orange margin-tb-sm lg" :loading="loading" @click="userSignedWithNoPhoto" v-if="isEdit && packStatus == 'SENDING'">不拍照签收</button>
 			<button class="cu-btn bg-green lg" :loading="loading" @click="cancelSending" v-if="isEdit && packStatus == 'SENDING'">退回待发</button>
@@ -132,8 +111,8 @@ export default {
 			};
 		},
 		formatNote() {
-			return (flowSn, address) => {
-				return `${flowSn} | ${address}`;
+			return (flowSn) => {
+				return `${flowSn}`;
 			};
 		},
 		formatGoodsNote() {
@@ -164,7 +143,7 @@ export default {
 				this.packType = '打包类型：' + this.getPackTypeText(pack.packType);
 				this.packages = '件数：' + pack.packages;
 
-				this.orders = pack.orders;
+				this.orders = pack.customerOrderPages;
 				this.packStatus = pack.packStatus;
 				this.cancelDescription = pack.cancelDescription == null ? '' : pack.cancelDescription;
 				this.packItems = pack.packItems.sort((a, b) => a.number - b.number);
@@ -473,11 +452,15 @@ export default {
 				}
 			});
 		},
-		viewOrderDetail(order) {
-			uni.navigateTo({
-				url: `../order-confirm/order-confirm?id=${order.id}`,
-				animationType: 'slide-in-right'
-			});
+		viewOrderDetail(orderPage) {
+			this.api
+				.get('/api/customer_orders/findByCustomerOrderPagesId/' + orderPage.id)
+				.then(res => {
+					uni.navigateTo({
+						url: `../order-confirm/order-confirm?id=${res.data.id}&searchValue=${orderPage.flowSn}`,
+						animationType: 'slide-in-right'
+					});
+				})
 		}
 	},
 	onLoad(params) {

@@ -439,6 +439,11 @@ public class CustomerOrderController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/findByCustomerOrderPagesId/{id}")
+    public ResponseEntity findByCustomerOrderPagesId(@PathVariable Long id) {
+        return new ResponseEntity(customerOrderService.findByCustomerOrderPagesId(id),HttpStatus.OK);
+    }
+
     private void checkPermission(Long customerId) {
         if (customerId == null) {
             throw new BadRequestException("客户ID参数错误");

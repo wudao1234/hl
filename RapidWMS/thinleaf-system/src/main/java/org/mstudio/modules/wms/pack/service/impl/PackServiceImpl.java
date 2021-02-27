@@ -139,7 +139,7 @@ public class PackServiceImpl implements PackService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     public Map queryAll(Boolean exportExcel, Boolean isPrintedFilter, Boolean isPackagedFilter, String customerFilter, String addressTypeFilter, String packTypeFilter, String receiveTypeFilter, String packStatusFilter, String userNameFilter, String startDate, String endDate, String search, String searchAddress, String searchOrderSn, Pageable pageable) {
         Specification<Pack> spec = new Specification<Pack>() {
             @Override
@@ -250,13 +250,14 @@ public class PackServiceImpl implements PackService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
-    @Cacheable(value = CACHE_NAME, key = "#p0")
+//    @Cacheable(value = CACHE_NAME, key = "#p0")
     public PackDTO findById(Long id) {
         Optional<Pack> optionalPack = packRepository.findById(id);
         if (!optionalPack.isPresent()) {
             throw new BadRequestException("打包不存在 ID=" + id);
         }
-        return packMapper.toDto(optionalPack.get());
+        Pack p = optionalPack.get();
+        return packMapper.toDto(p);
     }
 
     @Override
@@ -281,15 +282,6 @@ public class PackServiceImpl implements PackService {
         operateSnapshotService.create(OrderStatus.PACKAGE.getName(), pack);
         List<CustomerOrderPage> pages = attachCustomerOrderPages(pack, resource.getCustomerOrderPages());
         pack.setCustomerOrderPages(pages);
-        if (pack.getPackages() == 1) {
-            List<PackItem> packItems = new ArrayList<>();
-            getStockFLows(pack).forEach(item -> {
-                packItems.add(new PackItem(pack, 1, item.getQuantity(), item.getName(), item.getSn(), item.getExpireDate()));
-            });
-            packItemRepository.saveAll(packItems);
-            pack.setIsPackaged(true);
-            packRepository.save(pack);
-        }
         // 判断 更新CustomerOrder 状态
         updateOrderStatusByPages(pages);
 
@@ -679,7 +671,7 @@ public class PackServiceImpl implements PackService {
             throw new BadRequestException("打包不存在ID=" + id);
         } else {
             Pack pack = optionalPack.get();
-//            detachOrders(pack.getOrders());
+            detachOrders(pack.getCustomerOrderPages());
             pack.setIsActive(false);
             pack.setPackStatus(OrderStatus.CANCEL);
             pack.setCancelDescription(cancelDescription);
@@ -999,11 +991,10 @@ public class PackServiceImpl implements PackService {
             if (order.getOrderStatus().getIndex() < OrderStatus.PACKAGE.getIndex()) {
                 throw new BadRequestException("打包的订单页中，流水号为" + order.getFlowSn() + "的订单已被取消打包");
             }
-//            order.setPack(null);
+            order.setPack(null);
             order.setOrderStatus(OrderStatus.CONFIRM);
-//            order.setCompletePrice(null);
-//            order.setCompleteDescription(null);
             operateSnapshotService.create("取消打包", order.getCustomerOrder());
+            order.getCustomerOrder().setOrderStatus(OrderStatus.CONFIRM);
         });
         return customerOrderPageRepository.saveAll(orders);
     }

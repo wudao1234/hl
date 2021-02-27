@@ -1741,6 +1741,11 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         return (Goods) goodsRepository.findOne(spec).get();
     }
 
+    @Override
+    public CustomerOrderDTO findByCustomerOrderPagesId(Long id) {
+        return customerOrderMapper.toDto(customerOrderRepository.findByCustomerOrderPagesId(id));
+    }
+
     private void returnStockAndSaveOperateSnapshot(CustomerOrder order, OrderStatus orderStatus, String operation, String cancelDescription) {
         List<StockFlow> stockFlows = stockFlowRepository.findAllByCustomerOrderIdOrderByWarePositionOut(order.getId());
         JwtUser user = (JwtUser) getUserDetails();

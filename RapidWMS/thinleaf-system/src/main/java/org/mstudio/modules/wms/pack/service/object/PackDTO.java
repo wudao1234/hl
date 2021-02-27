@@ -8,7 +8,7 @@ import org.mstudio.modules.wms.common.BaseObject;
 import org.mstudio.modules.wms.customer.service.object.CustomerVO;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.customer_order.domain.ReceiveType;
-import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderVO;
+import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderPageVO;
 import org.mstudio.modules.wms.operate_snapshot.service.object.OperateSnapshotVO;
 import org.mstudio.modules.wms.pack.domain.PackType;
 
@@ -25,7 +25,7 @@ public class PackDTO extends BaseObject {
 
     private CustomerVO customer;
 
-    private List<CustomerOrderVO> orders;
+    private List<CustomerOrderPageVO> customerOrderPages;
 
     private AddressVO address;
 

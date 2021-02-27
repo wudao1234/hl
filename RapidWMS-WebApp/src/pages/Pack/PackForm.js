@@ -5,13 +5,11 @@ import {
   Card,
   Col,
   Form,
-  Icon,
   Input,
   InputNumber,
   message,
   notification,
   Popconfirm,
-  Popover,
   Row,
   Select,
   Steps,
@@ -19,7 +17,6 @@ import {
   Tag,
 } from 'antd';
 import Highlighter from 'react-highlight-words';
-import accounting from 'accounting';
 import moment from 'moment';
 import { connect } from 'dva';
 import styles from './Pack.less';
@@ -115,7 +112,7 @@ class PackForm extends PureComponent {
         trackingNumber: pack.trackingNumber,
         address: pack.address,
         packStatus: pack.packStatus,
-        allItems: pack.orders,
+        allItems: pack.customerOrderPages,
       });
     }
   }
@@ -205,23 +202,6 @@ class PackForm extends PureComponent {
         },
       },
       {
-        title: '出货',
-        dataIndex: 'isSatisfied',
-        key: 'isSatisfied',
-        width: '1%',
-        align: 'center',
-        render: text => {
-          switch (text) {
-            case true:
-              return <Tag color="blue">全匹配</Tag>;
-            case false:
-              return <Tag color="orange">部分匹配</Tag>;
-            default:
-              return <Tag color="#A9A9A9">未匹配</Tag>;
-          }
-        },
-      },
-      {
         title: '流程',
         dataIndex: 'orderStatus',
         key: 'orderStatus',
@@ -280,67 +260,6 @@ class PackForm extends PureComponent {
         },
       },
       {
-        title: '所属客户',
-        dataIndex: 'owner.name',
-        key: 'owner.name',
-        width: '15%',
-      },
-      {
-        title: '订单客户',
-        dataIndex: 'clientName',
-        key: 'clientName',
-        width: '15%',
-        render: (text, record) => {
-          const tooltip = (
-            <div>
-              <p>
-                <b>客户名称</b>: {record.clientName}
-              </p>
-              <p>
-                <b>客户地址</b>: {record.clientAddress}
-              </p>
-              <p>
-                <b>客户门店</b>: {record.clientStore}
-              </p>
-            </div>
-          );
-          return (
-            <span>
-              <Popover content={tooltip} title={text}>
-                <a style={{ marginRight: 3 }}>
-                  <Icon type="exclamation-circle" />
-                </a>
-              </Popover>
-              <Highlighter
-                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                searchWords={[search]}
-                autoEscape
-                textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
-              />
-            </span>
-          );
-        },
-      },
-      {
-        title: '客户订单号',
-        dataIndex: 'clientOrderSn',
-        key: 'clientOrderSn',
-        width: '10%',
-        render: text => {
-          if (text) {
-            return (
-              <Highlighter
-                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                searchWords={[search]}
-                autoEscape
-                textToHighlight={text === undefined ? '' : text.toString()}
-              />
-            );
-          }
-          return '';
-        },
-      },
-      {
         title: '说明',
         dataIndex: 'description',
         key: 'description',
@@ -360,16 +279,6 @@ class PackForm extends PureComponent {
         },
       },
       {
-        title: '金额',
-        dataIndex: 'totalPrice',
-        key: 'totalPrice',
-        width: '5%',
-        align: 'right',
-        render: text => {
-          return <Tag color="blue">{accounting.formatMoney(text, '￥')}</Tag>;
-        },
-      },
-      {
         title: '提交时间',
         dataIndex: 'createTime',
         key: 'createTime',
@@ -383,22 +292,6 @@ class PackForm extends PureComponent {
         dataIndex: 'flowSn',
         key: 'flowSn',
         width: '15%',
-        render: text => {
-          return (
-            <Highlighter
-              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-              searchWords={[search]}
-              autoEscape
-              textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
-            />
-          );
-        },
-      },
-      {
-        title: '自编号',
-        dataIndex: 'autoIncreaseSn',
-        key: 'autoIncreaseSn',
-        width: '10%',
         render: text => {
           return (
             <Highlighter

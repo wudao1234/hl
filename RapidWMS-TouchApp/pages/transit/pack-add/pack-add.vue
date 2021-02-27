@@ -18,6 +18,16 @@
 				<view class="title">件数</view>
 				<uni-number-box :min="1" :max="99999" :step="1" v-model="packages" @change="changePackages" />
 			</view>
+			<view class="cu-form-group" v-if="showLogistics">
+				<view class="title">渠道</view>
+				<picker @change="logisticsChange" range-key="name" :value="logisticsIndex" :range="logisticsTemplate">
+					<view class="picker" v-if="logisticsTemplate.length > 0">{{ logisticsTemplate[logisticsIndex].name }}</view>
+				</picker>
+			</view>
+			<view class="cu-form-group" v-if="showLogistics">
+				<view class="title">重量</view>
+				<input placeholder="重量kg" v-model="weight" />
+			</view>
 			<view class="cu-form-group">
 				<view class="title">送货地址</view>
 				<input disabled="true" :value="selectedAddressText" />
@@ -74,7 +84,11 @@ export default {
 			description: '',
 			// totalPrice: 0,
 			loading: false,
-			userId:undefined
+			userId:undefined,
+			logisticsIndex:0,
+			logisticsTemplate:[],
+			weight:null,
+			showLogistics:false
 		};
 	},
 	computed: {
@@ -119,15 +133,24 @@ export default {
 			this.packages = value;
 		},
 		bindPackTypeChange(e) {
+			this.showLogistics = false
 			this.packTypeIndex = e.target.value;
 			if (this.packTypeIndex == 2) {
 				this.selectedAddressId = '';
 				this.selectedAddressText = '';
+			}else if(this.packTypeIndex === 1 ){
+				this.showLogistics = true
 			}
+		},
+		logisticsChange(e) {
+			this.logisticsIndex = e.target.value;
 		},
 		initData() {
 			this.api.get('/api/customers/all_list').then(res => {
 				this.customerArray = res.data;
+			});
+			this.api.get('/api/Logistics_template/fetch_group_all').then(res => {
+				this.logisticsTemplate = res.data;
 			});
 		},
 		selectAddress() {
@@ -184,7 +207,9 @@ export default {
 					packType: this.packTypeIndex,
 					packages: this.packages,
 					trackingNumber: this.trackingNumber,
-					customerOrderPages: this.orders
+					customerOrderPages: this.orders,
+					weight:this.weight,
+					logisticsTemplate:this.logisticsTemplate[this.logisticsIndex]
 				};
 			}
 			Object.assign(postData,{user:{id:this.userId}})

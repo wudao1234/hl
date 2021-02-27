@@ -1,20 +1,6 @@
 import React, { PureComponent } from 'react';
 import router from 'umi/router';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Form,
-  Icon,
-  Popover,
-  Row,
-  Steps,
-  Table,
-  Tag,
-  Timeline,
-} from 'antd';
+import { Alert, Button, Card, Col, Divider, Form, Row, Steps, Table, Tag, Timeline } from 'antd';
 import Highlighter from 'react-highlight-words';
 import accounting from 'accounting';
 import moment from 'moment';
@@ -98,7 +84,7 @@ class PackDetail extends PureComponent {
         address,
         packStatus: pack.packStatus,
         flowSn: pack.flowSn,
-        allItems: pack.orders,
+        allItems: pack.customerOrderPages,
         operateSnapshots: pack.operateSnapshots,
         cancelDescription: pack.cancelDescription,
         signedPhoto: pack.signedPhoto,
@@ -137,23 +123,6 @@ class PackDetail extends PureComponent {
         key: 'index',
         render: (text, record, index) => {
           return `${index + 1 + (orderCurrentPage - 1) * orderPageSize}`;
-        },
-      },
-      {
-        title: '出货',
-        dataIndex: 'isSatisfied',
-        key: 'isSatisfied',
-        width: '1%',
-        align: 'center',
-        render: text => {
-          switch (text) {
-            case true:
-              return <Tag color="blue">全匹配</Tag>;
-            case false:
-              return <Tag color="orange">部分匹配</Tag>;
-            default:
-              return <Tag color="#A9A9A9">未匹配</Tag>;
-          }
         },
       },
       {
@@ -214,84 +183,14 @@ class PackDetail extends PureComponent {
           return <Tag color={color}>{result}</Tag>;
         },
       },
+
       {
-        title: '所属客户',
-        dataIndex: 'owner.name',
-        key: 'owner.name',
-        width: '10%',
-      },
-      {
-        title: '订单客户',
-        dataIndex: 'clientName',
-        key: 'clientName',
-        width: '10%',
-        render: (text, record) => {
-          const tooltip = (
-            <div>
-              <p>
-                <b>客户名称</b>: {record.clientName}
-              </p>
-              <p>
-                <b>客户地址</b>: {record.clientAddress}
-              </p>
-              <p>
-                <b>客户门店</b>: {record.clientStore}
-              </p>
-            </div>
-          );
-          return (
-            <span>
-              <Popover content={tooltip} title={text}>
-                <a style={{ marginRight: 3 }}>
-                  <Icon type="exclamation-circle" />
-                </a>
-              </Popover>
-              <Highlighter
-                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                searchWords={[search]}
-                autoEscape
-                textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
-              />
-            </span>
-          );
-        },
-      },
-      {
-        title: '客户订单号',
-        dataIndex: 'clientOrderSn',
-        key: 'clientOrderSn',
-        width: '10%',
+        title: '提交时间',
+        dataIndex: 'createTime',
+        key: 'createTime',
+        width: '1%',
         render: text => {
-          if (text) {
-            return (
-              <Highlighter
-                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                searchWords={[search]}
-                autoEscape
-                textToHighlight={text === undefined ? '' : text.toString()}
-              />
-            );
-          }
-          return '';
-        },
-      },
-      {
-        title: '客户单据号',
-        dataIndex: 'clientOrderSn2',
-        key: 'clientOrderS2n',
-        width: '10%',
-        render: text => {
-          if (text) {
-            return (
-              <Highlighter
-                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                searchWords={[search]}
-                autoEscape
-                textToHighlight={text === undefined ? '' : text.toString()}
-              />
-            );
-          }
-          return '';
+          return <Tag>{moment(text).format('YY/MM/DD/HH:mm')}</Tag>;
         },
       },
       {
@@ -314,45 +213,10 @@ class PackDetail extends PureComponent {
         },
       },
       {
-        title: '金额',
-        dataIndex: 'totalPrice',
-        key: 'totalPrice',
-        width: '1%',
-        align: 'right',
-        render: text => {
-          return <Tag color="blue">{accounting.formatMoney(text, '￥')}</Tag>;
-        },
-      },
-      {
-        title: '提交时间',
-        dataIndex: 'createTime',
-        key: 'createTime',
-        width: '1%',
-        render: text => {
-          return <Tag>{moment(text).format('YY/MM/DD/HH:mm')}</Tag>;
-        },
-      },
-      {
         title: '流水号',
         dataIndex: 'flowSn',
         key: 'flowSn',
         width: '15%',
-        render: text => {
-          return (
-            <Highlighter
-              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-              searchWords={[search]}
-              autoEscape
-              textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
-            />
-          );
-        },
-      },
-      {
-        title: '自编号',
-        dataIndex: 'autoIncreaseSn',
-        key: 'autoIncreaseSn',
-        width: '10%',
         render: text => {
           return (
             <Highlighter
@@ -589,7 +453,7 @@ class PackDetail extends PureComponent {
             </Col>
           </Row>
           <Divider />
-          <Card title="订单列表" size="small">
+          <Card title="订单页列表" size="small">
             <Table
               columns={selectOrderColumns}
               dataSource={allItems}

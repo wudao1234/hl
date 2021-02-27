@@ -1,7 +1,6 @@
 package org.mstudio.modules.wms.customer_order.domain;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -68,8 +67,8 @@ public class CustomerOrderPage extends BaseEntity {
      * 订单信息
      */
     @JSONField(serialize = false)
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     private CustomerOrder customerOrder;
 
     /**

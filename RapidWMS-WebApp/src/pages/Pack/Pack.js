@@ -1234,7 +1234,6 @@ class Pack extends PureComponent {
     const { search, searchAddress, searchOrderSn, startDate, endDate } = this.state;
     const {
       isPrintedFilter,
-      isPackagedFilter,
       packTypeFilter,
       receiveTypeFilter,
       customerFilter,
@@ -1336,22 +1335,6 @@ class Pack extends PureComponent {
             return <Tag color="blue">已打印</Tag>;
           }
           return <Tag color="#A9A9A9">未打印</Tag>;
-        },
-      },
-      {
-        title: '分包',
-        dataIndex: 'isPackaged',
-        key: 'isPackaged',
-        width: '1%',
-        align: 'center',
-        filters: this.handleIsPackagedFilters(),
-        filteredValue: isPackagedFilter,
-        filterMultiple: false,
-        render: text => {
-          if (text) {
-            return <Tag color="red">已分包</Tag>;
-          }
-          return <Tag color="#A9A9A9">未分包</Tag>;
         },
       },
       {
@@ -1914,18 +1897,6 @@ class Pack extends PureComponent {
                   <span>
                     <Button icon="edit" htmlType="button" type="primary" onClick={this.editPack}>
                       修改打包
-                    </Button>
-                  </span>
-                )}
-                {selectedRowKeys.length === 1 && selectedRows[0].packStatus === 'PACKAGE' && (
-                  <span>
-                    <Button
-                      icon="download"
-                      htmlType="button"
-                      type="danger"
-                      onClick={this.assignPack}
-                    >
-                      商品分包
                     </Button>
                   </span>
                 )}
