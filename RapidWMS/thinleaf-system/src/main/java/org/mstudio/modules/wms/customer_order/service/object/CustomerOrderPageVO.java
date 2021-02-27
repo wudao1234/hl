@@ -6,6 +6,7 @@ import org.mstudio.modules.wms.common.BaseObject;
 import org.mstudio.modules.wms.customer_order.domain.OrderStatus;
 import org.mstudio.modules.wms.stock_flow.service.object.StockFlowVO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -18,6 +19,7 @@ import java.util.List;
 @Data
 public class CustomerOrderPageVO extends BaseObject {
     private String flowSn;
+    private BigDecimal totalPrice;
     private OrderStatus orderStatus;
     private List<UserVO> userGatherings;
     private List<UserVO> userReviewers;

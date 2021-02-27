@@ -1558,6 +1558,12 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                             }).collect(Collectors.toList()));
                     customerOrderPage.setOrderStatus(order.getOrderStatus());
                     customerOrderPage.setFlowSn(CUSTOMER_ORDER_PAGE_SN_PREFIX + WmsUtil.generateSnowFlakeId());
+                    BigDecimal price = BigDecimal.valueOf(0);
+                    for (int k = 0; k < customerOrderPage.getStockFlows().size(); k++) {
+                        StockFlow stockFlow = customerOrderPage.getStockFlows().get(k);
+                        price = price.add(stockFlow.getPrice().multiply(BigDecimal.valueOf(stockFlow.getQuantity())));
+                    }
+                    customerOrderPage.setTotalPrice(price);
                     order.getCustomerOrderPages().add(customerOrderPage);
                     customerOrderPageRepository.save(customerOrderPage);
                     stockFlowRepository.saveAll(customerOrderPage.getStockFlows());
@@ -1685,7 +1691,6 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
     public byte[] batchPrintPageInfo(String orderIds) throws IOException {
-        // todo 打印订单 页二维码
         String[] ids = orderIds.split(",");
         ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
         PdfDocument pdfDocument = new PdfDocument(new PdfWriter(outByteStream));

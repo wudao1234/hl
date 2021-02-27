@@ -15,7 +15,9 @@
 				:show-extra-icon="true"
 				:extra-icon="formatIcon"
 				:badge-type="order.totalPrice > 0 ? 'error' : 'success'"
-				:title="order.clientName+'-'+order.flowSn"
+				:badge-text="order.totalPrice"
+				show-badge
+				:title="order.clientName + '-' + order.flowSn"
 				:note="formatNote(order)"
 				@click="addOrder(order)"
 			/>
@@ -49,15 +51,7 @@ export default {
 				console.log(JSON.stringify({ createTime, description, userGatherings, userReviewers }));
 				const userGath = userGatherings.map(item => item.num).join(',');
 				const userRev = userReviewers.map(item => item.num).join(',');
-				return (
-					this.moment(createTime).format('YYYY-MM-DD HH:mm') +
-					' | ' +
-					userGath +
-					' | ' +
-					userRev +
-					' | ' +
-					(description == '' ? '无说明' : description)
-				);
+				return this.moment(createTime).format('YYYY-MM-DD HH:mm') + ' | ' + userGath + ' | ' + userRev + ' | ' + (description == '' ? '无说明' : description);
 			};
 		},
 		formatIcon() {

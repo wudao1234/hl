@@ -37,7 +37,7 @@ public enum OrderStatus {
      */
     SENDING("物流派送", 6),
     /**
-     * 物流派送
+     * 签收确认
      */
     CLIENT_SIGNED("签收确认", 7),
     /**

@@ -10,6 +10,7 @@ import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.stock_flow.domain.StockFlow;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -38,6 +39,11 @@ public class CustomerOrderPage extends BaseEntity {
      * 签收状态
      */
     private ReceiveType receiveType;
+
+    /**
+     * stockTotalPrice 实际匹配出库总价
+     */
+    private BigDecimal totalPrice;
 
     /**
      * 打包信息据

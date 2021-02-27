@@ -46,7 +46,7 @@
 			<uni-list>
 				<uni-swipe-action>
 					<uni-swipe-action-item v-for="(order, index) in orders" :key="index" :right-options="options" @click="bindClickOrder(order.id)">
-						<uni-list-item :show-arrow="false" :title="order.clientName+'-'+order.flowSn" :note="formatNote(order)" :show-badge="true" badge-type="error" />
+						<uni-list-item :show-arrow="false" :title="order.clientName+'-'+order.flowSn" :note="formatNote(order)" :show-badge="true" badge-type="error" :badge-text="order.totalPrice"/>
 					</uni-swipe-action-item>
 				</uni-swipe-action>
 			</uni-list>

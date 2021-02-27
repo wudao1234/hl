@@ -132,6 +132,10 @@ class PackForm extends PureComponent {
       queryParams,
       logisticsTemplateList,
     } = this.props;
+    let orderLists;
+    if (orderList) {
+      orderLists = orderList.reduce((acc, cur) => [...acc, ...cur.customerOrderPages], []);
+    }
 
     const { orderPageSize, orderCurrentPage, search } = this.state;
 
@@ -406,7 +410,7 @@ class PackForm extends PureComponent {
         }
         dispatch({
           type: 'pack/submit',
-          payload: { ...fieldsValue, isEdit, orders: allItems },
+          payload: { ...fieldsValue, isEdit, customerOrderPages: allItems },
           callback: response => {
             if (response.status === 400) {
               notification.error({
@@ -694,7 +698,7 @@ class PackForm extends PureComponent {
         >
           <Table
             columns={orderColumns}
-            dataSource={orderList}
+            dataSource={orderLists}
             rowKey="id"
             loading={loadingOrders}
             pagination={orderPaginationProps}

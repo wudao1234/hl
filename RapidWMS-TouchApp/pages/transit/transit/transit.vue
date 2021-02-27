@@ -80,6 +80,7 @@
 						:show-badge="true"
 						:badge-type="pack.totalPrice > 0 ? 'error' : 'success'"
 						:title="formatTitle2(pack)"
+						:badge-text="pack.totalPrice"
 						@click="viewPackDetail(pack.id)"
 					>
 						<view slot="body" style="flex: 1;">

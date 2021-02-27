@@ -68,6 +68,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.criteria.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -272,9 +274,10 @@ public class PackServiceImpl implements PackService {
         resource.setIsPrinted(false);
         resource.setIsPackaged(false);
         resource.setIsActive(true);
+        resource.setTotalPrice(resource.getCustomerOrderPages().stream().map(CustomerOrderPage::getTotalPrice).reduce(BigDecimal.ZERO,BigDecimal::add));
         // 检查打包中所有订单的状态是否符合要求
         confirmOrdersStatus(resource.getCustomerOrderPages(), OrderStatus.CONFIRM);
-        resource.getCustomerOrderPages().forEach( page -> {
+        resource.getCustomerOrderPages().forEach(page -> {
             CustomerOrder o = customerOrderRepository.findByCustomerOrderPagesId(page.getId());
             page.setCustomerOrder(o);
         });
@@ -283,7 +286,7 @@ public class PackServiceImpl implements PackService {
         List<CustomerOrderPage> pages = attachCustomerOrderPages(pack, resource.getCustomerOrderPages());
         pack.setCustomerOrderPages(pages);
         // 判断 更新CustomerOrder 状态
-        updateOrderStatusByPages(pages);
+        updateOrderStatusByPages(pages, OrderStatus.PACKAGE);
 
         return packMapper.toDto(pack);
     }
@@ -293,7 +296,7 @@ public class PackServiceImpl implements PackService {
      *
      * @param pages
      */
-    private void updateOrderStatusByPages(List<CustomerOrderPage> pages) {
+    private void updateOrderStatusByPages(List<CustomerOrderPage> pages, OrderStatus status) {
         List<CustomerOrder> orders = new ArrayList<>();
         List<CustomerOrder> finalOrders = orders;
         pages.forEach(p -> {
@@ -303,10 +306,23 @@ public class PackServiceImpl implements PackService {
         orders = orders.stream().distinct().collect(Collectors.toList());
         orders.forEach(o -> {
             boolean b = o.getCustomerOrderPages().stream().anyMatch(p ->
-                    OrderStatus.CONFIRM.equals(p.getOrderStatus()));
-            o.setOrderStatus(b ? OrderStatus.CONFIRM : OrderStatus.PACKAGE);
+                    status.equals(p.getOrderStatus()));
+            o.setOrderStatus(b ? status : o.getOrderStatus());
+            if (OrderStatus.CLIENT_SIGNED.equals(status) && b) {
+                o.setSignTime(new Timestamp((new Date()).getTime()));
+                // 拣配 复核 派送计件计算
+                calculatePiece(o);
+            }
             customerOrderRepository.save(o);
         });
+    }
+
+    /**
+     * 计算计件
+     * @param o 订单
+     */
+    private void calculatePiece(CustomerOrder o) {
+//        pickMatchService.create(o);
     }
 
     @Override
@@ -351,27 +367,10 @@ public class PackServiceImpl implements PackService {
         pack.setPackages(resource.getPackages());
         pack.setPackType(resource.getPackType());
         pack.setTrackingNumber(resource.getTrackingNumber());
-//        BigDecimal totalPrice = resource.getOrders().stream().map(CustomerOrder::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
-//        pack.setTotalPrice(totalPrice);
-        if (!attachOrders.isEmpty() || !detachOrders.isEmpty()) {
-            pack.setIsPackaged(false);
-            List<PackItem> packItems = pack.getPackItems();
-            packItemRepository.deleteAll(packItems);
-        }
         packItemRepository.deleteAll(pack.getPackItems());
         pack.setPackItems(null);
         pack.setIsPackaged(false);
         packRepository.save(pack);
-
-        if (pack.getPackages() == 1) {
-            List<PackItem> packItems = new ArrayList<>();
-            getStockFLows(pack).forEach(item -> {
-                packItems.add(new PackItem(pack, 1, item.getQuantity(), item.getName(), item.getSn(), item.getExpireDate()));
-            });
-            packItemRepository.saveAll(packItems);
-            pack.setIsPackaged(true);
-            packRepository.save(pack);
-        }
 
         operateSnapshotService.create("修改打包", pack);
         attachCustomerOrderPages(pack, attachOrders);
@@ -552,9 +551,11 @@ public class PackServiceImpl implements PackService {
                 operateName += "（指定 " + optionalUser.get().getUsername() + " 派送）";
             }
             operateSnapshotService.create(operateName, pack);
-//            List<CustomerOrder> orders = customerOrderRepository.findByPackId(pack.getId());
-//            pack.setCustomerOrderPages(orders);
-//            updateOrderStatus(orders, OrderStatus.SENDING, userRepository.findById(sendingUserId).get());
+            List<CustomerOrderPage> orders = pack.getCustomerOrderPages();
+            updateOrderStatus(orders, OrderStatus.SENDING, userRepository.findById(sendingUserId).get());
+            // 判断 更新CustomerOrder 状态
+            updateOrderStatusByPages(orders, OrderStatus.SENDING);
+
         }
     }
 
@@ -584,6 +585,7 @@ public class PackServiceImpl implements PackService {
             @CacheEvict(value = CustomerOrderServiceImpl.CACHE_NAME, allEntries = true)
     })
     synchronized public void signed(Long id, String signedPhoto) {
+        // todo 签收 - APP
         Optional<Pack> optionalPack = packRepository.findById(id);
         if (!optionalPack.isPresent()) {
             throw new BadRequestException("打包不存在ID=" + id);
@@ -596,7 +598,12 @@ public class PackServiceImpl implements PackService {
             pack.setSignedPhoto(photoFileUrl);
             packRepository.save(pack);
             operateSnapshotService.create(OrderStatus.CLIENT_SIGNED.getName(), pack);
-//            updateOrderStatus(pack.getOrders(), OrderStatus.CLIENT_SIGNED, null);
+            updateOrderStatus(pack.getCustomerOrderPages(), OrderStatus.CLIENT_SIGNED, null);
+            // 判断 更新CustomerOrder 状态
+            updateOrderStatusByPages(pack.getCustomerOrderPages(), OrderStatus.CLIENT_SIGNED);
+
+
+
         }
     }
 
@@ -1002,13 +1009,14 @@ public class PackServiceImpl implements PackService {
     private void updateOrderStatus(List<CustomerOrderPage> orders, OrderStatus status, User userSending) {
         orders.forEach(order -> {
             order.setOrderStatus(status);
-//            order.setSignTime(new Timestamp((new Date()).getTime()));
             if (userSending != null) {
-//                order.setUserSending(userSending);
+                order.setUserSending(userSending);
             }
             operateSnapshotService.create(status.getName(), order.getCustomerOrder());
         });
         customerOrderPageRepository.saveAll(orders);
+
+
     }
 
     private List<StockFlow> getStockFLows(Pack pack) {

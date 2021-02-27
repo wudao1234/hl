@@ -29,8 +29,7 @@
 					:extra-icon="formatIcon(pack.packStatus)"
 					:show-badge="true"
 					:badge-text="formatPrice(pack.totalPrice)"
-					:badge-type="pack.totalPrice > 0 ? 'error' : 'success'"
-					:title="formatTitle(pack)"
+					:badge-type="pack.totalPrice > 0 ? 'error' : 'success'"					:title="formatTitle(pack)"
 					:note="formatNote(pack.user, pack.packages, pack.packType, pack.description)"
 					@click="viewMyPackDetail(pack.id)"
 				/>

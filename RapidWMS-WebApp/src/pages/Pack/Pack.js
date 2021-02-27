@@ -1893,13 +1893,6 @@ class Pack extends PureComponent {
                       打印标签
                     </Button>
                   )}
-                {selectedRowKeys.length === 1 && selectedRows[0].packStatus === 'PACKAGE' && (
-                  <span>
-                    <Button icon="edit" htmlType="button" type="primary" onClick={this.editPack}>
-                      修改打包
-                    </Button>
-                  </span>
-                )}
                 {selectedRowKeys.length >= 1 &&
                   selectedRows.every(row => row.packStatus === 'SENDING') && (
                     <span>
