@@ -1,5 +1,6 @@
 package org.mstudio.modules.wms.Logistics.rest;
 
+import org.mstudio.aop.log.Log;
 import org.mstudio.modules.wms.Logistics.service.LogisticsDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +42,18 @@ public class LogisticsDetailController {
     @PreAuthorize("hasAnyRole('ADMIN', 'LOGISTICSDETAIL_ALL')")
     public ResponseEntity get(@PathVariable Long id) {
         return new ResponseEntity<>(logisticsDetailService.findById(id), HttpStatus.OK);
+    }
+
+    @Log("物流统计")
+    @GetMapping(value = "/statics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LOGISTICSDETAIL_ALL')")
+    @ResponseBody
+    public ResponseEntity statistics(
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate,
+            @RequestParam(value = "search", required = false) String search,
+            Pageable pageable) {
+        return new ResponseEntity(logisticsDetailService.statistics(startDate, endDate, search, pageable), HttpStatus.OK);
     }
 
 }

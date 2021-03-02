@@ -4,6 +4,7 @@ import {
   queryAllAddressType,
   queryAddressType,
   updateAddressType,
+  statics,
 } from '@/services/logisticsDetail';
 
 export default {
@@ -16,6 +17,15 @@ export default {
   effects: {
     *fetch(state, { call, put }) {
       const response = yield call(queryAddressType, state);
+      if (response !== undefined && response !== null) {
+        yield put({
+          type: 'save',
+          payload: response,
+        });
+      }
+    },
+    *static(state, { call, put }) {
+      const response = yield call(statics, state);
       if (response !== undefined && response !== null) {
         yield put({
           type: 'save',

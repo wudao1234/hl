@@ -37,6 +37,8 @@ import java.util.List;
 })
 public class Pack extends BaseEntity {
 
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private Customer customer;
@@ -137,8 +139,12 @@ public class Pack extends BaseEntity {
     private LogisticsTemplate logisticsTemplate;
 
     /**
-     * 打包重量
+     * 打包重量(计算)
      */
     private Float weight;
 
+    /**
+     * 打包重量（真实）
+     */
+    private Float realityWeight;
 }

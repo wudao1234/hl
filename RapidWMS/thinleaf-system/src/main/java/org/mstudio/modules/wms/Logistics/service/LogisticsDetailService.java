@@ -4,6 +4,7 @@ import org.mstudio.modules.wms.Logistics.domain.LogisticsDetail;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Macrow
@@ -24,4 +25,5 @@ public interface LogisticsDetailService {
 
     List<LogisticsDetail> getAllList();
 
+    Map statistics(String startDate, String endDate, String search, Pageable pageable);
 }

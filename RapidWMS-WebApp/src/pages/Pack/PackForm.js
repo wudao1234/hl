@@ -52,6 +52,7 @@ class PackForm extends PureComponent {
     packStatus: null,
     allItems: [],
     weight: null,
+    realityWeight: null,
     logisticsTemplate: { id: undefined },
   };
 
@@ -150,6 +151,7 @@ class PackForm extends PureComponent {
       packStatus,
       allItems,
       weight,
+      realityWeight,
       logisticsTemplate,
     } = this.state;
 
@@ -594,7 +596,6 @@ class PackForm extends PureComponent {
               <Col span={2}>
                 <FormItem label="渠道" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('logisticsTemplate.id', {
-                    rules: [{ required: true, message: '请选择渠道' }],
                     initialValue: logisticsTemplate.id,
                   })(
                     <Select
@@ -611,10 +612,16 @@ class PackForm extends PureComponent {
                 </FormItem>
               </Col>
               <Col span={2}>
-                <FormItem label="重量" {...this.formLayout} hasFeedback>
+                <FormItem label="计算重量" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('weight', {
-                    rules: [{ required: true, message: '请输入打包重量' }],
                     initialValue: weight,
+                  })(<InputNumber min={1} max={99999999} step={1} precision={2} />)}
+                </FormItem>
+              </Col>
+              <Col span={2}>
+                <FormItem label="实际重量" {...this.formLayout} hasFeedback>
+                  {getFieldDecorator('realityWeight', {
+                    initialValue: realityWeight,
                   })(<InputNumber min={1} max={99999999} step={1} precision={2} />)}
                 </FormItem>
               </Col>
@@ -625,7 +632,7 @@ class PackForm extends PureComponent {
                   })(<Input />)}
                 </FormItem>
               </Col>
-              <Col span={6}>
+              <Col span={4}>
                 <FormItem label="备注" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('description', {
                     initialValue: packDescription,

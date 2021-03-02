@@ -3,6 +3,7 @@ package org.mstudio.modules.wms.Logistics.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.Logistics.domain.LogisticsDetail;
 import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
 import org.mstudio.modules.wms.Logistics.repository.LogisticsDetailRepository;
@@ -24,6 +25,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.criteria.Predicate;
 import java.util.*;
@@ -53,6 +55,8 @@ public class LogisticsDetailServiceImpl implements LogisticsDetailService {
 
     @Autowired
     AddressRepository addressRepository;
+    @Autowired
+    private UserRepository userRepo;
 
     @Override
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
@@ -93,6 +97,44 @@ public class LogisticsDetailServiceImpl implements LogisticsDetailService {
     @Cacheable(value = CACHE_NAME, key = "'AllList'")
     public List<LogisticsDetail> getAllList() {
         return logisticsDetailRepository.findAll();
+    }
+
+    @Override
+    public Map statistics(String startDate, String endDate, String search, Pageable pageable) {
+        Specification< LogisticsTemplate > spec = (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<Predicate>();
+            if (!ObjectUtils.isEmpty(search)) {
+                predicates.add(criteriaBuilder.like(root.get("name").as(String.class), "%" + search + "%"));
+            }
+            Predicate[] p = new Predicate[predicates.size()];
+            return criteriaBuilder.and(predicates.toArray(p));
+        };
+        Sort sort = pageable.getSort().and(new Sort(Sort.Direction.DESC, "id"));
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<LogisticsTemplate> page = logisticsTemplateRepository.findAll(spec, newPageable);
+
+        Date start = new Date();
+        Date end = new Date();
+        if (startDate != null && endDate != null) {
+            start = DateUtil.parse(startDate);
+            end = DateUtil.parse(endDate);
+            // 必须在结束日期基础上加上一天，第二天凌晨0点作为结束时间点
+            Calendar c = Calendar.getInstance();
+            c.setTime(end);
+            c.add(Calendar.DAY_OF_MONTH, 1);
+            end = c.getTime();
+        }
+        Date finalStart = start;
+        Date finalEnd = end;
+
+        return PageUtil.toPage(page.map(logisticsTemplate -> {
+            Map m = new HashMap();
+            m.put("id", logisticsTemplate.getId());
+            m.put("name", logisticsTemplate.getName());
+            List<LogisticsDetail>  l = logisticsDetailRepository.findAllByNameAndCreateTimeBetween(logisticsTemplate.getName(),finalStart,finalEnd);
+            m.put("totalPrice", l.stream().mapToDouble(LogisticsDetail::getTotalPrice).sum());
+            return m;
+        }));
     }
 
     @Override

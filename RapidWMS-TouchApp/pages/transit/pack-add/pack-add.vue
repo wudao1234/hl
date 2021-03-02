@@ -28,6 +28,10 @@
 				<view class="title">重量</view>
 				<input placeholder="重量kg" v-model="weight" />
 			</view>
+			<view class="cu-form-group" v-if="showLogistics">
+				<view class="title">实际重量</view>
+				<input placeholder="实际重量kg" v-model="realityWeight" />
+			</view>
 			<view class="cu-form-group">
 				<view class="title">送货地址</view>
 				<input disabled="true" :value="selectedAddressText" />
@@ -88,6 +92,7 @@ export default {
 			logisticsIndex:0,
 			logisticsTemplate:[],
 			weight:null,
+			realityWeight:null,
 			showLogistics:false
 		};
 	},
@@ -209,6 +214,7 @@ export default {
 					trackingNumber: this.trackingNumber,
 					customerOrderPages: this.orders,
 					weight:this.weight,
+					realityWeight:this.realityWeight,
 					logisticsTemplate:this.logisticsTemplate[this.logisticsIndex]
 				};
 			}

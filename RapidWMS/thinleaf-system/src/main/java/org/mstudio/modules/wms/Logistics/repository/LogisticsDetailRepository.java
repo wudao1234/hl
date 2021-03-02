@@ -6,6 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  * 物流结算明细
  * @author lfj
@@ -16,4 +19,6 @@ public interface LogisticsDetailRepository extends JpaRepository<LogisticsDetail
     Page<LogisticsDetail> findAllByNameLike(String name, Pageable pageable);
 
     LogisticsDetail findByName(String name);
+
+    List<LogisticsDetail> findAllByNameAndCreateTimeBetween(String name, Date finalStart, Date finalEnd);
 }

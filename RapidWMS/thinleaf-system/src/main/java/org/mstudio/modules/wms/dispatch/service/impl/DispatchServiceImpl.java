@@ -15,6 +15,8 @@ import org.mstudio.modules.wms.dispatch.repository.DispatchCoefficientRepository
 import org.mstudio.modules.wms.dispatch.repository.DispatchPieceRepository;
 import org.mstudio.modules.wms.dispatch.repository.DispatchSysRepository;
 import org.mstudio.modules.wms.dispatch.service.DispatchService;
+import org.mstudio.modules.wms.dispatch.service.mapper.DispatchPieceMapper;
+import org.mstudio.modules.wms.dispatch.service.object.DispatchPieceDTO;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.utils.PageUtil;
@@ -70,6 +72,8 @@ public class DispatchServiceImpl implements DispatchService {
 
     @Autowired
     private DispatchPieceRepository dispatchPieceRepository;
+    @Autowired
+    private DispatchPieceMapper dispatchPieceMapper;
 
     @Override
     @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
@@ -235,7 +239,7 @@ public class DispatchServiceImpl implements DispatchService {
     }
 
     @Override
-    public DispatchPiece finish(Float mileage, Long dispatchSysId) {
+    public DispatchPieceDTO finish(Float mileage, Long dispatchSysId) {
         if (ObjectUtil.isNull(mileage) || mileage.compareTo(0f) <= 0) {
             throw new BadRequestException("里数错误");
         }
@@ -273,7 +277,7 @@ public class DispatchServiceImpl implements DispatchService {
                 ) * user.getCoefficient() * dispatchSys.getValue()
         );
         dispatchPiece.setStatus(DispatchStatusEnum.FINISH);
-        return dispatchPieceRepository.save(dispatchPiece);
+        return dispatchPieceMapper.toDto(dispatchPieceRepository.save(dispatchPiece));
     }
 
 }

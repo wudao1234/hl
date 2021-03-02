@@ -21,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.system.domain.User;
 import org.mstudio.modules.system.repository.UserRepository;
+import org.mstudio.modules.wms.Logistics.domain.LogisticsDetail;
+import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
+import org.mstudio.modules.wms.Logistics.service.LogisticsDetailService;
 import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
@@ -35,6 +38,7 @@ import org.mstudio.modules.wms.operate_snapshot.repository.OperateSnapshotReposi
 import org.mstudio.modules.wms.operate_snapshot.service.OperateSnapshotService;
 import org.mstudio.modules.wms.pack.domain.Pack;
 import org.mstudio.modules.wms.pack.domain.PackItem;
+import org.mstudio.modules.wms.pack.domain.PackType;
 import org.mstudio.modules.wms.pack.repository.PackItemRepository;
 import org.mstudio.modules.wms.pack.repository.PackRepository;
 import org.mstudio.modules.wms.pack.service.PackService;
@@ -137,6 +141,9 @@ public class PackServiceImpl implements PackService {
 
     @Autowired
     private CustomerOrderPageRepository customerOrderPageRepository;
+
+    @Autowired
+    LogisticsDetailService logisticsDetailService;
 
 
     @Override
@@ -274,7 +281,7 @@ public class PackServiceImpl implements PackService {
         resource.setIsPrinted(false);
         resource.setIsPackaged(false);
         resource.setIsActive(true);
-        resource.setTotalPrice(resource.getCustomerOrderPages().stream().map(CustomerOrderPage::getTotalPrice).reduce(BigDecimal.ZERO,BigDecimal::add));
+        resource.setTotalPrice(resource.getCustomerOrderPages().stream().map(CustomerOrderPage::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
         // 检查打包中所有订单的状态是否符合要求
         confirmOrdersStatus(resource.getCustomerOrderPages(), OrderStatus.CONFIRM);
         resource.getCustomerOrderPages().forEach(page -> {
@@ -310,19 +317,10 @@ public class PackServiceImpl implements PackService {
             o.setOrderStatus(b ? status : o.getOrderStatus());
             if (OrderStatus.CLIENT_SIGNED.equals(status) && b) {
                 o.setSignTime(new Timestamp((new Date()).getTime()));
-                // 拣配 复核 派送计件计算
-                calculatePiece(o);
+
             }
             customerOrderRepository.save(o);
         });
-    }
-
-    /**
-     * 计算计件
-     * @param o 订单
-     */
-    private void calculatePiece(CustomerOrder o) {
-//        pickMatchService.create(o);
     }
 
     @Override
@@ -602,7 +600,37 @@ public class PackServiceImpl implements PackService {
             // 判断 更新CustomerOrder 状态
             updateOrderStatusByPages(pack.getCustomerOrderPages(), OrderStatus.CLIENT_SIGNED);
 
+            // 拣配 复核计算
+            pickMatchService.create(pack);
 
+            // 物流结算
+            if (PackType.TRANSFER.equals(pack.getPackType())) {
+                LogisticsDetail ld = new LogisticsDetail();
+                LogisticsTemplate lt = pack.getLogisticsTemplate();
+
+                ld.setProvince(pack.getAddress().getName().split("-")[0]);
+                ld.setBill(pack.getFlowSn());
+                ld.setPiece((float) pack.getPackages());
+                ld.setRenew(lt.getRenew());
+                ld.setRealityWeight(pack.getRealityWeight());
+                ld.setComputeWeight(pack.getWeight());
+                ld.setRenewNum(lt.getType() ? (pack.getWeight() - lt.getFirst()) : (pack.getPackages() - lt.getFirst()));
+                ld.setName(lt.getName());
+                ld.setFirst(lt.getFirst());
+                ld.setFirstPrice(lt.getFirstPrice());
+                ld.setRenewPrice(lt.getRenewPrice());
+                ld.setAddress(pack.getAddress().getName());
+                ld.setCustomer(pack.getCustomer().getName());
+                ld.setRemark(pack.getDescription());
+                float totalPrice = ld.getFirstPrice();
+                if (ld.getRenewNum() > 0) {
+                    totalPrice += (ld.getRenewPrice() * ld.getRenewNum()/ld.getRenew());
+                }
+                ld.setTotalPrice(Math.round(totalPrice));
+                logisticsDetailService.create(ld, pack.getLogisticsTemplate().getId());
+            }
+
+            // 配送结算
 
         }
     }

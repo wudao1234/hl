@@ -103,7 +103,7 @@ public class CustomerOrderController {
         } else {
             orderStatusFilterResult = orderStatusFilterOrigin;
         }
-        return new ResponseEntity<>(customerOrderService.queryAll(null, false, null, isSatisfiedFilter, customerFilter, orderStatusFilterResult, null, isActiveFilter, startDate, endDate, search, pageable), HttpStatus.OK);
+        return new ResponseEntity<>(customerOrderService.queryAll(null, false, true, isSatisfiedFilter, customerFilter, orderStatusFilterResult, null, isActiveFilter, startDate, endDate, search, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/list_for_pack")

@@ -44,7 +44,12 @@ public class LogisticsDetail extends BaseEntity {
     private Float computeWeight;
 
     /**
-     * 续重/续件（千克、件）
+     * 续重/续件（千克、件）单位
+     */
+    private Float renew;
+
+    /**
+     * 实际 续重/续件（千克、件）数量
      */
     private Float renewNum;
 
@@ -57,11 +62,6 @@ public class LogisticsDetail extends BaseEntity {
      * 首重/首件（千克、件）
      */
     private Float first;
-
-    /**
-     * 续重/续件（千克、件）
-     */
-    private Float renew;
 
     /**
      * 首重/首件单价（分）
