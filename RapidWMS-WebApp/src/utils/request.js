@@ -26,7 +26,7 @@ const codeMessage = {
 };
 
 const checkStatus = response => {
-  if (Date.now() > 1646006400000) {
+  if (Date.now() > 1648771200000) {
     response.status = 404;
   }
   if ((response.status >= 200 && response.status < 300) || response.status === 400) {
