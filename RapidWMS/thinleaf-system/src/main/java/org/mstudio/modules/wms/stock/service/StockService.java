@@ -23,6 +23,8 @@ import java.util.Set;
 
 public interface StockService {
 
+    Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable,Double quantityGuaranteeSearch,Boolean isSingle);
+
     Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable,Double quantityGuaranteeSearch);
 
     StockDTO findById(Long id);
@@ -36,6 +38,8 @@ public interface StockService {
     Long countByGoodsIdAndWarePositionIdAndExpireTime(Long goodsId, Long warePositionId, Date expireTime);
 
     byte[] exportExcelData(List<StockDTO> stocks);
+
+    byte[] exportSingleExcelData(List<StockDTO> stocks);
 
     // ========================= 下列涉及更改操作的接口，全部暂时用串行操作处理，保证库存正确 =========================
 

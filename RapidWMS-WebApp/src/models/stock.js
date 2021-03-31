@@ -1,5 +1,6 @@
 import {
   queryStock,
+  singleStock,
   addStock,
   updateStock,
   deleteStock,
@@ -18,6 +19,15 @@ export default {
   effects: {
     *fetch(state, { call, put }) {
       const response = yield call(queryStock, state);
+      if (response !== undefined && response !== null) {
+        yield put({
+          type: 'save',
+          payload: response,
+        });
+      }
+    },
+    *singleFetch(state, { call, put }) {
+      const response = yield call(singleStock, state);
       if (response !== undefined && response !== null) {
         yield put({
           type: 'save',

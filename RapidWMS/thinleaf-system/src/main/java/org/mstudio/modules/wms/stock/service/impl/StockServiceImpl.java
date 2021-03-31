@@ -98,7 +98,7 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
-    public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable, Double quantityGuaranteeSearch) {
+    public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable, Double quantityGuaranteeSearch, Boolean isSingle) {
         Specification<Stock> spec = new Specification<Stock>() {
             @Override
             public Predicate toPredicate(Root<Stock> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -164,8 +164,36 @@ public class StockServiceImpl implements StockService {
             newPageable = PageRequest.of(0, maxCount, pageable.getSort());
         }
 
+        if (isSingle) {
+            newPageable = PageRequest.of(0, maxCount, pageable.getSort());
+            Page<Stock> page = stockRepository.findAll(spec, newPageable);
+            Page<StockDTO> pageDto = page.map(stockMapper::toDto);
+            List<StockDTO> list = pageDto.getContent();
+            Map<String, StockDTO> map = new LinkedHashMap<>();
+            list.forEach(innerStockDTO -> {
+                String sn = innerStockDTO.getGoods().getSn();
+                String customerId = innerStockDTO.getGoods().getCustomer().getId();
+                String key = sn + customerId;
+                if (map.containsKey(key)) {
+                    StockDTO stockDTO = map.get(key);
+                    stockDTO.setQuantity(stockDTO.getQuantity() + innerStockDTO.getQuantity());
+                } else {
+                    map.put(key, innerStockDTO);
+                }
+            });
+
+            list = new ArrayList<>(map.values());
+            return PageUtil.toPageOfMap(pageable.getPageNumber(), pageable.getPageSize(), list);
+        }
         Page<Stock> page = stockRepository.findAll(spec, newPageable);
         return PageUtil.toPage(page.map(stockMapper::toDto));
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
+//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+    public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable, Double quantityGuaranteeSearch) {
+        return queryAll(customers, exportExcel, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable, quantityGuaranteeSearch, false);
     }
 
     @Override
@@ -270,6 +298,56 @@ public class StockServiceImpl implements StockService {
         writer.addHeaderAlias("goodsTypeName", "商品类别");
         writer.addHeaderAlias("customerName", "所属客户");
         writer.addHeaderAlias("isActive", "冻结");
+
+        writer.write(rows, true);
+        writer.flush(outByteStream);
+        writer.close();
+        return outByteStream.toByteArray();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
+    public byte[] exportSingleExcelData(List<StockDTO> stocks) {
+        List<StockExcelObj> rows = CollUtil.newArrayList();
+        for (int i = 0; i < stocks.size(); i++) {
+            StockExcelObj excelObj = new StockExcelObj();
+            excelObj.setIndex(Long.valueOf(i + 1));
+            excelObj.setGoodsName(stocks.get(i).getGoods().getName());
+            excelObj.setGoodsSn(stocks.get(i).getGoods().getSn());
+            excelObj.setGoodsPrice(stocks.get(i).getGoods().getPrice());
+            Integer months = stocks.get(i).getGoods().getMonthsOfWarranty();
+            int year = months / 12;
+            int month = months % 12;
+            String monthsOfWarranty = month + "月";
+            if (year >= 1) {
+                if (month == 0) {
+                    monthsOfWarranty = year + "年";
+                } else {
+                    monthsOfWarranty = year + "年" + monthsOfWarranty;
+                }
+            }
+            excelObj.setMonthsOfWarranty(monthsOfWarranty);
+            excelObj.setGoodsPackCount(stocks.get(i).getGoods().getPackCount());
+            excelObj.setGoodsUnit(stocks.get(i).getGoods().getUnit());
+            excelObj.setQuantity(stocks.get(i).getQuantity());
+            excelObj.setGoodsTypeName(stocks.get(i).getGoods().getGoodsType().getName());
+            excelObj.setCustomerName(stocks.get(i).getGoods().getCustomer().getName());
+
+            rows.add(excelObj);
+        }
+
+        ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
+        ExcelWriter writer = ExcelUtil.getBigWriter();
+        writer.addHeaderAlias("index", "#");
+        writer.addHeaderAlias("goodsName", "商品名称");
+        writer.addHeaderAlias("goodsSn", "商品条码");
+        writer.addHeaderAlias("goodsPrice", "商品价格");
+        writer.addHeaderAlias("monthsOfWarranty", "质保时长");
+        writer.addHeaderAlias("goodsPackCount", "商品规格");
+        writer.addHeaderAlias("goodsUnit", "商品单位");
+        writer.addHeaderAlias("quantity", "存量");
+        writer.addHeaderAlias("goodsTypeName", "商品类别");
+        writer.addHeaderAlias("customerName", "所属客户");
 
         writer.write(rows, true);
         writer.flush(outByteStream);

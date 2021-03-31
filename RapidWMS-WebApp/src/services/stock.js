@@ -1,7 +1,7 @@
 import request from '@/utils/request';
 import { getToken } from '../models/login';
 
-export async function queryStock(params) {
+function queryBaseStock(params, api) {
   const {
     payload: {
       exportExcel,
@@ -17,7 +17,7 @@ export async function queryStock(params) {
     },
   } = params;
 
-  let queryString = '/api/stocks?';
+  let queryString = `/api/${api}?`;
 
   if (exportExcel && exportExcel !== '') {
     queryString += `exportExcel=${exportExcel}&`;
@@ -63,6 +63,14 @@ export async function queryStock(params) {
       });
   }
   return request(queryString);
+}
+
+export async function singleStock(params) {
+  return queryBaseStock(params, 'stocks/singleStocks');
+}
+
+export async function queryStock(params) {
+  return queryBaseStock(params, 'stocks');
 }
 
 export async function addStock(payload) {

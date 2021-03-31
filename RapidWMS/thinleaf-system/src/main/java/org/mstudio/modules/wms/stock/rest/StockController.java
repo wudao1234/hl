@@ -72,6 +72,33 @@ public class StockController {
         }
     }
 
+    @GetMapping("singleStocks")
+    @PreAuthorize("hasAnyRole('ADMIN', 'W_STOCK_LIST', 'O_ORDER_EDIT')")
+    public ResponseEntity singleStocks(
+            @RequestParam(value = "exportExcel", required = false) Boolean exportExcel,
+            @RequestParam(value = "wareZoneFilter", required = false) String wareZoneFilter,
+            @RequestParam(value = "customerFilter", required = false) String customerFilter,
+            @RequestParam(value = "goodsTypeFilter", required = false) String goodsTypeFilter,
+            @RequestParam(value = "isActiveFilter", required = false) Boolean isActiveFilter,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "quantityGuaranteeSearch", required = false) Double quantityGuaranteeSearch,
+            Pageable pageable) {
+        JwtUser jwtUser = (JwtUser) getUserDetails();
+        UserDTO user = userService.findById(jwtUser.getId());
+        Set<CustomerVO> customers = user.getCustomers();
+        if (customers.isEmpty()) {
+            List<Stock> emptyStocks = new ArrayList<>();
+            return new ResponseEntity<>(PageUtil.toPage(stockMapper.toDto(emptyStocks), 0), HttpStatus.OK);
+        }
+        if (exportExcel != null && exportExcel) {
+            Map result = stockService.queryAll(customers, true, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch);
+            List<StockDTO> stocks = (List)result.get("content");
+            return new ResponseEntity<>(stockService.exportSingleExcelData(stocks), WmsUtil.getExportExcelHeaders(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(stockService.queryAll(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch,true), HttpStatus.OK);
+        }
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'W_STOCK_LIST')")
     public ResponseEntity get(@PathVariable Long id) {

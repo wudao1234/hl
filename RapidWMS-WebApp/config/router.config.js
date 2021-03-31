@@ -341,6 +341,16 @@ export default [
             component: './Stock/Stock',
           },
           {
+            path: '/inventory/singleStock',
+            name: 'singleStock',
+            component: './Stock/SingleStock',
+          },
+          {
+            path: '/inventory/countStock',
+            name: 'countStock',
+            component: './Stock/CountStock',
+          },
+          {
             path: '/inventory/stockFlow',
             name: 'stockFlow',
             component: './StockFlow/StockFlow',
@@ -476,6 +486,11 @@ export default [
             path: '/logisticses/logisticsTemplate',
             name: 'logisticsTemplate',
             component: './Logistics/LogisticsTemplate',
+          },
+          {
+            path: '/logisticses/logisticsStatistics',
+            name: 'logisticsStatistics',
+            component: './Logistics/LogisticsStatistics',
           },
         ],
       },

@@ -37,6 +37,18 @@ public class PageUtil extends cn.hutool.core.util.PageUtil {
     }
 
     /**
+     * List 分页
+     *
+     * @param page
+     * @param size
+     * @param list
+     * @return
+     */
+    public static Map toPageOfMap(int page, int size, List list) {
+        return toPage(toPage(page, size, list), list.size());
+    }
+
+    /**
      * Page 数据处理，预防redis反序列化报错
      *
      * @param page
