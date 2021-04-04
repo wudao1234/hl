@@ -1,13 +1,13 @@
 // https://umijs.org/config/
 import os from 'os';
 import pageRoutes from './router.config';
-import webpackPlugin from './plugin.config';
+// import webpackPlugin from './plugin.config';
 import defaultSettings from '../src/defaultSettings';
 import slash from 'slash2';
-import { apiHost } from '@/defaultSettings';
+// import { apiHost } from '@/defaultSettings';
 import aliyunTheme from '@ant-design/aliyun-theme';
 
-const { pwa, primaryColor } = defaultSettings;
+const { pwa, primaryColor, apiHost } = defaultSettings;
 const { APP_TYPE, TEST } = process.env;
 
 const plugins = [
@@ -78,7 +78,7 @@ export default {
   //   'primary-color': primaryColor,
   // },
   // https://github.com/ant-design/ant-design-aliyun-theme
-  "theme": aliyunTheme,
+  theme: aliyunTheme,
   proxy: {
     '/api': {
       target: apiHost,
@@ -120,5 +120,5 @@ export default {
     basePath: '/',
   },
 
-  chainWebpack: webpackPlugin,
+  // chainWebpack: webpackPlugin,
 };

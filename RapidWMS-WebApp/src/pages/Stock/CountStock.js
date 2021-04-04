@@ -20,6 +20,7 @@ import {
 import accounting from 'accounting';
 
 import Highlighter from 'react-highlight-words';
+import * as XLSX from 'xlsx';
 
 import moment from 'moment';
 import FormItem from 'antd/es/form/FormItem';
@@ -234,7 +235,7 @@ class Stock extends PureComponent {
     quantityGuaranteeSearch
   ) => {
     dispatch({
-      type: 'stock/fetch',
+      type: 'stock/countFetch',
       payload: {
         exportExcel,
         search,
@@ -643,6 +644,47 @@ class Stock extends PureComponent {
     );
   };
 
+  handleImportExcel = e => {
+    const { dispatch } = this.props;
+    const {
+      target: { files },
+    } = e;
+    const fileReader = new FileReader();
+    fileReader.onload = ev => {
+      const {
+        target: { result: data },
+      } = ev;
+      const workbook = XLSX.read(data, {
+        type: 'binary',
+      }); // 存储获取到的数据
+      const stock = XLSX.utils.sheet_to_json(workbook.Sheets.Sheet1);
+      const payload = [];
+      stock.forEach(item => {
+        const tmp = {
+          customerName: item['客户'],
+          sn: item['条码'],
+          name: item['名称'],
+          packCount: item['规格'],
+          quantity: null,
+          currentQuantity: item['实盘数量'],
+          monthsOfWarranty: item['质保期'],
+          warePositionName: item['库位'],
+          expireDate: item['到期'],
+        };
+        payload.push(tmp);
+      });
+      dispatch({
+        type: 'stock/submits',
+        payload,
+      });
+    };
+
+    // 以二进制方式打开文件
+    if (files.length > 0) {
+      fileReader.readAsBinaryString(files[0]);
+    }
+  };
+
   render() {
     const { list, total, loading } = this.props;
     const { pageSize, currentPage } = this.state;
@@ -703,6 +745,15 @@ class Stock extends PureComponent {
           onClick={this.handleExportExcel}
         >
           导出Excel
+        </Button>
+        <Button style={{ marginLeft: 10 }} htmlType="button" type="primary" icon="upload">
+          <input
+            className={styles.fileUploaderInput}
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={this.handleImportExcel}
+          />
+          导入
         </Button>
       </div>
     );
@@ -783,6 +834,19 @@ class Stock extends PureComponent {
         align: 'right',
         sorter: true,
         sortOrder: sortQuantity,
+        render: text => {
+          if (text === 0) {
+            return <Tag color="green">{text}</Tag>;
+          }
+          return <Tag color="red">{text}</Tag>;
+        },
+      },
+      {
+        title: '实盘数量',
+        dataIndex: 'currentQuantity',
+        key: 'currentQuantity',
+        width: '10%',
+        align: 'right',
         render: text => {
           if (text === 0) {
             return <Tag color="green">{text}</Tag>;

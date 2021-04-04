@@ -1,5 +1,6 @@
 package org.mstudio.modules.wms.stock.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.poi.excel.ExcelUtil;
@@ -20,8 +21,10 @@ import org.mstudio.modules.wms.goods.repository.GoodsRepository;
 import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoods;
 import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsItem;
 import org.mstudio.modules.wms.receive_goods.repository.ReceiveGoodsItemRepository;
+import org.mstudio.modules.wms.stock.domain.CountStock;
 import org.mstudio.modules.wms.stock.domain.Stock;
 import org.mstudio.modules.wms.stock.dto.*;
+import org.mstudio.modules.wms.stock.repository.CountStockRepository;
 import org.mstudio.modules.wms.stock.repository.StockRepository;
 import org.mstudio.modules.wms.stock.service.StockService;
 import org.mstudio.modules.wms.stock.service.mapper.StockMapper;
@@ -49,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.criteria.*;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -94,6 +98,9 @@ public class StockServiceImpl implements StockService {
 
     @Autowired
     private ReceiveGoodsItemRepository receiveGoodsItemRepository;
+
+    @Autowired
+    private CountStockRepository countStockRepository;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
@@ -194,6 +201,105 @@ public class StockServiceImpl implements StockService {
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     public Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable, Double quantityGuaranteeSearch) {
         return queryAll(customers, exportExcel, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable, quantityGuaranteeSearch, false);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
+//    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
+    public Map queryAllOfCount(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable, Double quantityGuaranteeSearch) {
+        List<CountStock> countStockList = countStockRepository.findAll();
+        if (countStockList.isEmpty()) {
+            return PageUtil.toPageOfMap(pageable.getPageNumber(), pageable.getPageSize(), new ArrayList<>());
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Map<String, CountStock> countMap = new LinkedHashMap<>();
+        countStockList.forEach(innerCS -> {
+            String key = innerCS.getSn() + innerCS.getPackCount() + innerCS.getCustomerName() + innerCS.getWarePositionName() + sdf.format(innerCS.getExpireDate());
+            countMap.put(key, innerCS);
+        });
+        Specification<Stock> spec = (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (wareZoneFilter != null && !"".equals(wareZoneFilter)) {
+                String[] wareZoneIds = wareZoneFilter.split(",");
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("warePosition").get("wareZone").get("id"));
+                Arrays.stream(wareZoneIds).forEach(id -> in.value(Long.valueOf(id)));
+                predicates.add(in);
+            }
+
+            if (customerFilter != null && !"".equals(customerFilter)) {
+                String[] customerIds = customerFilter.split(",");
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("goods").get("customer").get("id"));
+                Arrays.stream(customerIds).forEach(id -> in.value(Long.valueOf(id)));
+                predicates.add(in);
+            }
+
+            if (goodsTypeFilter != null && !"".equals(goodsTypeFilter)) {
+                String[] goodsTypeIds = goodsTypeFilter.split(",");
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("goods").get("goodsType").get("id"));
+                Arrays.stream(goodsTypeIds).forEach(id -> in.value(Long.valueOf(id)));
+                predicates.add(in);
+            }
+
+            if (isActiveFilter != null) {
+                predicates.add(criteriaBuilder.equal(root.get("isActive").as(Boolean.class), isActiveFilter));
+            }
+
+            if (search != null) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(root.get("goods").get("name").as(String.class), "%" + search + "%"),
+                        criteriaBuilder.like(root.get("goods").get("sn").as(String.class), "%" + search + "%"),
+                        criteriaBuilder.like(root.get("warePosition").get("name").as(String.class), "%" + search + "%")
+                ));
+            }
+            if (quantityGuaranteeSearch != null) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.ge(root.get("quantityGuarantee").as(Double.class), quantityGuaranteeSearch)
+                ));
+            }
+
+
+            // 查询权限内的客户库存
+            if (!customers.isEmpty()) {
+                List<Long> customerIdList = customers.stream().map(customer -> Long.valueOf(customer.getId())).collect(Collectors.toList());
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("goods").get("customer").get("id"));
+                customerIdList.forEach(id -> in.value(id));
+                predicates.add(in);
+            }
+
+            if (predicates.size() != 0) {
+                Predicate[] p = new Predicate[predicates.size()];
+                return criteriaBuilder.and(predicates.toArray(p));
+            } else {
+                return null;
+            }
+        };
+        Pageable newPageable = PageRequest.of(0, maxCount, pageable.getSort());
+
+        Page<Stock> page = stockRepository.findAll(spec, newPageable);
+        Page<StockDTO> pageDto = page.map(stockMapper::toDto);
+        List<StockDTO> list = new ArrayList<>(pageDto.getContent());
+        List<StockCountDTO> stockCountDTOList = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            StockDTO innerStockDTO = list.get(i);
+            String sn = innerStockDTO.getGoods().getSn();
+            Integer packCount = innerStockDTO.getGoods().getPackCount();
+            String customerName = innerStockDTO.getGoods().getCustomer().getName();
+            String warePositionName = innerStockDTO.getWarePosition().getName();
+            String expireDate = sdf.format(innerStockDTO.getExpireDate());
+            String key = sn + packCount + customerName + warePositionName + expireDate;
+            if (countMap.containsKey(key)) {
+                CountStock countStock = countMap.get(key);
+                StockCountDTO tmp = new StockCountDTO();
+                BeanUtil.copyProperties(innerStockDTO, tmp);
+                tmp.setCurrentQuantity(countStock.getCurrentQuantity());
+                stockCountDTOList.add(tmp);
+            } else {
+                list.remove(innerStockDTO);
+                i--;
+            }
+        }
+        return PageUtil.toPageOfMap(pageable.getPageNumber(), pageable.getPageSize(), stockCountDTOList);
     }
 
     @Override
@@ -625,6 +731,16 @@ public class StockServiceImpl implements StockService {
             s.setQuantityGuarantee(quantityGuarantee);
             stockRepository.save(s);
         });
+    }
+
+    @Override
+    public Boolean create(List<CountStock> resources) {
+        // todo 新增盘点信息
+        // 删除原盘点
+        countStockRepository.deleteAll();
+        // 批量新增
+        countStockRepository.saveAll(resources);
+        return true;
     }
 
     private void moveStub(Stock stock, Stock newStock, JwtUser user, String description, BigDecimal price) {

@@ -95,7 +95,8 @@
     "typescript": "^3.6.3",
     "umi": "^2.9.6",
     "umi-plugin-react": "^1.10.1",
-    "umi-request": "^1.2.6"
+    "umi-request": "^1.2.6",
+    "xlsx": "^0.16.9"
   },
   "devDependencies": {
     "@types/history": "^4.7.3",

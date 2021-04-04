@@ -4,6 +4,7 @@ import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.customer.service.object.CustomerVO;
 import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoods;
 import org.mstudio.modules.wms.receive_goods.domain.ReceiveGoodsItem;
+import org.mstudio.modules.wms.stock.domain.CountStock;
 import org.mstudio.modules.wms.stock.dto.*;
 import org.mstudio.modules.wms.stock.service.object.StockActivateDTO;
 import org.mstudio.modules.wms.stock.service.object.StockDTO;
@@ -26,6 +27,8 @@ public interface StockService {
     Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable,Double quantityGuaranteeSearch,Boolean isSingle);
 
     Map queryAll(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable,Double quantityGuaranteeSearch);
+
+    Map queryAllOfCount(Set<CustomerVO> customers, Boolean exportExcel, String wareZoneFilter, String customerFilter, String goodsTypeFilter, Boolean isActiveFilter, String search, Pageable pageable,Double quantityGuaranteeSearch);
 
     StockDTO findById(Long id);
 
@@ -68,4 +71,6 @@ public interface StockService {
     void move(MoveDTO moveDTO);
 
     void updateQuantityGuarantee();
+
+    Boolean create(List<CountStock> resources);
 }

@@ -1,12 +1,14 @@
 import {
   queryStock,
   singleStock,
+  countStock,
   addStock,
   updateStock,
   deleteStock,
   activateStock,
   singleOperateStock,
   multipleOperateStock,
+  addCountStocks,
 } from '@/services/stock';
 
 export default {
@@ -35,6 +37,15 @@ export default {
         });
       }
     },
+    *countFetch(state, { call, put }) {
+      const response = yield call(countStock, state);
+      if (response !== undefined && response !== null) {
+        yield put({
+          type: 'save',
+          payload: response,
+        });
+      }
+    },
     *submit({ payload, callback }, { call }) {
       let methodsName;
       if (payload.id) {
@@ -43,6 +54,10 @@ export default {
         methodsName = addStock;
       }
       const response = yield call(methodsName, payload);
+      if (callback) callback(response);
+    },
+    *submits({ payload, callback }, { call }) {
+      const response = yield call(addCountStocks, payload);
       if (callback) callback(response);
     },
     *activate({ payload, callback }, { call }) {

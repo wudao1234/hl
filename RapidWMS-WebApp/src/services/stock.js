@@ -69,6 +69,10 @@ export async function singleStock(params) {
   return queryBaseStock(params, 'stocks/singleStocks');
 }
 
+export async function countStock(params) {
+  return queryBaseStock(params, 'stocks/countStock');
+}
+
 export async function queryStock(params) {
   return queryBaseStock(params, 'stocks');
 }
@@ -85,6 +89,13 @@ export async function addStock(payload) {
       goodsType: { id: goodsTypeId },
       customer: { id: customerId },
     },
+  });
+}
+
+export async function addCountStocks(payload) {
+  return request('/api/stocks/create', {
+    method: 'POST',
+    body: payload,
   });
 }
 

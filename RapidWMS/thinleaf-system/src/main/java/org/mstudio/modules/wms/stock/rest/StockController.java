@@ -5,6 +5,7 @@ import org.mstudio.modules.system.service.UserService;
 import org.mstudio.modules.system.service.dto.UserDTO;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer.service.object.CustomerVO;
+import org.mstudio.modules.wms.stock.domain.CountStock;
 import org.mstudio.modules.wms.stock.domain.Stock;
 import org.mstudio.modules.wms.stock.service.StockService;
 import org.mstudio.modules.wms.stock.service.mapper.StockMapper;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -28,9 +30,9 @@ import java.util.Set;
 import static org.mstudio.utils.SecurityContextHolder.getUserDetails;
 
 /**
-* @author Macrow
-* @date 2019-02-22
-*/
+ * @author Macrow
+ * @date 2019-02-22
+ */
 
 @RestController
 @RequestMapping("api/stocks")
@@ -64,11 +66,11 @@ public class StockController {
             return new ResponseEntity<>(PageUtil.toPage(stockMapper.toDto(emptyStocks), 0), HttpStatus.OK);
         }
         if (exportExcel != null && exportExcel) {
-            Map result = stockService.queryAll(customers, true, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch);
-            List<StockDTO> stocks = (List)result.get("content");
+            Map result = stockService.queryAll(customers, true, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable, quantityGuaranteeSearch);
+            List<StockDTO> stocks = (List) result.get("content");
             return new ResponseEntity<>(stockService.exportExcelData(stocks), WmsUtil.getExportExcelHeaders(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(stockService.queryAll(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch), HttpStatus.OK);
+            return new ResponseEntity<>(stockService.queryAll(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable, quantityGuaranteeSearch), HttpStatus.OK);
         }
     }
 
@@ -91,12 +93,33 @@ public class StockController {
             return new ResponseEntity<>(PageUtil.toPage(stockMapper.toDto(emptyStocks), 0), HttpStatus.OK);
         }
         if (exportExcel != null && exportExcel) {
-            Map result = stockService.queryAll(customers, true, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch);
-            List<StockDTO> stocks = (List)result.get("content");
+            Map result = stockService.queryAll(customers, true, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable, quantityGuaranteeSearch);
+            List<StockDTO> stocks = (List) result.get("content");
             return new ResponseEntity<>(stockService.exportSingleExcelData(stocks), WmsUtil.getExportExcelHeaders(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(stockService.queryAll(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable,quantityGuaranteeSearch,true), HttpStatus.OK);
+            return new ResponseEntity<>(stockService.queryAll(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable, quantityGuaranteeSearch, true), HttpStatus.OK);
         }
+    }
+
+    @GetMapping("countStock")
+    @PreAuthorize("hasAnyRole('ADMIN', 'W_STOCK_LIST', 'O_ORDER_EDIT')")
+    public ResponseEntity countStock(
+            @RequestParam(value = "exportExcel", required = false) Boolean exportExcel,
+            @RequestParam(value = "wareZoneFilter", required = false) String wareZoneFilter,
+            @RequestParam(value = "customerFilter", required = false) String customerFilter,
+            @RequestParam(value = "goodsTypeFilter", required = false) String goodsTypeFilter,
+            @RequestParam(value = "isActiveFilter", required = false) Boolean isActiveFilter,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "quantityGuaranteeSearch", required = false) Double quantityGuaranteeSearch,
+            Pageable pageable) {
+        JwtUser jwtUser = (JwtUser) getUserDetails();
+        UserDTO user = userService.findById(jwtUser.getId());
+        Set<CustomerVO> customers = user.getCustomers();
+        if (customers.isEmpty()) {
+            List<Stock> emptyStocks = new ArrayList<>();
+            return new ResponseEntity<>(PageUtil.toPage(stockMapper.toDto(emptyStocks), 0), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(stockService.queryAllOfCount(customers, false, wareZoneFilter, customerFilter, goodsTypeFilter, isActiveFilter, search, pageable, quantityGuaranteeSearch), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -130,6 +153,12 @@ public class StockController {
     public ResponseEntity singleOperate(@RequestBody StockMultipleOperateDTO stockMultipleOperateDTO) {
         stockService.multipleOperate(stockMultipleOperateDTO);
         return new ResponseEntity<>(WmsUtil.getSuccessMessage(), HttpStatus.CREATED);
+    }
+
+    @PostMapping("create")
+    @PreAuthorize("hasAnyRole('ADMIN', 'W_STOCK_LIST', 'O_ORDER_EDIT')")
+    public ResponseEntity create(@Validated @RequestBody List<CountStock> resources) {
+        return new ResponseEntity<>(stockService.create(resources), HttpStatus.CREATED);
     }
 
 }
