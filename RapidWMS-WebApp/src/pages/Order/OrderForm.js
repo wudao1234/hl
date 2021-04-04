@@ -1228,6 +1228,13 @@ class OrderForm extends PureComponent {
                 </FormItem>
               </Col>
               <Col span={3}>
+                <FormItem label="质保指数" {...this.formLayout} hasFeedback>
+                  {getFieldDecorator('qualityAssuranceExponent', {
+                    initialValue: qualityAssuranceExponent,
+                  })(<Input />)}
+                </FormItem>
+              </Col>
+              <Col span={12}>
                 <FormItem label="订单客户门店" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('clientStore', {
                     rules: [{ required: true, message: '请输入订单客户门店' }],
@@ -1245,28 +1252,23 @@ class OrderForm extends PureComponent {
                   )}
                 </FormItem>
               </Col>
-              <Col span={3}>
-                <FormItem label="质保指数" {...this.formLayout} hasFeedback>
-                  {getFieldDecorator('qualityAssuranceExponent', {
-                    initialValue: qualityAssuranceExponent,
-                  })(<Input />)}
-                </FormItem>
-              </Col>
-              <Col span={3}>
+            </Row>
+            <Row gutter={16}>
+              <Col span={5}>
                 <FormItem label="客户订单号" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('clientOrderSn', {
                     initialValue: clientOrderSn,
                   })(<Input />)}
                 </FormItem>
               </Col>
-              <Col span={3}>
+              <Col span={4}>
                 <FormItem label="客户单据号" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('clientOrderSn2', {
                     initialValue: clientOrderSn2,
                   })(<Input />)}
                 </FormItem>
               </Col>
-              <Col span={3}>
+              <Col span={4}>
                 <FormItem label="客户订单操作人员" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('clientOperator', {
                     initialValue: clientOperator,
