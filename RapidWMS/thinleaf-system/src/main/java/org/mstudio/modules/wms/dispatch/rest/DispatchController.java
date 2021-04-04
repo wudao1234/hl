@@ -3,9 +3,7 @@ package org.mstudio.modules.wms.dispatch.rest;
 import org.mstudio.aop.log.Log;
 import org.mstudio.exception.BadRequestException;
 import org.mstudio.modules.wms.dispatch.domain.DispatchCoefficient;
-import org.mstudio.modules.wms.dispatch.domain.DispatchSys;
 import org.mstudio.modules.wms.dispatch.service.DispatchService;
-import org.mstudio.modules.wms.dispatch.service.object.StatisticsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -67,6 +65,18 @@ public class DispatchController {
             @RequestParam(value = "search", required = false) String search,
             Pageable pageable) {
         return new ResponseEntity(dispatchService.statistics(startDate, endDate, search, pageable), HttpStatus.OK);
+    }
+
+    @Log("综合统计")
+    @GetMapping(value = "/statisticsAll")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PIECE_ALL')")
+    @ResponseBody
+    public ResponseEntity statisticsAll(
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate,
+            @RequestParam(value = "search", required = false) String search,
+            Pageable pageable) {
+        return new ResponseEntity(dispatchService.statisticsAll(startDate, endDate, search, pageable), HttpStatus.OK);
     }
 
 }

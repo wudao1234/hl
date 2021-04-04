@@ -26,4 +26,5 @@ public interface DispatchService {
 
     DispatchPieceDTO finish(Float mileage, Long dispatchSys);
 
+    Map statisticsAll(String startDate, String endDate, String search, Pageable pageable);
 }

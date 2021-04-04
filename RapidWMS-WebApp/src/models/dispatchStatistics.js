@@ -1,4 +1,4 @@
-import queryPickMatch from '@/services/dispatchStatistics';
+import { queryPickMatch, statisticsAll } from '@/services/dispatchStatistics';
 
 export default {
   namespace: 'dispatchStatistics',
@@ -10,6 +10,15 @@ export default {
   effects: {
     *fetch(state, { call, put }) {
       const response = yield call(queryPickMatch, state);
+      if (response !== undefined && response !== null) {
+        yield put({
+          type: 'save',
+          payload: response,
+        });
+      }
+    },
+    *fetchAll(state, { call, put }) {
+      const response = yield call(statisticsAll, state);
       if (response !== undefined && response !== null) {
         yield put({
           type: 'save',
