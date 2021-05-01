@@ -884,8 +884,8 @@ class Stock extends PureComponent {
         sorter: true,
         sortOrder: quantityGuarantee,
         render: text => {
-          if (text <= 0) {
-            return <span>已过期</span>;
+          if (typeof text === 'object') {
+            return <span>未更新</span>;
           }
           return <span>{text.toFixed(2)}</span>;
         },
