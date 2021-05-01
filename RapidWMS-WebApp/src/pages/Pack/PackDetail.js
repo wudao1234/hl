@@ -228,6 +228,36 @@ class PackDetail extends PureComponent {
           );
         },
       },
+      {
+        title: '门店',
+        dataIndex: 'simpleCustomerOrder.clientStore',
+        width: '15%',
+        render: text => {
+          return (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[search]}
+              autoEscape
+              textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
+            />
+          );
+        },
+      },
+      {
+        title: '客户订单号',
+        dataIndex: 'simpleCustomerOrder.clientOrderSn',
+        width: '15%',
+        render: text => {
+          return (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[search]}
+              autoEscape
+              textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
+            />
+          );
+        },
+      },
     ];
 
     const packItemColumns = [

@@ -1,5 +1,6 @@
 package org.mstudio.modules.wms.pack.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.poi.excel.ExcelUtil;
@@ -34,6 +35,7 @@ import org.mstudio.modules.wms.customer_order.repository.CustomerOrderPageReposi
 import org.mstudio.modules.wms.customer_order.repository.CustomerOrderRepository;
 import org.mstudio.modules.wms.customer_order.service.impl.CustomerOrderServiceImpl;
 import org.mstudio.modules.wms.customer_order.service.object.CustomerOrderVO;
+import org.mstudio.modules.wms.customer_order.service.object.SimpleCustomerOrderVO;
 import org.mstudio.modules.wms.operate_snapshot.repository.OperateSnapshotRepository;
 import org.mstudio.modules.wms.operate_snapshot.service.OperateSnapshotService;
 import org.mstudio.modules.wms.pack.domain.Pack;
@@ -266,7 +268,19 @@ public class PackServiceImpl implements PackService {
             throw new BadRequestException("打包不存在 ID=" + id);
         }
         Pack p = optionalPack.get();
-        return packMapper.toDto(p);
+        PackDTO packDTO = packMapper.toDto(p);
+        packDTO.getCustomerOrderPages().forEach(customerOrderPageVO -> {
+            Optional<CustomerOrderPage> optional = p.getCustomerOrderPages().stream().filter(
+                    innerP -> innerP.getId().equals(Long.valueOf(customerOrderPageVO.getId())))
+                    .findFirst();
+            if (optional.isPresent()){
+                CustomerOrder customerOrder = optional.get().getCustomerOrder();
+                SimpleCustomerOrderVO simpleCustomerOrderVO = new SimpleCustomerOrderVO();
+                BeanUtil.copyProperties(customerOrder,simpleCustomerOrderVO);
+                customerOrderPageVO.setSimpleCustomerOrder(simpleCustomerOrderVO);
+            }
+        });
+        return packDTO;
     }
 
     @Override
@@ -624,7 +638,7 @@ public class PackServiceImpl implements PackService {
                 ld.setRemark(pack.getDescription());
                 float totalPrice = ld.getFirstPrice();
                 if (ld.getRenewNum() > 0) {
-                    totalPrice += (ld.getRenewPrice() * ld.getRenewNum()/ld.getRenew());
+                    totalPrice += (ld.getRenewPrice() * ld.getRenewNum() / ld.getRenew());
                 }
                 ld.setTotalPrice(Math.round(totalPrice));
                 logisticsDetailService.create(ld, pack.getLogisticsTemplate().getId());

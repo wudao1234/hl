@@ -75,8 +75,9 @@ class PackForm extends PureComponent {
   componentWillReceiveProps(nextProps) {
     const { orderList } = this.props;
     if (orderList !== undefined && orderList !== null) {
-      if (orderList.length === 1) {
-        const row = orderList[0];
+      const orderLists = orderList.reduce((acc, cur) => [...acc, ...cur.customerOrderPages], []);
+      if (orderLists.length === 1) {
+        const row = orderLists[0];
         const { allItems } = this.state;
         if (!allItems.some(item => item.id === row.id)) {
           this.setState({
@@ -133,11 +134,15 @@ class PackForm extends PureComponent {
       queryParams,
       logisticsTemplateList,
     } = this.props;
-    let orderLists;
+    const orderLists = [];
     if (orderList) {
-      orderLists = orderList.reduce((acc, cur) => [...acc, ...cur.customerOrderPages], []);
+      orderList.forEach(o => {
+        const { clientStore, clientOrderSn, customerOrderPages } = o;
+        customerOrderPages.forEach(p =>
+          orderLists.push(Object.assign(p, { clientStore, clientOrderSn }))
+        );
+      });
     }
-
     const { orderPageSize, orderCurrentPage, search } = this.state;
 
     const {
@@ -309,6 +314,38 @@ class PackForm extends PureComponent {
           );
         },
       },
+      {
+        title: '客户订单号',
+        dataIndex: 'clientOrderSn',
+        key: 'clientOrderSn',
+        width: '15%',
+        render: text => {
+          return (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[search]}
+              autoEscape
+              textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
+            />
+          );
+        },
+      },
+      {
+        title: '门店',
+        dataIndex: 'clientStore',
+        key: 'clientStore',
+        width: '15%',
+        render: text => {
+          return (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[search]}
+              autoEscape
+              textToHighlight={text !== null && text !== undefined ? text.toString() : ''}
+            />
+          );
+        },
+      },
     ];
 
     const orderColumns = [
@@ -389,7 +426,7 @@ class PackForm extends PureComponent {
       <div className={styles.extraContent}>
         <Search
           className={styles.extraContentSearch}
-          placeholder="订单流水，自编号等订单信息"
+          placeholder="客户单据号、订单流水、自编号等订单信息"
           onSearch={handleSearch}
         />
       </div>

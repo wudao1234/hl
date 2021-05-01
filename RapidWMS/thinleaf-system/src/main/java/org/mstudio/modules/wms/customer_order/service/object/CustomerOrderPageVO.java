@@ -21,6 +21,7 @@ public class CustomerOrderPageVO extends BaseObject {
     private String flowSn;
     private BigDecimal totalPrice;
     private OrderStatus orderStatus;
+    private SimpleCustomerOrderVO simpleCustomerOrder;
     private List<UserVO> userGatherings;
     private List<UserVO> userReviewers;
     private List<StockFlowVO> stockFlows;
