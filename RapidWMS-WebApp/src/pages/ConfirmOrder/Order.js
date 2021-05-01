@@ -645,6 +645,7 @@ class Order extends PureComponent {
     orderStatusFilter.push({ text: '匹配出库', value: 1 });
     orderStatusFilter.push({ text: '正在分拣', value: 2 });
     orderStatusFilter.push({ text: '分拣完成', value: 3 });
+    orderStatusFilter.push({ text: '复核分拣', value: 4 });
     return orderStatusFilter;
   };
 
@@ -813,6 +814,20 @@ class Order extends PureComponent {
 
   render() {
     const { list, total, loading } = this.props;
+    if (list && list.length > 0) {
+      list.forEach(order => {
+        const ugArr = [];
+        const urArr = [];
+        order.customerOrderPages.forEach(page => {
+          page.userGatherings.forEach(user => ugArr.push(`${user.username}/${user.num}`));
+          page.userReviewers.forEach(user => urArr.push(`${user.username}/${user.num}`));
+        });
+        Object.assign(order, {
+          userGatheringsStr: ugArr.join(','),
+          userReviewersStr: urArr.join(','),
+        });
+      });
+    }
     const { pageSize, currentPage } = this.state;
     const { loadingGather, loadingUnGather, search, startDate, endDate } = this.state;
     const { isSatisfiedFilter, customerFilter, orderStatusFilter } = this.state;
@@ -1106,6 +1121,22 @@ class Order extends PureComponent {
         dataIndex: 'userCreator.username',
         key: 'userCreator.username',
         width: '6%',
+      },
+      {
+        title: '分拣人',
+        dataIndex: 'userGatheringsStr',
+        width: '1%',
+        render: text => {
+          return <Tag>{text}</Tag>;
+        },
+      },
+      {
+        title: '复核人',
+        dataIndex: 'userReviewersStr',
+        width: '1%',
+        render: text => {
+          return <Tag>{text}</Tag>;
+        },
       },
       {
         title: '操作',

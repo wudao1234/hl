@@ -96,7 +96,7 @@ public class CustomerOrderController {
             @RequestParam(value = "search", required = false) String search,
             Pageable pageable) {
         // todo app -待分拣 列表
-        String orderStatusFilterOrigin = OrderStatus.FETCH_STOCK.getIndex() + "," + OrderStatus.GATHERING_GOODS.getIndex() + "," + OrderStatus.GATHER_GOODS.getIndex();
+        String orderStatusFilterOrigin = OrderStatus.FETCH_STOCK.getIndex() + "," + OrderStatus.GATHERING_GOODS.getIndex() + "," + OrderStatus.GATHER_GOODS.getIndex()+ "," + OrderStatus.CONFIRM.getIndex();
         String orderStatusFilterResult;
         if (orderStatusFilter != null) {
             orderStatusFilterResult = String.join(",", WmsUtil.intersect(orderStatusFilterOrigin.split(","), orderStatusFilter.split(",")));
