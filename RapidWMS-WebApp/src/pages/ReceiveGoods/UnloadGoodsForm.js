@@ -589,13 +589,13 @@ class ReceiveGoodsForm extends PureComponent {
         title: '商品名称',
         dataIndex: 'goods.name',
         key: 'goods.name',
-        width: '15%',
+        width: '10%',
       },
       {
         title: '条码',
         dataIndex: 'goods.sn',
         key: 'goods.sn',
-        width: '15%',
+        width: '10%',
         render: (text, record) => {
           if (record) {
             return (
@@ -616,7 +616,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '价格',
         dataIndex: 'price',
         key: 'price',
-        width: '10%',
+        width: '5%',
         render: (text, record) => {
           if (record) {
             return (
@@ -635,7 +635,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '过期日',
         dataIndex: 'expireDate',
         key: 'expireDate',
-        width: '15%',
+        width: '10%',
         render: (text, record) => {
           if (record) {
             return (
@@ -654,7 +654,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '计划放入库位',
         dataIndex: 'warePositionIn',
         key: 'warePositionIn',
-        width: '10%',
+        width: '20%',
         render: (text, record) => {
           if (record) {
             return (
@@ -685,7 +685,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '数量',
         dataIndex: 'quantityInitial',
         key: 'quantityInitial',
-        width: '5%',
+        width: '1%',
         render: (text, record) => {
           if (record) {
             return (
@@ -704,7 +704,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '件数',
         dataIndex: 'packagesInitial',
         key: 'packagesInitial',
-        width: '5%',
+        width: '1%',
         render: (text, record) => {
           if (record) {
             return (
@@ -723,7 +723,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '收货人',
         dataIndex: 'unloadUser',
         key: 'unloadUser',
-        width: '10%',
+        width: '5%',
         render: (text, record) => {
           if (record) {
             return (
@@ -752,7 +752,7 @@ class ReceiveGoodsForm extends PureComponent {
         title: '入库人',
         dataIndex: 'receiveUser',
         key: 'receiveUser',
-        width: '10%',
+        width: '5%',
         render: (text, record) => {
           if (record) {
             return (

@@ -745,10 +745,6 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Transactional(rollbackFor = Exception.class)
     synchronized public void confirm(CustomerOrder order, Long userId, String pageFlowSn) {
         // todo 确认复核 app
-        if (!(order.getOrderStatus() == OrderStatus.GATHER_GOODS)) {
-            throw new BadRequestException("订单状态错误");
-        }
-
         for (int i = 0; i < order.getCustomerOrderPages().size(); i++) {
             CustomerOrderPage p = order.getCustomerOrderPages().get(i);
             if (StringUtils.isNotEmpty(pageFlowSn) && !pageFlowSn.equals(p.getFlowSn())) {
