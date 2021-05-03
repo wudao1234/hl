@@ -410,6 +410,11 @@ export default [
             component: './PickMatch/PickMatch',
           },
           {
+            path: '/piece/dispatchStatisticsAll',
+            name: 'dispatchStatisticsAll',
+            component: './Dispatch/DispatchStatisticsAll',
+          },
+          {
             path: '/piece/pickMatchStatistics',
             name: 'pickMatchStatistics',
             component: './PickMatchStatistics/PickMatchStatistics',
