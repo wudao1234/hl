@@ -80,10 +80,14 @@ class PackForm extends PureComponent {
         const row = orderLists[0];
         const { allItems } = this.state;
         if (!allItems.some(item => item.id === row.id)) {
-          this.setState({
-            allItems: [...allItems, row],
-          });
-          message.success(`添加${row.flowSn}成功`);
+          if (allItems.length > 0 && allItems[0].clientStore !== row.clientStore) {
+            message.error(`门店不一致`);
+          } else {
+            this.setState({
+              allItems: [...allItems, row],
+            });
+            message.success(`添加${row.flowSn}成功`);
+          }
         }
       }
     }
@@ -189,6 +193,8 @@ class PackForm extends PureComponent {
     const handleAddOrder = row => {
       if (allItems.some(item => item.id === row.id)) {
         message.warning(`${row.flowSn}订单已经添加过了`);
+      } else if (allItems.length > 0 && allItems[0].clientStore !== row.clientStore) {
+        message.error(`门店不一致`);
       } else {
         this.setState({
           allItems: [...allItems, row],

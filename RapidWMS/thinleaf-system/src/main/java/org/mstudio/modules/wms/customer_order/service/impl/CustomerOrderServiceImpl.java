@@ -1364,7 +1364,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 try {
                     // todo 复核分拣 serverI
                     CustomerOrder customerOrder = optionalCustomerOrder.get();
-                    customerOrderMultipleOperateDTO.getUserReviewers().forEach(u ->{
+                    customerOrderMultipleOperateDTO.getUserReviewers().forEach(u -> {
                         customerOrderService.confirm(customerOrder, u.getId(), null);
                     });
                     result.addSucceed();
@@ -1547,11 +1547,13 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                     CustomerOrderPage customerOrderPage = new CustomerOrderPage();
                     customerOrderPage.setCustomerOrder(order);
                     customerOrderPage.setStockFlows(
-                            stockFlowPrint.subList(indexs.get(j), indexs.get(j + 1)).stream().map(f -> {
-                                StockFlow sf = stockFlowRepository.getOne(Long.valueOf(f.getId()));
-                                sf.setCustomerOrderPage(customerOrderPage);
-                                return sf;
-                            }).collect(Collectors.toList()));
+                            stockFlowPrint.subList(indexs.get(j), indexs.get(j + 1)).stream()
+                                    .filter(f -> f.getId() != null)
+                                    .map(f -> {
+                                        StockFlow sf = stockFlowRepository.getOne(Long.valueOf(f.getId()));
+                                        sf.setCustomerOrderPage(customerOrderPage);
+                                        return sf;
+                                    }).collect(Collectors.toList()));
                     customerOrderPage.setOrderStatus(order.getOrderStatus());
                     customerOrderPage.setFlowSn(CUSTOMER_ORDER_PAGE_SN_PREFIX + WmsUtil.generateSnowFlakeId());
                     BigDecimal price = BigDecimal.valueOf(0);
