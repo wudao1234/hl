@@ -147,4 +147,9 @@ public class Pack extends BaseEntity {
      * 打包重量（真实）
      */
     private Float realityWeight;
+
+    /**
+     * 打包大小
+     */
+    private Float size;
 }

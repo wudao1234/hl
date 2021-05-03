@@ -17,6 +17,7 @@ import {
   InputNumber,
   Tag,
   Radio,
+  Select,
 } from 'antd';
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -26,12 +27,13 @@ import styles from '../Common.less';
 
 const FormItem = Form.Item;
 const { Search } = Input;
-const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
+const { Option } = Select;
 
-@connect(({ logisticsTemplate, loading }) => ({
+@connect(({ logisticsTemplate, addressArea, loading }) => ({
   list: logisticsTemplate.list.content,
   total: logisticsTemplate.list.totalElements,
+  addressAreaList: addressArea.allList,
   loading: loading.models.logisticsTemplate,
 }))
 @Form.create()
@@ -54,6 +56,9 @@ class LogisticsTemplate extends PureComponent {
     const { dispatch } = this.props;
     const { search, pageSize, currentPage, orderBy } = this.state;
     this.handleQuery(dispatch, search, pageSize, currentPage, orderBy);
+    dispatch({
+      type: 'addressArea/fetchAll',
+    });
   }
 
   handleSearchChange = e => {
@@ -92,6 +97,7 @@ class LogisticsTemplate extends PureComponent {
     const currentItem = Object.assign({}, item);
     currentItem.firstPrice /= 100;
     currentItem.renewPrice /= 100;
+    currentItem.protectPrice /= 100;
     this.setState({
       visible: true,
       currentItem,
@@ -128,6 +134,7 @@ class LogisticsTemplate extends PureComponent {
       const data = Object.assign({}, fieldsValue);
       data.firstPrice *= 100;
       data.renewPrice *= 100;
+      data.protectPrice *= 100;
       data.dateTime = new Date(moment(data.dateTime).format('YYYY-MM-DD 00:00:00'));
       dispatch({
         type: 'logisticsTemplate/submit',
@@ -191,9 +198,20 @@ class LogisticsTemplate extends PureComponent {
     this.handleQuery(dispatch, search, pageSize, currentPage, orderBy);
   };
 
+  handleAddressAreaFilters = () => {
+    const { addressAreaList } = this.props;
+    const addressAreaFilters = [];
+    if (addressAreaList !== null && addressAreaList !== undefined) {
+      addressAreaList.map(item => {
+        return addressAreaFilters.push({ text: item.name, value: item.id });
+      });
+    }
+    return addressAreaFilters;
+  };
+
   render() {
     const { search } = this.state;
-    const { list, total, loading } = this.props;
+    const { list, total, addressAreaList, loading } = this.props;
     const {
       form: { getFieldDecorator },
     } = this.props;
@@ -226,6 +244,27 @@ class LogisticsTemplate extends PureComponent {
       </div>
     );
 
+    const getCurentAddressArea = item => {
+      if (item !== undefined && item !== null && item.addressArea) {
+        return item.addressArea.id;
+      }
+      return undefined;
+    };
+
+    const getAddressAreasOptions = allAddressAreas => {
+      const children = [];
+      if (Array.isArray(allAddressAreas)) {
+        allAddressAreas.forEach(item => {
+          children.push(
+            <Option key={item.id} value={item.id}>
+              {item.name}
+            </Option>
+          );
+        });
+      }
+      return children;
+    };
+
     const getModalContent = () => {
       if (done) {
         message.success('保存成功');
@@ -239,15 +278,33 @@ class LogisticsTemplate extends PureComponent {
               initialValue: currentItem.name,
             })(<Input placeholder="请输入渠道" />)}
           </FormItem>
-          <FormItem label="按件/按重" {...this.formLayout} hasFeedback>
+          <FormItem label="计量方式" {...this.formLayout} hasFeedback>
             {getFieldDecorator('type', {
               rules: [{ required: true, message: '请选择按件/按重' }],
               initialValue: currentItem.type,
             })(
               <RadioGroup>
-                <Radio value={false}>按件</Radio>
-                <Radio value={true}>按重</Radio>
+                <Radio value={0}>按件</Radio>
+                <Radio value={1}>按重</Radio>
+                <Radio value={2}>按体积</Radio>
               </RadioGroup>
+            )}
+          </FormItem>
+          <FormItem label="地区" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('addressArea', {
+              rules: [{ required: true, message: '请选择地区' }],
+              initialValue: getCurentAddressArea(currentItem),
+            })(
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                placeholder="请选择地区"
+                style={{ width: '100%' }}
+              >
+                {getAddressAreasOptions(addressAreaList)}
+              </Select>
             )}
           </FormItem>
           <FormItem label="生效日期" {...this.formLayout} hasFeedback>
@@ -283,6 +340,21 @@ class LogisticsTemplate extends PureComponent {
                 step={0.01}
                 precision={2}
                 placeholder="请输入首重/首件单价(元)"
+              />
+            )}
+          </FormItem>
+          <FormItem label="保费" {...this.formLayout} hasFeedback>
+            {getFieldDecorator(`protectPrice`, {
+              rules: [{ required: false, message: '请输入保费(元)' }],
+              initialValue: currentItem.protectPrice,
+            })(
+              <InputNumber
+                className={styles.myAntInputNumber}
+                min={0.01}
+                max={99999999}
+                step={0.01}
+                precision={2}
+                placeholder="请输入保费(元)"
               />
             )}
           </FormItem>
@@ -348,12 +420,28 @@ class LogisticsTemplate extends PureComponent {
         },
       },
       {
+        title: '地区',
+        dataIndex: 'addressArea.name',
+        key: 'addressArea.name',
+        width: '5%',
+        align: 'center',
+        sorter: true,
+        filters: this.handleAddressAreaFilters(),
+      },
+      {
         title: '按件/按重',
         dataIndex: 'type',
         key: 'type',
         width: '10%',
         render: text => {
-          return <Tag color={text ? 'blue' : 'red'}>{text ? '按重' : '按件'}</Tag>;
+          switch (text) {
+            case 0:
+              return <Tag>按重</Tag>;
+            case 1:
+              return <Tag>按件</Tag>;
+            default:
+              return <Tag>按体积</Tag>;
+          }
         },
       },
       {
@@ -381,6 +469,15 @@ class LogisticsTemplate extends PureComponent {
         title: '续重/续件单价',
         dataIndex: 'renewPrice',
         key: 'renewPrice',
+        width: '10%',
+        render: text => {
+          return <Tag color="blue">{accounting.formatMoney(text / 100, '￥')}</Tag>;
+        },
+      },
+      {
+        title: '保费',
+        dataIndex: 'protectPrice',
+        key: 'protectPrice',
         width: '10%',
         render: text => {
           return <Tag color="blue">{accounting.formatMoney(text / 100, '￥')}</Tag>;

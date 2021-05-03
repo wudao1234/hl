@@ -1,9 +1,12 @@
 package org.mstudio.modules.wms.Logistics.domain;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
+import org.mstudio.modules.wms.address_area.domain.AddressArea;
 import org.mstudio.modules.wms.common.BaseEntity;
 
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.Date;
 
@@ -50,9 +53,17 @@ public class LogisticsTemplate extends BaseEntity {
     private Integer renewPrice;
 
     /**
-     * 按件：0；按重：1
+     * 按件：0；按重：1；按体：2
      */
-    private Boolean type;
+    private Integer type;
 
+    @JSONField(serialize = false)
+    @ManyToOne
+    private AddressArea addressArea;
+
+    /**
+     * 保费（分）
+     */
+    private Integer protectPrice;
 
 }

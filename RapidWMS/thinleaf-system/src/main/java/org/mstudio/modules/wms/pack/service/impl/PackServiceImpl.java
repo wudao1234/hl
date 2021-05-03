@@ -25,6 +25,7 @@ import org.mstudio.modules.system.repository.UserRepository;
 import org.mstudio.modules.wms.Logistics.domain.LogisticsDetail;
 import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
 import org.mstudio.modules.wms.Logistics.service.LogisticsDetailService;
+import org.mstudio.modules.wms.Logistics.service.object.LogTemTypeEnum;
 import org.mstudio.modules.wms.common.MultiOperateResult;
 import org.mstudio.modules.wms.common.WmsUtil;
 import org.mstudio.modules.wms.customer_order.domain.CustomerOrder;
@@ -71,7 +72,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -269,10 +273,10 @@ public class PackServiceImpl implements PackService {
             Optional<CustomerOrderPage> optional = p.getCustomerOrderPages().stream().filter(
                     innerP -> innerP.getId().equals(Long.valueOf(customerOrderPageVO.getId())))
                     .findFirst();
-            if (optional.isPresent()){
+            if (optional.isPresent()) {
                 CustomerOrder customerOrder = optional.get().getCustomerOrder();
                 SimpleCustomerOrderVO simpleCustomerOrderVO = new SimpleCustomerOrderVO();
-                BeanUtil.copyProperties(customerOrder,simpleCustomerOrderVO);
+                BeanUtil.copyProperties(customerOrder, simpleCustomerOrderVO);
                 customerOrderPageVO.setSimpleCustomerOrder(simpleCustomerOrderVO);
             }
         });
@@ -624,7 +628,13 @@ public class PackServiceImpl implements PackService {
                 ld.setRenew(lt.getRenew());
                 ld.setRealityWeight(pack.getRealityWeight());
                 ld.setComputeWeight(pack.getWeight());
-                ld.setRenewNum(lt.getType() ? (pack.getWeight() - lt.getFirst()) : (pack.getPackages() - lt.getFirst()));
+                if (LogTemTypeEnum.NUM.getIndex() == lt.getType()) {
+                    ld.setRenewNum(pack.getPackages() - lt.getFirst());
+                } else if (LogTemTypeEnum.WEIGHT.getIndex() == lt.getType()) {
+                    ld.setRenewNum(pack.getWeight() - lt.getFirst());
+                } else {
+                    ld.setRenewNum(pack.getSize() - lt.getFirst());
+                }
                 ld.setName(lt.getName());
                 ld.setFirst(lt.getFirst());
                 ld.setFirstPrice(lt.getFirstPrice());

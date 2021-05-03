@@ -1,6 +1,7 @@
 package org.mstudio.modules.wms.Logistics.service.object;
 
 import lombok.Data;
+import org.mstudio.modules.wms.address_area.service.object.AddressAreaDTO;
 import org.mstudio.modules.wms.common.BaseObject;
 
 import java.util.Date;
@@ -37,5 +38,10 @@ public class LogisticsTemplateDTO extends BaseObject {
      */
     private Integer renewPrice;
 
-    private Boolean type;
+    private Integer type;
+    /**
+     * 保费（分）
+     */
+    private Integer protectPrice;
+    private AddressAreaDTO addressArea;
 }

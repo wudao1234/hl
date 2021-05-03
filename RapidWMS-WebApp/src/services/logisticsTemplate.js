@@ -26,14 +26,14 @@ export async function fetchGroupAll() {
 export async function addLogisticsTemplate(payload) {
   return request('/api/Logistics_template', {
     method: 'POST',
-    body: payload,
+    body: { ...payload, addressArea: { id: payload.addressArea } },
   });
 }
 
 export async function updateLogisticsTemplate(payload) {
   return request('/api/Logistics_template', {
     method: 'PUT',
-    body: payload,
+    body: { ...payload, addressArea: { id: payload.addressArea } },
   });
 }
 

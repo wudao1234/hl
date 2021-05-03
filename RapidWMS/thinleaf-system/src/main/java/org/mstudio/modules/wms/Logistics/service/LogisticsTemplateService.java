@@ -2,6 +2,7 @@ package org.mstudio.modules.wms.Logistics.service;
 
 import org.mstudio.modules.wms.Logistics.domain.LogisticsTemplate;
 import org.mstudio.modules.wms.Logistics.service.object.LogisticsTemplateDTO;
+import org.mstudio.modules.wms.Logistics.service.object.LogisticsTemplateVO;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -17,13 +18,13 @@ public interface LogisticsTemplateService {
 
     LogisticsTemplate create(LogisticsTemplate resources);
 
-    LogisticsTemplate update(Long Id, LogisticsTemplate resources);
+    LogisticsTemplateVO update(Long Id, LogisticsTemplate resources);
 
     void delete(Long id);
 
     Object queryAll(String search, Pageable pageable);
 
-    List<LogisticsTemplate> getAllList();
+    List<LogisticsTemplateVO> getAllList();
 
     List<LogisticsTemplateDTO> fetchGroupAll();
 }

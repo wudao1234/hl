@@ -6,6 +6,7 @@ import org.mstudio.modules.wms.Logistics.repository.LogisticsTemplateRepository;
 import org.mstudio.modules.wms.Logistics.service.LogisticsTemplateService;
 import org.mstudio.modules.wms.Logistics.service.mapper.LogisticsTemplateMapper;
 import org.mstudio.modules.wms.Logistics.service.object.LogisticsTemplateDTO;
+import org.mstudio.modules.wms.Logistics.service.object.LogisticsTemplateVO;
 import org.mstudio.utils.PageUtil;
 import org.mstudio.utils.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,8 +56,8 @@ public class LogisticsTemplateServiceImpl implements LogisticsTemplateService {
 
     @Override
     @Cacheable(value = CACHE_NAME, key = "'AllList'")
-    public List<LogisticsTemplate> getAllList() {
-        return logisticsTemplateRepository.findAll();
+    public List<LogisticsTemplateVO> getAllList() {
+        return logisticsTemplateMapper.toVOList(logisticsTemplateRepository.findAll());
     }
 
     @Override
@@ -95,11 +96,11 @@ public class LogisticsTemplateServiceImpl implements LogisticsTemplateService {
 
     @Override
     @CacheEvict(value = CACHE_NAME, allEntries = true)
-    public LogisticsTemplate update(Long id, LogisticsTemplate resources) {
+    public LogisticsTemplateVO update(Long id, LogisticsTemplate resources) {
         Optional<LogisticsTemplate> optional = logisticsTemplateRepository.findById(id);
         ValidationUtil.isNull(optional, "LogisticsTemplate", "id", id);
         resources.setId(id);
-        return logisticsTemplateRepository.save(resources);
+        return logisticsTemplateMapper.toVO(logisticsTemplateRepository.save(resources));
     }
 
     @Override
