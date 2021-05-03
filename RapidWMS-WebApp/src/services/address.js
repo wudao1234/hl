@@ -43,14 +43,14 @@ export async function addAddress(payload) {
   delete body.id;
   return request('/api/address', {
     method: 'POST',
-    body: { ...body, addressType: { id: body.addressType } },
+    body: { ...body, addressType: { id: body.addressType }, addressArea: { id: body.addressArea } },
   });
 }
 
 export async function updateAddress(body) {
   return request('/api/address', {
     method: 'PUT',
-    body: { ...body, addressType: { id: body.addressType } },
+    body: { ...body, addressType: { id: body.addressType }, addressArea: { id: body.addressArea } },
   });
 }
 

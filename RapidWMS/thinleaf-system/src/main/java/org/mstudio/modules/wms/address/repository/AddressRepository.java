@@ -20,5 +20,7 @@ public interface AddressRepository extends JpaRepository<Address, Long>, JpaSpec
 
     Integer countByAddressTypeId(Long addressTypeId);
 
+    Integer countByAddressAreaId(Long addressTypeId);
+
     Address findOneByClientStore(String clientStore);
 }

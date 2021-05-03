@@ -1,6 +1,7 @@
 package org.mstudio.modules.wms.address.service.object;
 
 import lombok.Data;
+import org.mstudio.modules.wms.address_area.service.object.AddressAreaVO;
 import org.mstudio.modules.wms.address_type.service.object.AddressTypeVO;
 import org.mstudio.modules.wms.common.BaseObject;
 
@@ -13,6 +14,8 @@ import org.mstudio.modules.wms.common.BaseObject;
 public class AddressVO extends BaseObject {
 
     private AddressTypeVO addressType;
+
+    private AddressAreaVO addressArea;
 
     private String name;
 

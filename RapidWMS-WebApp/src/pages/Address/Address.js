@@ -25,10 +25,11 @@ const { Search } = Input;
 const { TextArea } = Input;
 const { Option } = Select;
 
-@connect(({ address, addressType, loading }) => ({
+@connect(({ address, addressType, addressArea, loading }) => ({
   list: address.list.content,
   total: address.list.totalElements,
   addressTypeList: addressType.allList,
+  addressAreaList: addressArea.allList,
   loading: loading.models.address,
 }))
 @Form.create()
@@ -55,6 +56,9 @@ class Address extends PureComponent {
     dispatch({
       type: 'addressType/fetchAll',
     });
+    dispatch({
+      type: 'addressArea/fetchAll',
+    });
   }
 
   handleAddressTypeFilters = () => {
@@ -66,6 +70,17 @@ class Address extends PureComponent {
       });
     }
     return addressTypeFilters;
+  };
+
+  handleAddressAreaFilters = () => {
+    const { addressAreaList } = this.props;
+    const addressAreaFilters = [];
+    if (addressAreaList !== null && addressAreaList !== undefined) {
+      addressAreaList.map(item => {
+        return addressAreaFilters.push({ text: item.name, value: item.id });
+      });
+    }
+    return addressAreaFilters;
   };
 
   handleSearch = value => {
@@ -232,7 +247,7 @@ class Address extends PureComponent {
   };
 
   render() {
-    const { list, total, loading, addressTypeList } = this.props;
+    const { list, total, loading, addressTypeList, addressAreaList } = this.props;
     const {
       form: { getFieldDecorator },
     } = this.props;
@@ -279,6 +294,13 @@ class Address extends PureComponent {
       return undefined;
     };
 
+    const getCurentAddressArea = item => {
+      if (item !== undefined && item !== null && item.addressArea) {
+        return item.addressArea.id;
+      }
+      return undefined;
+    };
+
     const getAddressTypesOptions = allAddressTypes => {
       const children = [];
       if (Array.isArray(allAddressTypes)) {
@@ -286,6 +308,20 @@ class Address extends PureComponent {
           children.push(
             <Option key={addressType.id} value={addressType.id}>
               {addressType.name}
+            </Option>
+          );
+        });
+      }
+      return children;
+    };
+
+    const getAddressAreasOptions = allAddressAreas => {
+      const children = [];
+      if (Array.isArray(allAddressAreas)) {
+        allAddressAreas.forEach(item => {
+          children.push(
+            <Option key={item.id} value={item.id}>
+              {item.name}
             </Option>
           );
         });
@@ -311,6 +347,23 @@ class Address extends PureComponent {
               rules: [{ required: true, message: '请输入地址' }],
               initialValue: currentItem.name,
             })(<Input placeholder="请输入地址名称" />)}
+          </FormItem>
+          <FormItem label="地区" {...this.formLayout} hasFeedback>
+            {getFieldDecorator('addressArea', {
+              rules: [{ required: true, message: '请选择地区' }],
+              initialValue: getCurentAddressArea(currentItem),
+            })(
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                placeholder="请选择地区"
+                style={{ width: '100%' }}
+              >
+                {getAddressAreasOptions(addressAreaList)}
+              </Select>
+            )}
           </FormItem>
           <FormItem label="地址类别" {...this.formLayout} hasFeedback>
             {getFieldDecorator('addressType', {
@@ -407,6 +460,15 @@ class Address extends PureComponent {
         align: 'center',
         sorter: true,
         filters: this.handleAddressTypeFilters(),
+      },
+      {
+        title: '地区',
+        dataIndex: 'addressArea.name',
+        key: 'addressArea.name',
+        width: '5%',
+        align: 'center',
+        sorter: true,
+        filters: this.handleAddressAreaFilters(),
       },
       {
         title: '联系人',

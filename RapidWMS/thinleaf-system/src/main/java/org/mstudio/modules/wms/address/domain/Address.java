@@ -2,6 +2,7 @@ package org.mstudio.modules.wms.address.domain;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
+import org.mstudio.modules.wms.address_area.domain.AddressArea;
 import org.mstudio.modules.wms.address_type.domain.AddressType;
 import org.mstudio.modules.wms.common.BaseEntity;
 import org.mstudio.modules.wms.pack.domain.Pack;
@@ -27,6 +28,10 @@ public class Address extends BaseEntity {
     @JSONField(serialize = false)
     @ManyToOne
     private AddressType addressType;
+
+    @JSONField(serialize = false)
+    @ManyToOne
+    private AddressArea addressArea;
 
     private String name;
 

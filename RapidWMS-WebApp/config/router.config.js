@@ -398,6 +398,11 @@ export default [
             name: 'addressType',
             component: './AddressType/AddressType',
           },
+          {
+            path: '/logistics/addressArea',
+            name: 'addressArea',
+            component: './AddressArea/AddressArea',
+          },
         ],
       },
       {
