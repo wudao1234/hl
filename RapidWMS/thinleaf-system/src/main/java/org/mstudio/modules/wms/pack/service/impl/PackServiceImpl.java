@@ -152,100 +152,96 @@ public class PackServiceImpl implements PackService {
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
 //    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
     public Map queryAll(Boolean exportExcel, Boolean isPrintedFilter, Boolean isPackagedFilter, String customerFilter, String addressTypeFilter, String packTypeFilter, String receiveTypeFilter, String packStatusFilter, String userNameFilter, String startDate, String endDate, String search, String searchAddress, String searchOrderSn, Pageable pageable) {
-        Specification<Pack> spec = new Specification<Pack>() {
-            @Override
-            public Predicate toPredicate(Root<Pack> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                List<Predicate> predicates = new ArrayList<>();
+        Specification<Pack> spec = (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-                if (isPrintedFilter != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("isPrinted").as(Boolean.class), isPrintedFilter));
-                }
+            if (isPrintedFilter != null) {
+                predicates.add(criteriaBuilder.equal(root.get("isPrinted").as(Boolean.class), isPrintedFilter));
+            }
 
-                if (isPackagedFilter != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("isPackaged").as(Boolean.class), isPackagedFilter));
-                }
+            if (isPackagedFilter != null) {
+                predicates.add(criteriaBuilder.equal(root.get("isPackaged").as(Boolean.class), isPackagedFilter));
+            }
 
-                if (customerFilter != null && !"".equals(customerFilter)) {
-                    String[] customerIds = customerFilter.split(",");
-                    CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("customer").get("id"));
-                    Arrays.stream(customerIds).forEach(id -> in.value(Long.valueOf(id)));
-                    predicates.add(in);
-                }
+            if (customerFilter != null && !"".equals(customerFilter)) {
+                String[] customerIds = customerFilter.split(",");
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("customer").get("id"));
+                Arrays.stream(customerIds).forEach(id -> in.value(Long.valueOf(id)));
+                predicates.add(in);
+            }
 
-                if (addressTypeFilter != null && !"".equals(addressTypeFilter)) {
-                    String[] addressTypeIds = addressTypeFilter.split(",");
-                    CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("address").get("addressType").get("id"));
-                    Arrays.stream(addressTypeIds).forEach(id -> in.value(Long.valueOf(id)));
-                    predicates.add(in);
-                }
+            if (addressTypeFilter != null && !"".equals(addressTypeFilter)) {
+                String[] addressTypeIds = addressTypeFilter.split(",");
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("address").get("addressType").get("id"));
+                Arrays.stream(addressTypeIds).forEach(id -> in.value(Long.valueOf(id)));
+                predicates.add(in);
+            }
 
-                if (packTypeFilter != null && !"".equals(packTypeFilter)) {
-                    String[] packType = packTypeFilter.split(",");
-                    CriteriaBuilder.In<Integer> in = criteriaBuilder.in(root.get("packType"));
-                    Arrays.stream(packType).forEach(id -> in.value(Integer.parseInt(id)));
-                    predicates.add(in);
-                }
+            if (packTypeFilter != null && !"".equals(packTypeFilter)) {
+                String[] packType = packTypeFilter.split(",");
+                CriteriaBuilder.In<Integer> in = criteriaBuilder.in(root.get("packType"));
+                Arrays.stream(packType).forEach(id -> in.value(Integer.parseInt(id)));
+                predicates.add(in);
+            }
 
-                if (receiveTypeFilter != null && !"".equals(receiveTypeFilter)) {
-                    String[] receiveType = receiveTypeFilter.split(",");
-                    CriteriaBuilder.In<Integer> in = criteriaBuilder.in(root.get("receiveType"));
-                    Arrays.stream(receiveType).forEach(id -> in.value(Integer.parseInt(id)));
-                    predicates.add(in);
-                }
+            if (receiveTypeFilter != null && !"".equals(receiveTypeFilter)) {
+                String[] receiveType = receiveTypeFilter.split(",");
+                CriteriaBuilder.In<Integer> in = criteriaBuilder.in(root.get("receiveType"));
+                Arrays.stream(receiveType).forEach(id -> in.value(Integer.parseInt(id)));
+                predicates.add(in);
+            }
 
-                if (packStatusFilter != null && !"".equals(packStatusFilter)) {
-                    String[] packStatus = packStatusFilter.split(",");
-                    CriteriaBuilder.In<Integer> in = criteriaBuilder.in(root.get("packStatus"));
-                    Arrays.stream(packStatus).forEach(id -> in.value(Integer.parseInt(id)));
-                    predicates.add(in);
-                }
+            if (packStatusFilter != null && !"".equals(packStatusFilter)) {
+                String[] packStatus = packStatusFilter.split(",");
+                CriteriaBuilder.In<Integer> in = criteriaBuilder.in(root.get("packStatus"));
+                Arrays.stream(packStatus).forEach(id -> in.value(Integer.parseInt(id)));
+                predicates.add(in);
+            }
 
-                if (startDate != null && endDate != null) {
-                    Date start = DateUtil.parse(startDate);
-                    Date end = DateUtil.parse(endDate);
-                    // 必须在结束日期基础上加上一天，第二天凌晨0点作为结束时间点
-                    Calendar c = Calendar.getInstance();
-                    c.setTime(end);
-                    c.add(Calendar.DAY_OF_MONTH, 1);
-                    end = c.getTime();
-                    predicates.add(criteriaBuilder.between(root.get("createTime").as(Date.class), start, end));
-                }
+            if (startDate != null && endDate != null) {
+                Date start = DateUtil.parse(startDate);
+                Date end = DateUtil.parse(endDate);
+                // 必须在结束日期基础上加上一天，第二天凌晨0点作为结束时间点
+                Calendar c = Calendar.getInstance();
+                c.setTime(end);
+                c.add(Calendar.DAY_OF_MONTH, 1);
+                end = c.getTime();
+                predicates.add(criteriaBuilder.between(root.get("createTime").as(Date.class), start, end));
+            }
 
-                if (search != null) {
-                    predicates.add(criteriaBuilder.or(
-                            criteriaBuilder.like(root.get("flowSn").as(String.class), "%" + search + "%"),
-                            criteriaBuilder.like(root.get("description").as(String.class), "%" + search + "%"),
-                            criteriaBuilder.like(root.get("user").get("username").as(String.class), "%" + search + "%")
-                    ));
-                }
+            if (search != null) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(root.get("flowSn").as(String.class), "%" + search + "%"),
+                        criteriaBuilder.like(root.get("description").as(String.class), "%" + search + "%"),
+                        criteriaBuilder.like(root.get("user").get("username").as(String.class), "%" + search + "%")
+                ));
+            }
 
-                if (searchAddress != null) {
-                    predicates.add(criteriaBuilder.or(
-                            criteriaBuilder.like(root.get("address").get("name").as(String.class), "%" + searchAddress + "%"),
-                            criteriaBuilder.like(root.get("address").get("contact").as(String.class), "%" + searchAddress + "%"),
-                            criteriaBuilder.like(root.get("address").get("phone").as(String.class), "%" + searchAddress + "%")
-                    ));
-                }
+            if (searchAddress != null) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(root.get("address").get("name").as(String.class), "%" + searchAddress + "%"),
+                        criteriaBuilder.like(root.get("address").get("contact").as(String.class), "%" + searchAddress + "%"),
+                        criteriaBuilder.like(root.get("address").get("phone").as(String.class), "%" + searchAddress + "%")
+                ));
+            }
 
-                if (searchOrderSn != null) {
-                    // todo CriteriaBuilder join
-                    Join<Pack, CustomerOrder> joinOrders = root.joinList("orders", JoinType.INNER);
-                    predicates.add(criteriaBuilder.or(
-                            criteriaBuilder.like(joinOrders.get("clientOrderSn"), "%" + searchOrderSn + "%"),
-                            criteriaBuilder.like(joinOrders.get("clientOrderSn2"), "%" + searchOrderSn + "%")
-                    ));
-                }
+            if (searchOrderSn != null) {
+                Join<Pack, CustomerOrderPage> joinOrders = root.joinList("customerOrderPages", JoinType.INNER);
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(joinOrders.get("customerOrder").get("clientOrderSn"), "%" + searchOrderSn + "%"),
+                        criteriaBuilder.like(joinOrders.get("customerOrder").get("clientOrderSn2"), "%" + searchOrderSn + "%")
+                ));
+            }
 
-                if (userNameFilter != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("user").get("username").as(String.class), userNameFilter));
-                }
+            if (userNameFilter != null) {
+                predicates.add(criteriaBuilder.equal(root.get("user").get("username").as(String.class), userNameFilter));
+            }
 
-                if (predicates.size() != 0) {
-                    Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
-                } else {
-                    return null;
-                }
+            if (predicates.size() != 0) {
+                Predicate[] p = new Predicate[predicates.size()];
+                return criteriaBuilder.and(predicates.toArray(p));
+            } else {
+                return null;
             }
         };
 
