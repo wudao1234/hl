@@ -218,6 +218,7 @@ class PickMatchStatistics extends PureComponent {
         />
         <RangePicker
           style={{ marginLeft: 10, marginRight: 10 }}
+          placeholder={['年-月-日 00:00:00', '年-月-日 59:59:59']}
           onChange={this.handleDateRangeChange}
           value={[startDate, endDate]}
         />
