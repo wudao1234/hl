@@ -1749,6 +1749,14 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         return customerOrderMapper.toDto(customerOrderRepository.findByCustomerOrderPagesId(id));
     }
 
+    @Override
+    public Address getAddressByClientStoreAndAddressType(String clientStore, String AddressType) {
+        Specification<Address> spec = (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.and(
+                criteriaBuilder.equal(root.get("addressType").get("name").as(String.class), AddressType),
+                criteriaBuilder.equal(root.get("clientStore").as(String.class), clientStore));
+        return (Address) addressRepository.findOne(spec).get();
+    }
+
     private void returnStockAndSaveOperateSnapshot(CustomerOrder order, OrderStatus orderStatus, String operation, String cancelDescription) {
         List<StockFlow> stockFlows = stockFlowRepository.findAllByCustomerOrderIdOrderByWarePositionOut(order.getId());
         JwtUser user = (JwtUser) getUserDetails();

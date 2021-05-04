@@ -445,19 +445,19 @@ class LogisticsTemplate extends PureComponent {
         },
       },
       {
-        title: '首重/首件',
+        title: '首重/首件/首体积',
         dataIndex: 'first',
         key: 'first',
         width: '10%',
       },
       {
-        title: '续重/续件',
+        title: '续重/续件/续体积',
         dataIndex: 'renew',
         key: 'renew',
         width: '10%',
       },
       {
-        title: '首重/首件单价',
+        title: '首重/首件/首体积单价',
         dataIndex: 'firstPrice',
         key: 'firstPrice',
         width: '10%',
@@ -466,7 +466,7 @@ class LogisticsTemplate extends PureComponent {
         },
       },
       {
-        title: '续重/续件单价',
+        title: '续重/续件/续体积单价',
         dataIndex: 'renewPrice',
         key: 'renewPrice',
         width: '10%',

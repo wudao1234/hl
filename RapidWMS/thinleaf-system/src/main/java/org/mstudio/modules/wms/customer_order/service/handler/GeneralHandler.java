@@ -58,6 +58,7 @@ public class GeneralHandler implements RowHandler {
     private final static int GOODS_QUANTITY = 11;
     private final static int GOODS_PACK_COUNT = 12;
     private final static int MONTHS_OF_WARRANTY = 13;
+    private final static int ADDRESS_TYPE = 14;
 
     public GeneralHandler(MultiOperateResult result, CustomerOrderService orderService, Customer customer, String targetWareZone,
                           Boolean useNewAutoIncreaseSn, Date expireDateMin, Date expireDateMax, Boolean fetchAll, Boolean fetchStocks,
@@ -142,9 +143,10 @@ public class GeneralHandler implements RowHandler {
 
             // 门店处理
             String clientStore = list.get(ORDER_CLIENT_STORE).toString();
-            Address address = orderService.getAddressByClientStore(clientStore);
+            String addressType = list.get(ADDRESS_TYPE).toString();
+            Address address = orderService.getAddressByClientStoreAndAddressType(clientStore, addressType);
             order.setClientAddress(address.getName());
-            order.setClientStore(address.getClientStore());
+            order.setClientStore(address.getClientStore() + "," + address.getName() + "," + address.getAddressType().getName());
 
             order.setExpireDateMin(expireDateMin);
             order.setExpireDateMax(expireDateMax);

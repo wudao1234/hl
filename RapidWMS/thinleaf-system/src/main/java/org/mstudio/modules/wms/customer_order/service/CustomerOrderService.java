@@ -129,4 +129,6 @@ public interface CustomerOrderService {
     Goods getGoodsByCustomerAndNameAndSn(Long id, String name, String sn);
 
     CustomerOrderDTO findByCustomerOrderPagesId(Long id);
+
+    Address getAddressByClientStoreAndAddressType(String clientStore, String AddressType);
 }

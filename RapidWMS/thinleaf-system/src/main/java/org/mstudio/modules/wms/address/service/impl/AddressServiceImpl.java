@@ -182,7 +182,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME)
+//    @Cacheable(value = CACHE_NAME)
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
     public List<AddressVO> getAllList() {
         return addressMapper.toVOList(addressRepository.findAll());

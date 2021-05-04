@@ -1091,8 +1091,11 @@ class OrderForm extends PureComponent {
       if (Array.isArray(addressList)) {
         addressList.forEach(addressItem => {
           children.push(
-            <Option key={addressItem.id} value={`${addressItem.clientStore},${addressItem.name}`}>
-              {addressItem.clientStore} /{addressItem.name}
+            <Option
+              key={addressItem.id}
+              value={`${addressItem.clientStore},${addressItem.name},${addressItem.addressType.name}`}
+            >
+              {addressItem.clientStore} / {addressItem.name} / {addressItem.addressType.name}
             </Option>
           );
         });

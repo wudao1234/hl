@@ -93,5 +93,10 @@ public class LogisticsDetail extends BaseEntity {
      */
     private String address;
 
+    /**
+     * 保费（分）
+     */
+    private Integer protectPrice;
+
 
 }

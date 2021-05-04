@@ -628,6 +628,7 @@ public class PackServiceImpl implements PackService {
                 ld.setRenew(lt.getRenew());
                 ld.setRealityWeight(pack.getRealityWeight());
                 ld.setComputeWeight(pack.getWeight());
+                ld.setProtectPrice(lt.getProtectPrice());
                 if (LogTemTypeEnum.NUM.getIndex() == lt.getType()) {
                     ld.setRenewNum(pack.getPackages() - lt.getFirst());
                 } else if (LogTemTypeEnum.WEIGHT.getIndex() == lt.getType()) {
@@ -642,7 +643,7 @@ public class PackServiceImpl implements PackService {
                 ld.setAddress(pack.getAddress().getName());
                 ld.setCustomer(pack.getCustomer().getName());
                 ld.setRemark(pack.getDescription());
-                float totalPrice = ld.getFirstPrice();
+                float totalPrice = ld.getFirstPrice() + ld.getProtectPrice();
                 if (ld.getRenewNum() > 0) {
                     totalPrice += (ld.getRenewPrice() * ld.getRenewNum() / ld.getRenew());
                 }
