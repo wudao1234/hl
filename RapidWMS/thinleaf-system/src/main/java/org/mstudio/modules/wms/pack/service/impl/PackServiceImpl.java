@@ -888,8 +888,8 @@ public class PackServiceImpl implements PackService {
                     text += "（内含单据）";
                 }
 
-                table.addCell(new Cell().add(new Paragraph(text).setFont(font)).setTextAlignment(TextAlignment.CENTER).setBold());
-                table.addCell(new Cell().add(new Paragraph(pack.getCustomer().getShortNameCn()).setFont(font)).setTextAlignment(TextAlignment.CENTER));
+                table.addCell(new Cell().add(new Paragraph(pack.getAddress().getPhone()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setBold());
+                table.addCell(new Cell().add(new Paragraph(text).setFont(font)).setTextAlignment(TextAlignment.CENTER)).setFontSize(10);
                 table.addCell(new Cell().add(new Paragraph(pack.getAddress().getName()).setFont(font)).setTextAlignment(TextAlignment.CENTER).setBold());
                 Barcode128 barcode128 = new Barcode128(pdfDocument);
                 barcode128.setCode(pack.getFlowSn());
