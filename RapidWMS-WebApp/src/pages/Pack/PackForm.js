@@ -53,6 +53,7 @@ class PackForm extends PureComponent {
     allItems: [],
     weight: null,
     realityWeight: null,
+    size: null,
     logisticsTemplate: { id: undefined },
   };
 
@@ -161,6 +162,7 @@ class PackForm extends PureComponent {
       allItems,
       weight,
       realityWeight,
+      size,
       logisticsTemplate,
     } = this.state;
 
@@ -668,6 +670,13 @@ class PackForm extends PureComponent {
                   })(<InputNumber min={1} max={99999999} step={1} precision={2} />)}
                 </FormItem>
               </Col>
+              <Col span={2}>
+                <FormItem label="体积" {...this.formLayout} hasFeedback>
+                  {getFieldDecorator('size', {
+                    initialValue: size,
+                  })(<InputNumber min={1} max={99999999} step={1} precision={2} />)}
+                </FormItem>
+              </Col>
               <Col span={3}>
                 <FormItem label="物流单号" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('trackingNumber', {
@@ -675,7 +684,7 @@ class PackForm extends PureComponent {
                   })(<Input />)}
                 </FormItem>
               </Col>
-              <Col span={4}>
+              <Col span={2}>
                 <FormItem label="备注" {...this.formLayout} hasFeedback>
                   {getFieldDecorator('description', {
                     initialValue: packDescription,

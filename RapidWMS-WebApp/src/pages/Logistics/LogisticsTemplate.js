@@ -403,7 +403,7 @@ class LogisticsTemplate extends PureComponent {
         title: '渠道',
         dataIndex: 'name',
         key: 'name',
-        width: '15%',
+        width: '5%',
         sorter: true,
         render: text => {
           if (text !== null && text !== undefined) {
@@ -432,7 +432,7 @@ class LogisticsTemplate extends PureComponent {
         title: '按件/按重',
         dataIndex: 'type',
         key: 'type',
-        width: '10%',
+        width: '5%',
         render: text => {
           switch (text) {
             case 0:
