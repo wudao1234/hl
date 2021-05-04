@@ -151,6 +151,7 @@ class LogisticsStatistics extends PureComponent {
         <RangePicker
           style={{ marginLeft: 10, marginRight: 10 }}
           onChange={this.handleDateRangeChange}
+          placeholder={['年-月-日 00:00:00', '年-月-日 59:59:59']}
           value={[startDate, endDate]}
         />
       </div>
