@@ -606,7 +606,11 @@ public class PackServiceImpl implements PackService {
         } else {
             Pack pack = optionalPack.get();
             pack.setPackStatus(OrderStatus.CLIENT_SIGNED);
-            String photoFileUrl = signedPhoto != null ? "/" + picturePath + "/" + signedPhoto : null;
+            String photoFileUrl = null;
+            if (signedPhoto != null) {
+                String[] tmp = signedPhoto.split(",");
+                photoFileUrl = Arrays.stream(tmp).map(item -> "/" + picturePath + "/" + item).collect(Collectors.joining(","));
+            }
             pack.setSignedPhoto(photoFileUrl);
             packRepository.save(pack);
             operateSnapshotService.create(OrderStatus.CLIENT_SIGNED.getName(), pack);
@@ -816,7 +820,7 @@ public class PackServiceImpl implements PackService {
     @Override
     public MultiOperateResult batchSigned(PackMultipleOperateDTO packMultipleOperateDTO) {
         MultiOperateResult result = new MultiOperateResult();
-        String photoURL = packMultipleOperateDTO.getUploadFileList().length > 0 ? packMultipleOperateDTO.getUploadFileList()[0] : null;
+        String photoURL = packMultipleOperateDTO.getUploadFileList().length > 0 ? String.join(",", packMultipleOperateDTO.getUploadFileList()) : null;
         Arrays.stream(packMultipleOperateDTO.getIds()).forEach(id -> {
             try {
                 packService.signed(id, photoURL);

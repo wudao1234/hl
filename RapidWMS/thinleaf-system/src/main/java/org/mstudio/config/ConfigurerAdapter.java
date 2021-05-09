@@ -34,6 +34,9 @@ public class ConfigurerAdapter implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**").addResourceLocations("classpath:/META-INF/resources/").setCachePeriod(0);
+        registry.addResourceHandler("/picture/**").addResourceLocations("file:" + getUploadPath("picture"));
         registry.addResourceHandler("/avatar/**").addResourceLocations("file:" + getUploadPath(avatarPath));
+        registry.addResourceHandler("/uploads/**").addResourceLocations("file:" + getUploadPath("uploads"));
+        registry.addResourceHandler("/template/**").addResourceLocations("file:" + getUploadPath("template"));
     }
 }

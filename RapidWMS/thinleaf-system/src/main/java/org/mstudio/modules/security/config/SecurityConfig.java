@@ -89,7 +89,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/*.html",
                         "/**/*.css",
                         "/**/*.js",
-                        "/avatar/*.jpg"
+                        "/avatar/*.jpg",
+                        "/picture/**",
+                        "/uploads/**",
+                        "/template/**"
                 ).permitAll()
 
                 .antMatchers( HttpMethod.POST,"/auth/"+loginPath).permitAll()

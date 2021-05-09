@@ -30,6 +30,7 @@ upload:
   path: uploads
   avatar: avatar
   picture: picture
+  template: template
 
 # excel 导出最大行数
 excel:

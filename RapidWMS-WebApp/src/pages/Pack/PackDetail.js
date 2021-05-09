@@ -514,7 +514,9 @@ class PackDetail extends PureComponent {
         </Card>
         {signedPhoto !== null ? (
           <Card title="签收快照" bordered={false} style={{ marginTop: 12 }}>
-            <Zmage src={signedPhoto} height="200" />
+            {signedPhoto.split(',').map(item => {
+              return <Zmage src={item} height="200" key={item} />;
+            })}
           </Card>
         ) : (
           ''

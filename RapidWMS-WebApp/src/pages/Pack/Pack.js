@@ -1248,7 +1248,7 @@ class Pack extends PureComponent {
       sortUserName,
       sortAddressName,
     } = this.state;
-    const { previewVisible, previewImage, uploadFileList } = this.state;
+    const { previewVisible, previewImage } = this.state;
 
     const paginationProps = {
       showSizeChanger: true,
@@ -1805,7 +1805,7 @@ class Pack extends PureComponent {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },
-        multiple: false,
+        multiple: true,
         accept: 'image/*',
         onChange: handleUploadChange,
         onPreview: handlePreview,
@@ -1828,8 +1828,8 @@ class Pack extends PureComponent {
           <FormItem label="上传签收快照(可选)" {...this.formLayout}>
             {getFieldDecorator(
               'uploadFileList',
-              {}
-            )(<Upload {...uploadProps}>{uploadFileList.length >= 1 ? null : uploadButton}</Upload>)}
+              []
+            )(<Upload {...uploadProps}>{uploadButton}</Upload>)}
           </FormItem>
           <Modal visible={previewVisible} footer={null} onCancel={handlePreviewCancel}>
             <img alt="example" style={{ width: '100%' }} src={previewImage} />
