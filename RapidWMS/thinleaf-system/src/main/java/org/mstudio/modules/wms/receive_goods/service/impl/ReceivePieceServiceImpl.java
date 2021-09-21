@@ -57,8 +57,6 @@ public class ReceivePieceServiceImpl implements ReceivePieceService {
     private GoodsRepository goodsRepository;
 
     @Override
-    @Cacheable(value = CACHE_NAME, keyGenerator = "keyGenerator")
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, rollbackFor = Exception.class)
     public Map queryAll(Pageable pageable) {
         Specification<RcceiveCoefficient> spec = (Specification<RcceiveCoefficient>) (root, criteriaQuery, criteriaBuilder) -> null;
         // 默认按照创建的时间顺序排列
